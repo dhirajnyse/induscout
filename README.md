@@ -2,6 +2,8 @@
 
 InduScout is an early GitHub Pages-ready prototype for a global industrial product finder. It helps procurement teams search sample industrial parts, compare supplier channels, review key specifications, and build a shortlist before requesting quotes or buying from source links.
 
+Live site: https://dhirajnyse.github.io/induscout/
+
 ## Vision
 
 Industrial buyers waste time searching manufacturer catalogs, distributor sites, marketplace listings, PDFs, and old part numbers. InduScout aims to become a neutral discovery layer for industrial procurement:
@@ -23,6 +25,7 @@ Features included:
 - Supplier/source cards with outbound links.
 - Shortlist drawer with exportable RFQ-style summary.
 - Responsive corporate UI and SVG 3D-style brand mark.
+- SEO metadata, social sharing preview, and installable site manifest.
 
 ## Launch On GitHub Pages
 
