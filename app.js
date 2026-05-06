@@ -22,6 +22,8 @@ const state = {
 const els = {
   search: document.querySelector("#globalSearch"),
   heroSearch: document.querySelector("#heroSearch"),
+  finderSearch: document.querySelector("#finderSearchInput"),
+  finderSearchForm: document.querySelector("#finderSearch"),
   category: document.querySelector("#categoryFilter"),
   region: document.querySelector("#regionFilter"),
   sourceType: document.querySelector("#sourceTypeFilter"),
@@ -85,6 +87,7 @@ function hydrateFromUrl() {
   if (query) {
     state.query = query;
     els.search.value = query;
+    els.finderSearch.value = query;
   }
 
   if (category && categories.includes(category)) {
@@ -119,13 +122,24 @@ function renderMetrics() {
 function wireEvents() {
   els.heroSearch.addEventListener("submit", (event) => {
     event.preventDefault();
-    state.query = els.search.value.trim();
+    setQuery(els.search.value);
     document.querySelector("#finder").scrollIntoView({ behavior: "smooth", block: "start" });
     render();
   });
 
   els.search.addEventListener("input", (event) => {
-    state.query = event.target.value.trim();
+    setQuery(event.target.value);
+    render();
+  });
+
+  els.finderSearchForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    setQuery(els.finderSearch.value);
+    render();
+  });
+
+  els.finderSearch.addEventListener("input", (event) => {
+    setQuery(event.target.value);
     render();
   });
 
@@ -178,7 +192,7 @@ function wireEvents() {
       datasheetOnly: false,
       verifiedOnly: false
     });
-    els.search.value = "";
+    setQuery("");
     els.category.value = "all";
     els.region.value = "all";
     els.sourceType.value = "all";
@@ -276,6 +290,19 @@ function wireEvents() {
     render();
   });
   els.copyShortlist.addEventListener("click", copyShortlist);
+}
+
+function setQuery(value) {
+  const rawValue = String(value);
+  state.query = rawValue.trim();
+
+  if (document.activeElement !== els.search) {
+    els.search.value = rawValue;
+  }
+
+  if (document.activeElement !== els.finderSearch) {
+    els.finderSearch.value = rawValue;
+  }
 }
 
 function render() {

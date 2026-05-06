@@ -577,6 +577,29 @@ input[type="checkbox"] {
   overflow: hidden;
 }
 
+.finder-search {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.finder-search label {
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.compact-search {
+  width: 100%;
+  min-height: 52px;
+  box-shadow: none;
+}
+
+.compact-search button {
+  min-height: 38px;
+}
+
 .results-head {
   display: flex;
   align-items: center;
