@@ -16,10 +16,10 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v0.6 version is still static and lightweight, but it already demonstrates the core procurement workflow.
+This v0.7 version is still static and lightweight, but it already demonstrates the core procurement workflow and adds crawlable SEO catalog pages.
 
 - 12 procurement categories, 36 product records, and 108 product source links.
-- Structured `data/catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
+- Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
 - Search, category, region, source type, confidence, datasheet, and verified-signal filters.
 - Procurement fit scoring for balanced, speed, and cost priorities.
 - Product confidence labels for high, standard, and review-required records.
@@ -31,6 +31,8 @@ This v0.6 version is still static and lightweight, but it already demonstrates t
 - Compare desk for up to four selected products.
 - Shortlist drawer with exportable RFQ-style summary.
 - Buyer desk, trust layer, source directory, launch-readiness section, and roadmap.
+- Static SEO category pages and product record pages generated from the catalog.
+- Expanded sitemap with category and product URLs.
 - Responsive corporate UI, SVG 3D-style brand mark, SEO metadata, social preview, and installable site manifest.
 
 ## Project Structure
@@ -40,8 +42,17 @@ This v0.6 version is still static and lightweight, but it already demonstrates t
 |-- index.html
 |-- styles.css
 |-- app.js
-|-- data/
-|   `-- catalog.js
+|-- catalog.js
+|-- categories/
+|   |-- index.html
+|   `-- ...
+|-- products/
+|   |-- index.html
+|   `-- ...
+|-- tools/
+|   `-- generate-seo-pages.js
+|-- .github/
+|   `-- ISSUE_TEMPLATE/
 |-- assets/
 |   |-- induscout-logo.svg
 |   |-- induscout-social-card.jpg
@@ -59,10 +70,21 @@ This v0.6 version is still static and lightweight, but it already demonstrates t
 ## Launch On GitHub Pages
 
 1. Upload the contents of this folder to the repository root.
-2. Keep the `data` and `assets` folders intact.
-3. In GitHub, open **Settings -> Pages**.
-4. Publish from the `main` branch and root folder.
-5. After deployment, hard refresh the live site.
+2. Keep `catalog.js`, `assets`, `categories`, and `products` intact.
+3. The `data` and `tools` folders are development backups only. They are not required for GitHub Pages upload.
+4. In GitHub, open **Settings -> Pages**.
+5. Publish from the `main` branch and root folder.
+6. After deployment, hard refresh the live site.
+
+## Regenerate SEO Pages
+
+When the catalog changes, regenerate static category/product pages and the sitemap:
+
+```bash
+node tools/generate-seo-pages.js
+```
+
+The generator is for local development only. The public website does not need the `tools` folder after pages are generated.
 
 ## Data Quality Note
 
