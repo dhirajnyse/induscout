@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v0.9 version is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v1.0 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
 - 12 procurement categories, 60 product records, and 180 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -34,6 +34,8 @@ This v0.9 version is still static and lightweight, but it already demonstrates t
 - Static SEO category pages and product record pages generated from the catalog.
 - Breadcrumbs, related records, buyer checklists, and richer structured data on SEO pages.
 - Static SEO pages can hand buyers back into the live finder with product or category filters prepared.
+- Public GitHub issue paths for product data corrections, supplier/source suggestions, and feature requests.
+- Launch-readiness guidance for sitemap checks, search indexing, and public beta verification.
 - Expanded sitemap with category and product URLs.
 - Responsive corporate UI, SVG 3D-style brand mark, SEO metadata, social preview, and installable site manifest.
 
@@ -91,6 +93,12 @@ The generator is for local development only. The public website does not need th
 ## Data Quality Note
 
 InduScout is a discovery and procurement workflow aid. Buyers must verify pricing, stock, compatibility, certifications, warranty path, seller terms, and source legitimacy with the seller or manufacturer before purchase.
+
+## Public Feedback Paths
+
+- Product data update: https://github.com/dhirajnyse/induscout/issues/new?template=product-data-update.yml
+- Supplier or source request: https://github.com/dhirajnyse/induscout/issues/new?template=supplier-source-request.yml
+- Feature request: https://github.com/dhirajnyse/induscout/issues/new?template=feature-request.yml
 
 ## Roadmap
 
