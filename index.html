@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="InduScout helps procurement teams find industrial products, compare global source links, and build RFQ-ready shortlists from a curated beta catalog.">
+    <meta name="description" content="InduScout helps procurement teams find industrial products, compare source options, and build RFQ-ready shortlists from a curated beta catalog.">
     <meta name="application-name" content="InduScout">
     <meta name="theme-color" content="#0f766e">
     <meta name="robots" content="index, follow">
@@ -13,7 +13,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dhirajnyse.github.io/induscout/">
     <meta property="og:title" content="InduScout | Global Industrial Product Finder">
-    <meta property="og:description" content="Find industrial products, compare source links, and build RFQ-ready shortlists from a curated beta catalog.">
+    <meta property="og:description" content="Find industrial products, compare source options, and build RFQ-ready shortlists from a curated beta catalog.">
     <meta property="og:image" content="https://dhirajnyse.github.io/induscout/assets/induscout-social-card.jpg">
     <meta property="og:image:width" content="600">
     <meta property="og:image:height" content="315">
@@ -21,7 +21,7 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="InduScout | Global Industrial Product Finder">
-    <meta name="twitter:description" content="Find industrial products, compare source links, and build RFQ-ready shortlists from a curated beta catalog.">
+    <meta name="twitter:description" content="Find industrial products, compare source options, and build RFQ-ready shortlists from a curated beta catalog.">
     <meta name="twitter:image" content="https://dhirajnyse.github.io/induscout/assets/induscout-social-card.jpg">
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
@@ -34,7 +34,7 @@
         "name": "InduScout",
         "url": "https://dhirajnyse.github.io/induscout/",
         "applicationCategory": "BusinessApplication",
-        "description": "InduScout helps procurement teams find industrial products, compare global source links, and build RFQ-ready shortlists from a curated beta catalog.",
+        "description": "InduScout helps procurement teams find industrial products, compare source options, and build RFQ-ready shortlists from a curated beta catalog.",
         "operatingSystem": "Any",
         "creator": {
           "@type": "Organization",
@@ -55,6 +55,7 @@
       <nav class="nav-actions" aria-label="Primary">
         <a href="#categories">Categories</a>
         <a href="#finder">Finder</a>
+        <a href="#compare">Compare</a>
         <a href="#sources">Sources</a>
         <a href="#methodology">Method</a>
         <a href="#roadmap">Roadmap</a>
@@ -166,10 +167,33 @@
                 <span id="resultCount">0 products</span>
                 <strong id="resultSummary">Ready to search</strong>
               </div>
-              <button class="ghost-button compact" id="exportShortlist" type="button">Export shortlist</button>
+              <div class="results-actions">
+                <button class="ghost-button compact" id="openCompare" type="button">Compare <span id="compareCount">0</span></button>
+                <button class="ghost-button compact" id="exportShortlist" type="button">Export shortlist</button>
+              </div>
             </div>
             <div id="resultsGrid" class="results-grid"></div>
           </section>
+        </div>
+      </section>
+
+      <section class="compare-band" id="compare" aria-labelledby="compare-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Compare Desk</p>
+            <h2 id="compare-title">Build a buyer-ready comparison</h2>
+          </div>
+          <p>Select up to four products from the finder to compare fit score, lead time, MOQ, datasheet status, certifications, alternates, and buying channels.</p>
+        </div>
+        <div class="compare-panel">
+          <div class="compare-toolbar">
+            <strong id="compareSummary">No products selected for comparison</strong>
+            <div>
+              <button class="ghost-button compact" id="copyCompare" type="button">Copy comparison</button>
+              <button class="ghost-button compact" id="clearCompare" type="button">Clear compare</button>
+            </div>
+          </div>
+          <div class="compare-grid" id="compareGrid"></div>
         </div>
       </section>
 
@@ -187,6 +211,39 @@
           <p>A practical starting map for global procurement discovery. Links are starting points; buyers still verify price, stock, certificates, and seller terms.</p>
         </div>
         <div class="source-directory" id="sourceDirectory"></div>
+      </section>
+
+      <section class="buyer-band" id="buyer-desk" aria-labelledby="buyer-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Buyer Desk</p>
+            <h2 id="buyer-title">Launch-ready procurement support</h2>
+          </div>
+          <p>These are the practical trust-building surfaces we need before inviting real buyers and suppliers into the platform.</p>
+        </div>
+        <div class="buyer-grid">
+          <article>
+            <span>RFQ Pack</span>
+            <h3>Buyer checklist</h3>
+            <ul>
+              <li>Part number, brand, and acceptable alternates</li>
+              <li>Quantity, target lead time, delivery country</li>
+              <li>Datasheet, certification, and warranty requirements</li>
+              <li>Preferred channel: OEM, distributor, RFQ, or surplus</li>
+            </ul>
+          </article>
+          <article>
+            <span>Supplier Growth</span>
+            <h3>Submit a source</h3>
+            <p>Suppliers should be able to request listing review with company profile, product categories, regions served, certificates, and official purchase/RFQ links.</p>
+            <a href="mailto:?subject=Supplier%20listing%20request%20for%20InduScout">Draft supplier email</a>
+          </article>
+          <article>
+            <span>Data Roadmap</span>
+            <h3>Next catalog targets</h3>
+            <p>Grow category-by-category with real product families, manufacturer pages, authorized distributor links, datasheets, and verified regional availability notes.</p>
+          </article>
+        </div>
       </section>
 
       <section class="method-band" id="methodology" aria-labelledby="methodology-title">

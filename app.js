@@ -12,7 +12,8 @@ const state = {
   priority: "balanced",
   datasheetOnly: false,
   verifiedOnly: false,
-  shortlist: []
+  shortlist: [],
+  compare: []
 };
 
 const els = {
@@ -40,6 +41,12 @@ const els = {
   clearShortlist: document.querySelector("#clearShortlist"),
   copyShortlist: document.querySelector("#copyShortlist"),
   exportShortlist: document.querySelector("#exportShortlist"),
+  openCompare: document.querySelector("#openCompare"),
+  compareCount: document.querySelector("#compareCount"),
+  compareSummary: document.querySelector("#compareSummary"),
+  compareGrid: document.querySelector("#compareGrid"),
+  clearCompare: document.querySelector("#clearCompare"),
+  copyCompare: document.querySelector("#copyCompare"),
   categoryCount: document.querySelector("#categoryCount"),
   productCount: document.querySelector("#productCount"),
   sourceCount: document.querySelector("#sourceCount")
@@ -58,6 +65,7 @@ function init() {
   renderSources();
   renderSourceDirectory();
   wireEvents();
+  renderCompare();
   render();
 }
 
@@ -153,9 +161,15 @@ function wireEvents() {
   });
 
   els.results.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-add]");
-    if (button) {
-      addToShortlist(button.dataset.add);
+    const shortlistButton = event.target.closest("[data-add]");
+    const compareButton = event.target.closest("[data-compare]");
+
+    if (shortlistButton) {
+      addToShortlist(shortlistButton.dataset.add);
+    }
+
+    if (compareButton) {
+      toggleCompare(compareButton.dataset.compare);
     }
   });
 
@@ -172,6 +186,21 @@ function wireEvents() {
 
   els.shortlistToggle.addEventListener("click", openShortlist);
   els.exportShortlist.addEventListener("click", openShortlist);
+  els.openCompare.addEventListener("click", () => {
+    document.querySelector("#compare").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  els.clearCompare.addEventListener("click", () => {
+    state.compare = [];
+    renderCompare();
+    render();
+  });
+  els.copyCompare.addEventListener("click", copyCompare);
+  els.compareGrid.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-remove-compare]");
+    if (button) {
+      toggleCompare(button.dataset.removeCompare);
+    }
+  });
   els.closeShortlist.addEventListener("click", closeShortlist);
   els.scrim.addEventListener("click", closeShortlist);
   els.clearShortlist.addEventListener("click", () => {
@@ -243,6 +272,7 @@ function summaryText(count) {
 function productTemplate(product) {
   const score = product[state.priority];
   const isShortlisted = state.shortlist.includes(product.id);
+  const isCompared = state.compare.includes(product.id);
   const sourceLinks = product.sources.map(sourceLinkTemplate).join("");
   const applicationList = product.applications.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   const specList = product.specs.map((spec) => `<li>${escapeHtml(spec)}</li>`).join("");
@@ -285,6 +315,7 @@ function productTemplate(product) {
         </div>
         <div class="card-actions">
           <button type="button" data-add="${escapeHtml(product.id)}">${isShortlisted ? "Shortlisted" : "Add to shortlist"}</button>
+          <button class="secondary-action" type="button" data-compare="${escapeHtml(product.id)}">${isCompared ? "In compare" : "Compare"}</button>
           <a class="button-link ghost-button" href="${escapeHtml(product.sources[0].url)}" target="_blank" rel="noreferrer">Open primary source</a>
         </div>
       </div>
@@ -353,6 +384,76 @@ function renderSourceDirectory() {
     .join("");
 }
 
+function toggleCompare(id) {
+  if (state.compare.includes(id)) {
+    state.compare = state.compare.filter((item) => item !== id);
+  } else {
+    if (state.compare.length >= 4) {
+      state.compare.shift();
+    }
+    state.compare.push(id);
+  }
+
+  renderCompare();
+  render();
+}
+
+function renderCompare() {
+  const selected = state.compare.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  setText(els.compareCount, selected.length);
+  setText(
+    els.compareSummary,
+    selected.length
+      ? `${selected.length} ${selected.length === 1 ? "product" : "products"} selected for comparison`
+      : "No products selected for comparison"
+  );
+
+  if (!selected.length) {
+    els.compareGrid.innerHTML = `
+      <div class="empty-state compare-empty">
+        Use the Compare button on product cards to build a side-by-side procurement view.
+      </div>
+    `;
+    return;
+  }
+
+  els.compareGrid.innerHTML = selected.map(compareTemplate).join("");
+}
+
+function compareTemplate(product) {
+  const score = product[state.priority];
+  const sourceNames = product.sources.map((source) => `${source.type}: ${source.name}`).join(", ");
+  const certs = product.certifications.length ? product.certifications.join(", ") : "Check";
+
+  return `
+    <article class="compare-card">
+      <div class="compare-card-head">
+        <div>
+          <span>${escapeHtml(product.category)}</span>
+          <h3>${escapeHtml(product.brand)} ${escapeHtml(product.sku)}</h3>
+        </div>
+        <button type="button" data-remove-compare="${escapeHtml(product.id)}" aria-label="Remove ${escapeHtml(product.name)} from comparison">&times;</button>
+      </div>
+      <p>${escapeHtml(product.name)}</p>
+      <div class="compare-score">
+        <span>${escapeHtml(state.priority)} fit</span>
+        <strong>${score}</strong>
+        <div class="bar" aria-hidden="true"><i style="width:${score}%"></i></div>
+      </div>
+      <dl class="compare-list">
+        <div><dt>Lead time</dt><dd>${escapeHtml(product.lead)}</dd></div>
+        <div><dt>MOQ</dt><dd>${escapeHtml(product.moq)}</dd></div>
+        <div><dt>Lifecycle</dt><dd>${escapeHtml(product.lifecycle)}</dd></div>
+        <div><dt>Datasheet</dt><dd>${product.datasheet ? "Yes" : "Check"}</dd></div>
+        <div><dt>Certs</dt><dd>${escapeHtml(certs)}</dd></div>
+        <div><dt>Sources</dt><dd>${escapeHtml(sourceNames)}</dd></div>
+        <div><dt>Alternates</dt><dd>${escapeHtml(product.alternatives.join(", "))}</dd></div>
+      </dl>
+      <a class="button-link ghost-button" href="${escapeHtml(product.sources[0].url)}" target="_blank" rel="noreferrer">Open primary source</a>
+    </article>
+  `;
+}
+
 function addToShortlist(id) {
   if (!state.shortlist.includes(id)) {
     state.shortlist.push(id);
@@ -418,6 +519,38 @@ Sources: ${sources}`;
     }, 1200);
   } catch {
     window.prompt("Copy RFQ summary", text);
+  }
+}
+
+async function copyCompare() {
+  const selected = state.compare.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  const text = selected.length
+    ? selected
+        .map((product, index) => {
+          const sources = product.sources.map((source) => `${source.type} - ${source.name}: ${source.url}`).join("; ");
+          const certs = product.certifications.length ? product.certifications.join(", ") : "Check";
+          return `${index + 1}. ${product.brand} ${product.sku} - ${product.name}
+Category: ${product.category}
+${state.priority} fit: ${product[state.priority]}
+Lead time: ${product.lead}
+MOQ: ${product.moq}
+Lifecycle: ${product.lifecycle}
+Datasheet: ${product.datasheet ? "Yes" : "Check"}
+Certifications: ${certs}
+Alternatives: ${product.alternatives.join(", ")}
+Sources: ${sources}`;
+        })
+        .join("\n\n")
+    : "No InduScout products selected for comparison.";
+
+  try {
+    await navigator.clipboard.writeText(text);
+    els.copyCompare.textContent = "Copied";
+    setTimeout(() => {
+      els.copyCompare.textContent = "Copy comparison";
+    }, 1200);
+  } catch {
+    window.prompt("Copy comparison", text);
   }
 }
 

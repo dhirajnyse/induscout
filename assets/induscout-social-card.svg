@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">InduScout social preview</title>
+  <desc id="desc">Branded social preview for InduScout, a global industrial product finder for procurement teams.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.54" stop-color="#dff7f0"/>
+      <stop offset="1" stop-color="#e0f2fe"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="732" y1="134" x2="1010" y2="445" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7dd3fc"/>
+      <stop offset="0.45" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="24" stdDeviation="26" flood-color="#0f172a" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="908" cy="310" r="218" fill="none" stroke="#0f172a" stroke-opacity="0.1" stroke-width="2"/>
+  <circle cx="972" cy="172" r="88" fill="#ffffff" opacity="0.5"/>
+  <g transform="translate(72 80)">
+    <g transform="translate(0 0)">
+      <rect x="0" y="0" width="72" height="72" rx="16" fill="#ffffff" filter="url(#shadow)"/>
+      <path d="M36 10 61 24v28L36 66 11 52V24L36 10Z" fill="#0f766e"/>
+      <path d="M36 18 53 28v19L36 57 19 47V28l17-10Z" fill="#0f172a"/>
+      <path d="M36 27 44 32v9l-8 5-8-5v-9l8-5Z" fill="#22c55e"/>
+      <circle cx="23" cy="24" r="5" fill="#38bdf8"/>
+      <circle cx="49" cy="24" r="5" fill="#22c55e"/>
+      <circle cx="23" cy="51" r="5" fill="#22c55e"/>
+      <circle cx="49" cy="51" r="5" fill="#38bdf8"/>
+    </g>
+    <text x="92" y="30" fill="#0f172a" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">InduScout</text>
+    <text x="92" y="56" fill="#64748b" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600">Global product finder</text>
+  </g>
+  <g transform="translate(72 198)">
+    <text x="0" y="0" fill="#0f766e" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="900">INDUSTRIAL DISCOVERY FOR PROCUREMENT TEAMS</text>
+    <text x="0" y="82" fill="#0f172a" font-family="Segoe UI, Arial, sans-serif" font-size="64" font-weight="900">Find industrial</text>
+    <text x="0" y="154" fill="#0f172a" font-family="Segoe UI, Arial, sans-serif" font-size="64" font-weight="900">products faster.</text>
+    <text x="0" y="226" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="500">Compare source links and procurement signals.</text>
+    <text x="0" y="260" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="500">Build RFQ-ready shortlists.</text>
+  </g>
+  <g transform="translate(790 144)" filter="url(#shadow)">
+    <rect x="0" y="0" width="330" height="330" rx="74" fill="#ffffff" opacity="0.9"/>
+    <path d="M165 40 288 108v139L165 316 42 247V108L165 40Z" fill="url(#mark)"/>
+    <path d="M165 81 253 128v99l-88 50-88-50v-99l88-47Z" fill="#0f172a" opacity="0.82"/>
+    <path d="M165 110 218 140v59l-53 29-53-29v-59l53-30Z" fill="#ffffff"/>
+    <path d="M165 134 194 150v33l-29 17-29-17v-33l29-16Z" fill="#22c55e"/>
+    <circle cx="77" cy="97" r="22" fill="#0f172a"/>
+    <circle cx="77" cy="97" r="11" fill="#22c55e"/>
+    <circle cx="253" cy="97" r="22" fill="#0f172a"/>
+    <circle cx="253" cy="97" r="11" fill="#38bdf8"/>
+    <circle cx="77" cy="258" r="22" fill="#0f172a"/>
+    <circle cx="77" cy="258" r="11" fill="#38bdf8"/>
+    <circle cx="253" cy="258" r="22" fill="#0f172a"/>
+    <circle cx="253" cy="258" r="11" fill="#22c55e"/>
+  </g>
+  <g transform="translate(72 520)">
+    <rect x="0" y="0" width="162" height="48" rx="8" fill="#ffffff" stroke="#d9e2ec"/>
+    <text x="20" y="31" fill="#0f766e" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="900">12</text>
+    <text x="50" y="31" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">categories</text>
+    <rect x="178" y="0" width="154" height="48" rx="8" fill="#ffffff" stroke="#d9e2ec"/>
+    <text x="198" y="31" fill="#0f766e" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="900">36</text>
+    <text x="240" y="31" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">products</text>
+    <rect x="348" y="0" width="180" height="48" rx="8" fill="#ffffff" stroke="#d9e2ec"/>
+    <text x="368" y="31" fill="#0f766e" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="900">108</text>
+    <text x="422" y="31" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">sources</text>
+  </g>
+</svg>
