@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v0.7 version is still static and lightweight, but it already demonstrates the core procurement workflow and adds crawlable SEO catalog pages.
+This v0.8 version is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
 - 12 procurement categories, 36 product records, and 108 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -32,6 +32,8 @@ This v0.7 version is still static and lightweight, but it already demonstrates t
 - Shortlist drawer with exportable RFQ-style summary.
 - Buyer desk, trust layer, source directory, launch-readiness section, and roadmap.
 - Static SEO category pages and product record pages generated from the catalog.
+- Breadcrumbs, related records, buyer checklists, and richer structured data on SEO pages.
+- Static SEO pages can hand buyers back into the live finder with product or category filters prepared.
 - Expanded sitemap with category and product URLs.
 - Responsive corporate UI, SVG 3D-style brand mark, SEO metadata, social preview, and installable site manifest.
 
@@ -96,4 +98,4 @@ InduScout is a discovery and procurement workflow aid. Buyers must verify pricin
 - Add supplier submission and verification review.
 - Add saved projects and team collaboration.
 - Add backend search, accounts, and structured supplier/product APIs.
-- Add richer product detail pages for SEO once the data model stabilizes.
+- Add richer product detail pages for SEO as the catalog expands category by category.

@@ -68,12 +68,29 @@ const sourceTypes = [...new Set(products.flatMap((product) => product.sources.ma
 function init() {
   renderMetrics();
   populateFilters();
+  hydrateFromUrl();
   renderCategories();
   renderSources();
   renderSourceDirectory();
   wireEvents();
   renderCompare();
   render();
+}
+
+function hydrateFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const query = (params.get("q") || "").trim();
+  const category = (params.get("category") || "").trim();
+
+  if (query) {
+    state.query = query;
+    els.search.value = query;
+  }
+
+  if (category && categories.includes(category)) {
+    state.category = category;
+    els.category.value = category;
+  }
 }
 
 function populateFilters() {
