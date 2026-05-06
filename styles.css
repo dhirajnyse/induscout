@@ -1707,7 +1707,8 @@ input[type="checkbox"] {
 }
 
 .detail-actions button,
-.rfq-builder button {
+.rfq-builder button,
+.brief-builder button {
   min-height: 44px;
   padding: 0 16px;
   color: #ffffff;
@@ -1715,6 +1716,18 @@ input[type="checkbox"] {
   border: 1px solid var(--ink);
   border-radius: var(--radius);
   font-weight: 900;
+}
+
+.rfq-copy-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rfq-copy-actions .secondary-copy {
+  color: var(--teal);
+  background: #f0fdfa;
+  border-color: #99f6e4;
 }
 
 .data-update-builder button {
@@ -1757,6 +1770,28 @@ input[type="checkbox"] {
 
 .detail-facts strong {
   color: var(--ink);
+}
+
+.brief-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: var(--radius);
+}
+
+.brief-builder h4,
+.brief-builder p {
+  margin: 0;
+}
+
+.brief-builder p {
+  margin-top: 4px;
+  color: #475569;
+  font-size: 0.9rem;
 }
 
 .detail-section {
@@ -2379,6 +2414,10 @@ footer a {
     grid-template-columns: 1fr;
   }
 
+  .brief-builder {
+    grid-template-columns: 1fr;
+  }
+
   .card-actions {
     grid-template-columns: 1fr;
   }
@@ -2393,6 +2432,7 @@ footer a {
   .detail-actions,
   .detail-facts,
   .rfq-grid,
+  .rfq-copy-actions,
   .seo-grid,
   .seo-grid.compact,
   .seo-mini-grid,
