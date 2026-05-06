@@ -573,6 +573,10 @@ function productDetailTemplate(product) {
         <span>${escapeHtml(confidence.label)}</span>
         <strong>${escapeHtml(confidence.reason)}</strong>
       </div>
+      <div class="verification-note">
+        <strong>Verify before buying</strong>
+        <span>Confirm exact part number, compatibility, datasheet revision, certificate availability, warranty path, stock, pricing, and seller terms with the supplier.</span>
+      </div>
       <div class="detail-score">
         <div>
           <span>${escapeHtml(state.priority)} fit</span>
@@ -613,7 +617,7 @@ function productDetailTemplate(product) {
       <form class="rfq-builder" id="rfqBuilder">
         <div class="rfq-heading">
           <h4>RFQ request pack</h4>
-          <p>Fill what you know, then copy a clean request for email or supplier portals.</p>
+          <p>Fill what you know, then copy a clean request for email or supplier portals. Ask the supplier to confirm all commercial and technical details.</p>
         </div>
         <div class="rfq-grid">
           <label>Quantity
@@ -883,7 +887,7 @@ Preferred source links: ${sources}
 Buyer notes:
 ${buyerNotes}
 
-Please confirm price, lead time, stock availability, warranty path, certificate availability, country of origin, and payment/delivery terms.`;
+Please confirm exact part number, compatibility, datasheet revision, price, lead time, stock availability, warranty path, certificate availability, country of origin, and payment/delivery terms before order placement.`;
 
   try {
     await navigator.clipboard.writeText(text);

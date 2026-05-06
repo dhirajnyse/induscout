@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v1.0 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v1.1 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
 - 12 procurement categories, 60 product records, and 180 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -36,6 +36,7 @@ This v1.0 public beta is still static and lightweight, but it already demonstrat
 - Static SEO pages can hand buyers back into the live finder with product or category filters prepared.
 - Public GitHub issue paths for product data corrections, supplier/source suggestions, and feature requests.
 - Launch-readiness guidance for sitemap checks, search indexing, and public beta verification.
+- Clear beta and buyer-verification notices in the hero, finder, product detail, and copied RFQ text.
 - Expanded sitemap with category and product URLs.
 - Responsive corporate UI, SVG 3D-style brand mark, SEO metadata, social preview, and installable site manifest.
 
