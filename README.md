@@ -16,9 +16,9 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v0.8 version is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v0.9 version is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
-- 12 procurement categories, 36 product records, and 108 product source links.
+- 12 procurement categories, 60 product records, and 180 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
 - Search, category, region, source type, confidence, datasheet, and verified-signal filters.
 - Procurement fit scoring for balanced, speed, and cost priorities.
