@@ -1,7 +1,7 @@
 {
   "name": "InduScout",
   "short_name": "InduScout",
-  "description": "Global industrial product finder for procurement teams.",
+  "description": "Global industrial product finder with a structured beta catalog for procurement teams.",
   "start_url": "/induscout/",
   "scope": "/induscout/",
   "display": "standalone",

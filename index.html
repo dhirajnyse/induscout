@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="InduScout helps procurement teams find industrial products, compare global source links, and build RFQ-ready shortlists.">
+    <meta name="description" content="InduScout helps procurement teams find industrial products, compare global source links, and build RFQ-ready shortlists from a curated beta catalog.">
     <meta name="application-name" content="InduScout">
     <meta name="theme-color" content="#0f766e">
     <meta name="robots" content="index, follow">
@@ -13,7 +13,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dhirajnyse.github.io/induscout/">
     <meta property="og:title" content="InduScout | Global Industrial Product Finder">
-    <meta property="og:description" content="Find industrial products, compare source links, and build RFQ-ready shortlists for procurement.">
+    <meta property="og:description" content="Find industrial products, compare source links, and build RFQ-ready shortlists from a curated beta catalog.">
     <meta property="og:image" content="https://dhirajnyse.github.io/induscout/assets/induscout-social-card.jpg">
     <meta property="og:image:width" content="600">
     <meta property="og:image:height" content="315">
@@ -21,7 +21,7 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="InduScout | Global Industrial Product Finder">
-    <meta name="twitter:description" content="Find industrial products, compare source links, and build RFQ-ready shortlists for procurement.">
+    <meta name="twitter:description" content="Find industrial products, compare source links, and build RFQ-ready shortlists from a curated beta catalog.">
     <meta name="twitter:image" content="https://dhirajnyse.github.io/induscout/assets/induscout-social-card.jpg">
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
@@ -34,7 +34,7 @@
         "name": "InduScout",
         "url": "https://dhirajnyse.github.io/induscout/",
         "applicationCategory": "BusinessApplication",
-        "description": "InduScout helps procurement teams find industrial products, compare global source links, and build RFQ-ready shortlists.",
+        "description": "InduScout helps procurement teams find industrial products, compare global source links, and build RFQ-ready shortlists from a curated beta catalog.",
         "operatingSystem": "Any",
         "creator": {
           "@type": "Organization",
@@ -53,8 +53,10 @@
         </span>
       </a>
       <nav class="nav-actions" aria-label="Primary">
+        <a href="#categories">Categories</a>
         <a href="#finder">Finder</a>
         <a href="#sources">Sources</a>
+        <a href="#methodology">Method</a>
         <a href="#roadmap">Roadmap</a>
         <button class="icon-button" id="shortlistToggle" type="button" aria-label="Open shortlist">
           <span class="cart-icon" aria-hidden="true"></span>
@@ -73,14 +75,14 @@
             <label for="globalSearch">Search products, part numbers, brands, or specs</label>
             <div class="search-shell">
               <span class="search-icon" aria-hidden="true"></span>
-              <input id="globalSearch" name="q" type="search" placeholder="Try: proximity sensor M12 PNP, VFD 5.5kW, SKF 6205" autocomplete="off">
+              <input id="globalSearch" name="q" type="search" placeholder="Try: proximity sensor M12 PNP, VFD 5.5kW, SKF 6205, Loctite 243" autocomplete="off">
               <button type="submit">Search</button>
             </div>
           </form>
-          <div class="hero-stats" aria-label="Prototype metrics">
-            <span><strong>10</strong> launch categories</span>
-            <span><strong>18</strong> sample products</span>
-            <span><strong>54</strong> source links</span>
+          <div class="hero-stats" aria-label="Beta catalog metrics">
+            <span><strong id="categoryCount">12</strong> beta categories</span>
+            <span><strong id="productCount">36</strong> product records</span>
+            <span><strong id="sourceCount">108</strong> source links</span>
           </div>
         </div>
         <div class="hero-visual" aria-label="InduScout product intelligence preview">
@@ -99,13 +101,24 @@
         </div>
       </section>
 
+      <section class="category-band" id="categories" aria-labelledby="categories-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Category Index</p>
+            <h2 id="categories-title">Built around real procurement lanes</h2>
+          </div>
+          <p>Each category keeps the catalog structured by the signals buyers actually use: specs, alternates, regions, source type, lifecycle, and RFQ fit.</p>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+      </section>
+
       <section class="finder-shell" id="finder" aria-labelledby="finder-title">
         <div class="section-heading">
           <div>
             <p class="eyebrow">Finder</p>
             <h2 id="finder-title">Procurement-first search</h2>
           </div>
-          <p>Use the prototype like a sourcing desk: search, filter, compare, shortlist.</p>
+          <p>Use the beta like a sourcing desk: search by part number, category, application, source type, region, or specification.</p>
         </div>
 
         <div class="workspace">
@@ -124,6 +137,12 @@
                 <option value="Europe">Europe</option>
                 <option value="Middle East">Middle East</option>
                 <option value="Asia">Asia</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="sourceTypeFilter">Source type</label>
+              <select id="sourceTypeFilter">
+                <option value="all">All source types</option>
               </select>
             </div>
             <div class="filter-group">
@@ -160,9 +179,46 @@
             <p class="eyebrow">Source Strategy</p>
             <h2 id="sources-title">Built for worldwide discovery</h2>
           </div>
-          <p>The platform should combine official manufacturer data, authorized distributors, marketplaces, RFQ networks, and regional suppliers.</p>
+          <p>The platform combines official manufacturer data, distributors, marketplaces, RFQ networks, surplus channels, and data directories.</p>
         </div>
         <div class="source-grid" id="sourceGrid"></div>
+        <div class="directory-head">
+          <h3>Launch source directory</h3>
+          <p>A practical starting map for global procurement discovery. Links are starting points; buyers still verify price, stock, certificates, and seller terms.</p>
+        </div>
+        <div class="source-directory" id="sourceDirectory"></div>
+      </section>
+
+      <section class="method-band" id="methodology" aria-labelledby="methodology-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Methodology</p>
+            <h2 id="methodology-title">How InduScout should earn trust</h2>
+          </div>
+          <p>The first public beta should be transparent: it helps discovery and RFQ preparation, while final supplier validation stays with the buyer.</p>
+        </div>
+        <div class="method-grid">
+          <article>
+            <span>01</span>
+            <h3>Normalize products</h3>
+            <p>Keep brand, SKU, family, category, lifecycle, specs, certifications, applications, alternates, and regional source links in one clean record.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Separate source intent</h3>
+            <p>Mark links as OEM, distributor, marketplace, RFQ, surplus, or data so buyers understand what each channel is good for.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Score for procurement fit</h3>
+            <p>Rank records by balanced fit, speed, or cost using simple visible signals that can later become a stronger matching model.</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>Verify before buying</h3>
+            <p>Always confirm stock, compatibility, certificates, warranty path, country of origin, and payment terms before purchase or RFQ award.</p>
+          </article>
+        </div>
       </section>
 
       <section class="roadmap" id="roadmap" aria-labelledby="roadmap-title">
@@ -177,7 +233,7 @@
           <article>
             <span>01</span>
             <h3>Static public launch</h3>
-            <p>GitHub Pages, curated examples, clear positioning, and professional brand foundation.</p>
+            <p>GitHub Pages, curated beta catalog, clear positioning, source directory, and professional brand foundation.</p>
           </article>
           <article>
             <span>02</span>
@@ -204,7 +260,7 @@
           <p class="eyebrow">Shortlist</p>
           <h2>RFQ draft</h2>
         </div>
-        <button class="icon-button close" id="closeShortlist" type="button" aria-label="Close shortlist">×</button>
+        <button class="icon-button close" id="closeShortlist" type="button" aria-label="Close shortlist">&times;</button>
       </div>
       <div id="shortlistItems" class="shortlist-items"></div>
       <div class="shortlist-actions">
@@ -222,6 +278,7 @@
       <a href="#top">Back to top</a>
     </footer>
 
+    <script src="data/catalog.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

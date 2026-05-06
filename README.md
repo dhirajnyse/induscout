@@ -1,6 +1,6 @@
 # InduScout
 
-InduScout is an early GitHub Pages-ready prototype for a global industrial product finder. It helps procurement teams search sample industrial parts, compare supplier channels, review key specifications, and build a shortlist before requesting quotes or buying from source links.
+InduScout is an early GitHub Pages-ready beta for a global industrial product finder. It helps procurement teams search industrial parts, compare supplier channels, review key specifications, and build a shortlist before requesting quotes or buying from source links.
 
 Live site: https://dhirajnyse.github.io/induscout/
 
@@ -13,16 +13,19 @@ Industrial buyers waste time searching manufacturer catalogs, distributor sites,
 - Surface datasheets, compliance signals, lead-time hints, and replacement options.
 - Help buyers build a shortlist before purchase or RFQ.
 
-## Current Prototype
+## Current Beta
 
-This first version is a static frontend with curated demo data. It is designed to launch easily on GitHub Pages while the product model, supplier data strategy, and category focus mature.
+This version is a static frontend with a structured procurement catalog. It is designed to launch easily on GitHub Pages while the product model, supplier data strategy, and category focus mature.
 
 Features included:
 
-- Search by keyword, brand, model, SKU, category, and spec terms.
-- Category and region filters.
+- 12 procurement categories, 36 product records, and 108 product source links.
+- Separate `data/catalog.js` data layer for product records, taxonomy, source channels, and source directory entries.
+- Search by keyword, brand, model, SKU, category, application, source type, and spec terms.
+- Category, region, source type, datasheet, and verified-signal filters.
 - Procurement fit scoring.
-- Supplier/source cards with outbound links.
+- Supplier/source cards for OEM, distributor, marketplace, RFQ, surplus, and data sources.
+- Launch source directory with global distributor, marketplace, RFQ, and specification-discovery starting points.
 - Shortlist drawer with exportable RFQ-style summary.
 - Responsive corporate UI and SVG 3D-style brand mark.
 - SEO metadata, social sharing preview, and installable site manifest.
@@ -37,4 +40,4 @@ Features included:
 
 ## Important Note
 
-The prototype is for product discovery and procurement workflow planning only. Pricing, stock, compatibility, certifications, and supplier claims must be verified with the seller or manufacturer before purchase.
+The beta is for product discovery and procurement workflow planning only. Pricing, stock, compatibility, certifications, and supplier claims must be verified with the seller or manufacturer before purchase.
