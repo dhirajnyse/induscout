@@ -257,11 +257,16 @@ function wireEvents() {
   els.productDetailContent.addEventListener("click", (event) => {
     const copyButton = event.target.closest("[data-copy-rfq]");
     const updateButton = event.target.closest("[data-copy-update]");
+    const briefButton = event.target.closest("[data-copy-brief]");
     const shortlistButton = event.target.closest("[data-detail-add]");
     const compareButton = event.target.closest("[data-detail-compare]");
 
     if (copyButton) {
       copyProductRfq(copyButton.dataset.copyRfq);
+    }
+
+    if (briefButton) {
+      copyProcurementBrief(briefButton.dataset.copyBrief, briefButton);
     }
 
     if (updateButton) {
@@ -598,6 +603,13 @@ function productDetailTemplate(product) {
         <div><span>Certifications</span><strong>${escapeHtml(certs)}</strong></div>
         <div><span>Confidence</span><strong>${escapeHtml(confidence.short)}</strong></div>
       </div>
+      <div class="brief-builder">
+        <div>
+          <h4>Procurement brief</h4>
+          <p>Copy a buyer-ready internal note with fit score, source paths, alternates, and verification checks.</p>
+        </div>
+        <button type="button" data-copy-brief="${escapeHtml(product.id)}">Copy procurement brief</button>
+      </div>
       <div class="detail-section">
         <h4>Specifications</h4>
         <ul class="detail-pills">${specs}</ul>
@@ -642,7 +654,10 @@ function productDetailTemplate(product) {
         <label class="note-field">Buyer notes
           <textarea id="buyerNotes" data-buyer-note="${escapeHtml(product.id)}" rows="5" placeholder="Add project, compatibility, certificate, or supplier instructions">${escapeHtml(note)}</textarea>
         </label>
-        <button type="button" data-copy-rfq="${escapeHtml(product.id)}">Copy RFQ request</button>
+        <div class="rfq-copy-actions">
+          <button type="button" data-copy-rfq="${escapeHtml(product.id)}">Copy RFQ request</button>
+          <button class="secondary-copy" type="button" data-copy-brief="${escapeHtml(product.id)}">Copy procurement brief</button>
+        </div>
       </form>
       <form class="data-update-builder">
         <div class="rfq-heading">
@@ -900,6 +915,77 @@ Please confirm exact part number, compatibility, datasheet revision, price, lead
     }
   } catch {
     window.prompt("Copy RFQ request", text);
+  }
+}
+
+async function copyProcurementBrief(id, triggerButton) {
+  const product = products.find((item) => item.id === id);
+  if (!product) {
+    return;
+  }
+
+  const confidence = confidenceForProduct(product);
+  const certs = product.certifications.length ? product.certifications.join(", ") : "Check with supplier";
+  const sources = product.sources
+    .map((source) => {
+      const sourceConfidence = confidenceForSource(source);
+      return `- ${source.type} - ${source.name} (${sourceConfidence.label}): ${source.url}`;
+    })
+    .join("\n");
+  const note = state.notes[product.id] || "None added";
+  const text = `InduScout procurement brief
+
+Product: ${product.brand} ${product.sku} - ${product.name}
+Category: ${product.category}
+Family: ${product.family}
+Lifecycle: ${product.lifecycle}
+${state.priority} fit score: ${product[state.priority]}
+Lead time signal: ${product.lead}
+MOQ signal: ${product.moq}
+Datasheet signal: ${product.datasheet ? "Available" : "Check with supplier"}
+Certifications to request: ${certs}
+
+Confidence:
+${confidence.label} - ${confidence.reason}
+
+Why this record may fit:
+${product.description}
+
+Key specifications:
+${product.specs.map((item) => `- ${item}`).join("\n")}
+
+Common applications:
+${product.applications.map((item) => `- ${item}`).join("\n")}
+
+Known alternates to review:
+${product.alternatives.map((item) => `- ${item}`).join("\n")}
+
+Source paths:
+${sources}
+
+Buyer notes:
+${note}
+
+Verification checklist before order:
+- Confirm exact part number, suffix, voltage, size, material, and configuration.
+- Confirm compatibility with installed equipment or project specification.
+- Request latest datasheet, certificate, warranty path, and country of origin.
+- Confirm stock, price, lead time, payment terms, delivery terms, and seller legitimacy.
+- Treat alternates as technical review items, not automatic substitutes.
+
+InduScout is a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    const button = triggerButton || els.productDetailContent.querySelector("[data-copy-brief]");
+    if (button) {
+      button.textContent = "Brief copied";
+      setTimeout(() => {
+        button.textContent = "Copy procurement brief";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy procurement brief", text);
   }
 }
 
