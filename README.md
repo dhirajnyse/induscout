@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v1.1 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v1.2 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
 - 12 procurement categories, 60 product records, and 180 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -33,6 +33,8 @@ This v1.1 public beta is still static and lightweight, but it already demonstrat
 - Buyer desk, trust layer, source directory, launch-readiness section, and roadmap.
 - Static SEO category pages and product record pages generated from the catalog.
 - Breadcrumbs, related records, buyer checklists, and richer structured data on SEO pages.
+- SEO product pages include source-confidence notes, RFQ fields to send, and internal buyer paths.
+- SEO category pages include sourcing guidance and RFQ preparation guidance.
 - Static SEO pages can hand buyers back into the live finder with product or category filters prepared.
 - Public GitHub issue paths for product data corrections, supplier/source suggestions, and feature requests.
 - Launch-readiness guidance for sitemap checks, search indexing, and public beta verification.

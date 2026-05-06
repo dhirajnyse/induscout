@@ -2061,8 +2061,15 @@ footer a {
   grid-template-columns: 1fr;
 }
 
+.seo-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .seo-card,
-.seo-content article {
+.seo-content article,
+.seo-mini-card {
   padding: 18px;
   background: #ffffff;
   border: 1px solid var(--line);
@@ -2070,7 +2077,8 @@ footer a {
   box-shadow: 0 12px 38px rgba(15, 23, 42, 0.05);
 }
 
-.seo-card span {
+.seo-card span,
+.seo-mini-card span {
   color: var(--teal);
   font-size: 0.76rem;
   font-weight: 900;
@@ -2079,17 +2087,34 @@ footer a {
 
 .seo-card h2,
 .seo-card h3,
-.seo-content h2 {
+.seo-content h2,
+.seo-mini-card h3 {
   margin: 8px 0 10px;
 }
 
 .seo-card p,
-.seo-note {
+.seo-note,
+.seo-mini-card p {
   color: #475569;
 }
 
 .seo-card p {
   margin: 0 0 12px;
+}
+
+.seo-mini-card {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.seo-mini-card h3,
+.seo-mini-card p {
+  margin: 0;
+}
+
+.seo-mini-card strong {
+  color: var(--ink);
 }
 
 .seo-card-actions {
@@ -2370,6 +2395,7 @@ footer a {
   .rfq-grid,
   .seo-grid,
   .seo-grid.compact,
+  .seo-mini-grid,
   .seo-content.two-column {
     grid-template-columns: 1fr;
   }

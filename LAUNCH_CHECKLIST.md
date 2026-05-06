@@ -1,4 +1,4 @@
-# InduScout v1.1 Launch Checklist
+# InduScout v1.2 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -17,6 +17,8 @@ Use this checklist after each public GitHub Pages upload.
 - Confirm the Finder shows the buyer verification reminder above search.
 - Open the Sensors category SEO page and use the finder handoff link.
 - Open one product page, such as `/products/pepperl-fuchs-nbb/`, and use the product finder handoff link.
+- Confirm SEO category pages show sourcing guidance and RFQ preparation guidance.
+- Confirm SEO product pages show source-confidence notes and RFQ fields to send.
 - Open one product detail drawer and confirm the verify-before-buying notice appears before RFQ fields.
 - Check the back-to-top button after scrolling.
 
