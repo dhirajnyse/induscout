@@ -1,53 +1,77 @@
 # InduScout
 
-InduScout is an early GitHub Pages-ready beta for a global industrial product finder. It helps procurement teams search industrial parts, compare supplier channels, review key specifications, and build a shortlist before requesting quotes or buying from source links.
+InduScout is a GitHub Pages-ready beta for a global industrial product finder. It helps procurement teams search industrial parts, compare source options, review confidence signals, and prepare RFQ-ready sourcing briefs.
 
 Live site: https://dhirajnyse.github.io/induscout/
 
-## Vision
+## What It Does
 
-Industrial buyers waste time searching manufacturer catalogs, distributor sites, marketplace listings, PDFs, and old part numbers. InduScout aims to become a neutral discovery layer for industrial procurement:
+Industrial buyers often search across manufacturer pages, distributor catalogs, marketplaces, datasheets, RFQ networks, and old part numbers. InduScout is designed as a neutral discovery layer for that workflow.
 
-- Find exact industrial products by part number, brand, category, or specification.
+- Find industrial products by part number, brand, category, application, or specification.
 - Compare global and regional buying channels.
-- Surface datasheets, compliance signals, lead-time hints, and replacement options.
-- Help buyers build a shortlist before purchase or RFQ.
+- Review confidence, datasheet, certification, lifecycle, lead-time, and alternate-product signals.
+- Build shortlists, compare products, and copy RFQ-ready request text.
+- Collect product data corrections and supplier/source suggestions.
 
 ## Current Beta
 
-This v0.5 version is a static frontend with a structured procurement catalog, early buyer workflow tools, and visible trust signals. It is designed to launch easily on GitHub Pages while the product model, supplier data strategy, and category focus mature.
-
-Features included:
+This v0.6 version is still static and lightweight, but it already demonstrates the core procurement workflow.
 
 - 12 procurement categories, 36 product records, and 108 product source links.
-- Separate `data/catalog.js` data layer for product records, taxonomy, source channels, and source directory entries.
-- Search by keyword, brand, model, SKU, category, application, source type, and spec terms.
-- Category, region, source type, confidence, datasheet, and verified-signal filters.
-- Procurement fit scoring.
+- Structured `data/catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
+- Search, category, region, source type, confidence, datasheet, and verified-signal filters.
+- Procurement fit scoring for balanced, speed, and cost priorities.
 - Product confidence labels for high, standard, and review-required records.
 - Source confidence hints for primary trust paths, discovery paths, and seller-term verification.
 - Product detail drawer with specifications, applications, alternates, source actions, and RFQ fields.
 - Copyable product-level RFQ request with quantity, delivery country, target date, urgency, alternates preference, and buyer notes.
-- Copyable product data update/report request for missing sources, outdated specs, certificate issues, or supplier verification concerns.
+- Copyable product data update/report request.
 - Browser-saved buyer notes for each product.
 - Compare desk for up to four selected products.
-- Copyable comparison brief for sourcing discussions.
-- Supplier/source cards for OEM, distributor, marketplace, RFQ, surplus, and data sources.
-- Launch source directory with global distributor, marketplace, RFQ, and specification-discovery starting points.
-- Buyer desk with RFQ checklist, supplier listing prompt, and data expansion priorities.
-- Trust layer explaining confidence levels and the data update workflow.
 - Shortlist drawer with exportable RFQ-style summary.
-- Responsive corporate UI and SVG 3D-style brand mark.
-- SEO metadata, social sharing preview, and installable site manifest.
+- Buyer desk, trust layer, source directory, launch-readiness section, and roadmap.
+- Responsive corporate UI, SVG 3D-style brand mark, SEO metadata, social preview, and installable site manifest.
+
+## Project Structure
+
+```text
+.
+|-- index.html
+|-- styles.css
+|-- app.js
+|-- data/
+|   `-- catalog.js
+|-- assets/
+|   |-- induscout-logo.svg
+|   |-- induscout-social-card.jpg
+|   |-- induscout-social-card.png
+|   |-- induscout-social-card.svg
+|   `-- induscout-touch-icon.png
+|-- site.webmanifest
+|-- sitemap.xml
+|-- robots.txt
+|-- .nojekyll
+|-- LICENSE
+`-- README.md
+```
 
 ## Launch On GitHub Pages
 
-1. Create a GitHub repository named `induscout`.
-2. Upload the files in this folder to the repository root.
+1. Upload the contents of this folder to the repository root.
+2. Keep the `data` and `assets` folders intact.
 3. In GitHub, open **Settings -> Pages**.
-4. Select the default branch and root folder.
-5. Publish.
+4. Publish from the `main` branch and root folder.
+5. After deployment, hard refresh the live site.
 
-## Important Note
+## Data Quality Note
 
-The beta is for product discovery and procurement workflow planning only. Pricing, stock, compatibility, certifications, and supplier claims must be verified with the seller or manufacturer before purchase.
+InduScout is a discovery and procurement workflow aid. Buyers must verify pricing, stock, compatibility, certifications, warranty path, seller terms, and source legitimacy with the seller or manufacturer before purchase.
+
+## Roadmap
+
+- Expand catalog depth category by category.
+- Add supplier submission and verification review.
+- Add saved projects and team collaboration.
+- Add backend search, accounts, and structured supplier/product APIs.
+- Add richer product detail pages for SEO once the data model stabilizes.
