@@ -13,7 +13,9 @@ const state = {
   datasheetOnly: false,
   verifiedOnly: false,
   shortlist: [],
-  compare: []
+  compare: [],
+  notes: loadNotes(),
+  activeProductId: null
 };
 
 const els = {
@@ -33,10 +35,13 @@ const els = {
   priorityButtons: [...document.querySelectorAll("[data-priority]")],
   reset: document.querySelector("#resetFilters"),
   shortlistDrawer: document.querySelector("#shortlistDrawer"),
+  productDetail: document.querySelector("#productDetail"),
   shortlistToggle: document.querySelector("#shortlistToggle"),
   closeShortlist: document.querySelector("#closeShortlist"),
+  closeProductDetail: document.querySelector("#closeProductDetail"),
   scrim: document.querySelector("#scrim"),
   shortlistItems: document.querySelector("#shortlistItems"),
+  productDetailContent: document.querySelector("#productDetailContent"),
   shortlistCount: document.querySelector("#shortlistCount"),
   clearShortlist: document.querySelector("#clearShortlist"),
   copyShortlist: document.querySelector("#copyShortlist"),
@@ -163,6 +168,7 @@ function wireEvents() {
   els.results.addEventListener("click", (event) => {
     const shortlistButton = event.target.closest("[data-add]");
     const compareButton = event.target.closest("[data-compare]");
+    const detailButton = event.target.closest("[data-detail]");
 
     if (shortlistButton) {
       addToShortlist(shortlistButton.dataset.add);
@@ -170,6 +176,10 @@ function wireEvents() {
 
     if (compareButton) {
       toggleCompare(compareButton.dataset.compare);
+    }
+
+    if (detailButton) {
+      openProductDetail(detailButton.dataset.detail);
     }
   });
 
@@ -202,7 +212,33 @@ function wireEvents() {
     }
   });
   els.closeShortlist.addEventListener("click", closeShortlist);
-  els.scrim.addEventListener("click", closeShortlist);
+  els.closeProductDetail.addEventListener("click", closeProductDetail);
+  els.scrim.addEventListener("click", closeOverlays);
+  els.productDetailContent.addEventListener("click", (event) => {
+    const copyButton = event.target.closest("[data-copy-rfq]");
+    const shortlistButton = event.target.closest("[data-detail-add]");
+    const compareButton = event.target.closest("[data-detail-compare]");
+
+    if (copyButton) {
+      copyProductRfq(copyButton.dataset.copyRfq);
+    }
+
+    if (shortlistButton) {
+      addToShortlist(shortlistButton.dataset.detailAdd);
+      openProductDetail(shortlistButton.dataset.detailAdd);
+    }
+
+    if (compareButton) {
+      toggleCompare(compareButton.dataset.detailCompare);
+      openProductDetail(compareButton.dataset.detailCompare);
+    }
+  });
+  els.productDetailContent.addEventListener("input", (event) => {
+    if (event.target.matches("[data-buyer-note]")) {
+      state.notes[event.target.dataset.buyerNote] = event.target.value;
+      saveNotes();
+    }
+  });
   els.clearShortlist.addEventListener("click", () => {
     state.shortlist = [];
     renderShortlist();
@@ -314,6 +350,7 @@ function productTemplate(product) {
           <span>Datasheet <b>${product.datasheet ? "Yes" : "Check"}</b></span>
         </div>
         <div class="card-actions">
+          <button class="detail-action" type="button" data-detail="${escapeHtml(product.id)}">Details / RFQ</button>
           <button type="button" data-add="${escapeHtml(product.id)}">${isShortlisted ? "Shortlisted" : "Add to shortlist"}</button>
           <button class="secondary-action" type="button" data-compare="${escapeHtml(product.id)}">${isCompared ? "In compare" : "Compare"}</button>
           <a class="button-link ghost-button" href="${escapeHtml(product.sources[0].url)}" target="_blank" rel="noreferrer">Open primary source</a>
@@ -382,6 +419,118 @@ function renderSourceDirectory() {
       `
     )
     .join("");
+}
+
+function openProductDetail(id) {
+  const product = products.find((item) => item.id === id);
+  if (!product) {
+    return;
+  }
+
+  closeShortlist();
+  state.activeProductId = id;
+  els.productDetailContent.innerHTML = productDetailTemplate(product);
+  els.productDetail.classList.add("open");
+  els.productDetail.setAttribute("aria-hidden", "false");
+  els.scrim.classList.add("open");
+}
+
+function productDetailTemplate(product) {
+  const score = product[state.priority];
+  const note = state.notes[product.id] || "";
+  const isShortlisted = state.shortlist.includes(product.id);
+  const isCompared = state.compare.includes(product.id);
+  const certs = product.certifications.length ? product.certifications.join(", ") : "Check with supplier";
+  const sourceActions = product.sources.map(detailSourceTemplate).join("");
+  const specs = product.specs.map((spec) => `<li>${escapeHtml(spec)}</li>`).join("");
+  const applications = product.applications.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+  const alternates = product.alternatives.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+
+  return `
+    <article class="detail-product">
+      <div class="detail-title">
+        <span>${escapeHtml(product.category)}</span>
+        <h3>${escapeHtml(product.brand)} ${escapeHtml(product.sku)}</h3>
+        <p>${escapeHtml(product.name)}</p>
+      </div>
+      <div class="detail-score">
+        <div>
+          <span>${escapeHtml(state.priority)} fit</span>
+          <strong>${score}</strong>
+        </div>
+        <div class="bar" aria-hidden="true"><i style="width:${score}%"></i></div>
+      </div>
+      <p class="detail-description">${escapeHtml(product.description)}</p>
+      <div class="detail-actions">
+        <button type="button" data-detail-add="${escapeHtml(product.id)}">${isShortlisted ? "Shortlisted" : "Add to shortlist"}</button>
+        <button class="secondary-action" type="button" data-detail-compare="${escapeHtml(product.id)}">${isCompared ? "In compare" : "Compare"}</button>
+      </div>
+      <div class="detail-facts">
+        <div><span>Family</span><strong>${escapeHtml(product.family)}</strong></div>
+        <div><span>Lead time</span><strong>${escapeHtml(product.lead)}</strong></div>
+        <div><span>MOQ</span><strong>${escapeHtml(product.moq)}</strong></div>
+        <div><span>Lifecycle</span><strong>${escapeHtml(product.lifecycle)}</strong></div>
+        <div><span>Datasheet</span><strong>${product.datasheet ? "Available" : "Check"}</strong></div>
+        <div><span>Certifications</span><strong>${escapeHtml(certs)}</strong></div>
+      </div>
+      <div class="detail-section">
+        <h4>Specifications</h4>
+        <ul class="detail-pills">${specs}</ul>
+      </div>
+      <div class="detail-section">
+        <h4>Applications</h4>
+        <ul class="detail-pills">${applications}</ul>
+      </div>
+      <div class="detail-section">
+        <h4>Alternates</h4>
+        <ul class="detail-pills">${alternates}</ul>
+      </div>
+      <div class="detail-section">
+        <h4>Source actions</h4>
+        <div class="detail-sources">${sourceActions}</div>
+      </div>
+      <form class="rfq-builder" id="rfqBuilder">
+        <div class="rfq-heading">
+          <h4>RFQ request pack</h4>
+          <p>Fill what you know, then copy a clean request for email or supplier portals.</p>
+        </div>
+        <div class="rfq-grid">
+          <label>Quantity
+            <input id="rfqQuantity" type="text" value="${escapeHtml(defaultQuantity(product.moq))}" autocomplete="off">
+          </label>
+          <label>Delivery country
+            <input id="rfqCountry" type="text" placeholder="e.g. UAE, India, USA" autocomplete="off">
+          </label>
+          <label>Target date
+            <input id="rfqDate" type="date">
+          </label>
+          <label>Urgency
+            <select id="rfqUrgency">
+              <option>Standard sourcing</option>
+              <option>Urgent breakdown</option>
+              <option>Project tender</option>
+              <option>Budgetary quote</option>
+            </select>
+          </label>
+        </div>
+        <label class="rfq-check"><input id="rfqAlternates" type="checkbox" checked> Accept equivalent alternates if exact part is unavailable</label>
+        <label class="note-field">Buyer notes
+          <textarea id="buyerNotes" data-buyer-note="${escapeHtml(product.id)}" rows="5" placeholder="Add project, compatibility, certificate, or supplier instructions">${escapeHtml(note)}</textarea>
+        </label>
+        <button type="button" data-copy-rfq="${escapeHtml(product.id)}">Copy RFQ request</button>
+      </form>
+    </article>
+  `;
+}
+
+function detailSourceTemplate(source) {
+  return `
+    <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">
+      <span>${escapeHtml(source.type)}</span>
+      <strong>${escapeHtml(source.name)}</strong>
+      <small>${escapeHtml(source.action)} &middot; ${escapeHtml(source.region)}</small>
+    </a>
+  `;
 }
 
 function toggleCompare(id) {
@@ -554,7 +703,58 @@ Sources: ${sources}`;
   }
 }
 
+async function copyProductRfq(id) {
+  const product = products.find((item) => item.id === id);
+  if (!product) {
+    return;
+  }
+
+  const quantity = getFieldValue("#rfqQuantity", defaultQuantity(product.moq));
+  const country = getFieldValue("#rfqCountry", "TBC");
+  const targetDate = getFieldValue("#rfqDate", "TBC");
+  const urgency = getFieldValue("#rfqUrgency", "Standard sourcing");
+  const acceptAlternates = document.querySelector("#rfqAlternates")?.checked ? "Yes" : "No";
+  const buyerNotes = getFieldValue("#buyerNotes", "None added");
+  const certs = product.certifications.length ? product.certifications.join(", ") : "Check with supplier";
+  const sources = product.sources.map((source) => `${source.type} - ${source.name}: ${source.url}`).join("; ");
+  const text = `RFQ request prepared with InduScout
+
+Product: ${product.brand} ${product.sku} - ${product.name}
+Category: ${product.category}
+Family: ${product.family}
+Required quantity: ${quantity}
+Delivery country: ${country}
+Target date: ${targetDate}
+Urgency: ${urgency}
+Accept alternates: ${acceptAlternates}
+
+Key specifications: ${product.specs.join(", ")}
+Applications: ${product.applications.join(", ")}
+Certifications requested: ${certs}
+Known alternates: ${product.alternatives.join(", ")}
+Preferred source links: ${sources}
+
+Buyer notes:
+${buyerNotes}
+
+Please confirm price, lead time, stock availability, warranty path, certificate availability, country of origin, and payment/delivery terms.`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    const button = els.productDetailContent.querySelector("[data-copy-rfq]");
+    if (button) {
+      button.textContent = "RFQ copied";
+      setTimeout(() => {
+        button.textContent = "Copy RFQ request";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy RFQ request", text);
+  }
+}
+
 function openShortlist() {
+  closeProductDetail();
   renderShortlist();
   els.shortlistDrawer.classList.add("open");
   els.shortlistDrawer.setAttribute("aria-hidden", "false");
@@ -564,12 +764,54 @@ function openShortlist() {
 function closeShortlist() {
   els.shortlistDrawer.classList.remove("open");
   els.shortlistDrawer.setAttribute("aria-hidden", "true");
-  els.scrim.classList.remove("open");
+  if (!els.productDetail.classList.contains("open")) {
+    els.scrim.classList.remove("open");
+  }
+}
+
+function closeProductDetail() {
+  state.activeProductId = null;
+  els.productDetail.classList.remove("open");
+  els.productDetail.setAttribute("aria-hidden", "true");
+  if (!els.shortlistDrawer.classList.contains("open")) {
+    els.scrim.classList.remove("open");
+  }
+}
+
+function closeOverlays() {
+  closeShortlist();
+  closeProductDetail();
 }
 
 function setText(element, value) {
   if (element) {
     element.textContent = value;
+  }
+}
+
+function getFieldValue(selector, fallback) {
+  const value = document.querySelector(selector)?.value.trim();
+  return value || fallback;
+}
+
+function defaultQuantity(moq) {
+  const numeric = String(moq).match(/\d+/);
+  return numeric ? numeric[0] : "";
+}
+
+function loadNotes() {
+  try {
+    return JSON.parse(window.localStorage.getItem("induscoutBuyerNotes") || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveNotes() {
+  try {
+    window.localStorage.setItem("induscoutBuyerNotes", JSON.stringify(state.notes));
+  } catch {
+    // Notes are a convenience only; the RFQ still works if storage is blocked.
   }
 }
 

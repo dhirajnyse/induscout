@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="InduScout helps procurement teams find industrial products, compare source options, and build RFQ-ready shortlists from a curated beta catalog.">
+    <meta name="description" content="InduScout helps procurement teams find industrial products, compare source options, and prepare RFQ-ready sourcing briefs from a curated beta catalog.">
     <meta name="application-name" content="InduScout">
     <meta name="theme-color" content="#0f766e">
     <meta name="robots" content="index, follow">
@@ -13,7 +13,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dhirajnyse.github.io/induscout/">
     <meta property="og:title" content="InduScout | Global Industrial Product Finder">
-    <meta property="og:description" content="Find industrial products, compare source options, and build RFQ-ready shortlists from a curated beta catalog.">
+    <meta property="og:description" content="Find industrial products, compare source options, and prepare RFQ-ready sourcing briefs from a curated beta catalog.">
     <meta property="og:image" content="https://dhirajnyse.github.io/induscout/assets/induscout-social-card.jpg">
     <meta property="og:image:width" content="600">
     <meta property="og:image:height" content="315">
@@ -21,7 +21,7 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="InduScout | Global Industrial Product Finder">
-    <meta name="twitter:description" content="Find industrial products, compare source options, and build RFQ-ready shortlists from a curated beta catalog.">
+    <meta name="twitter:description" content="Find industrial products, compare source options, and prepare RFQ-ready sourcing briefs from a curated beta catalog.">
     <meta name="twitter:image" content="https://dhirajnyse.github.io/induscout/assets/induscout-social-card.jpg">
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
@@ -34,7 +34,7 @@
         "name": "InduScout",
         "url": "https://dhirajnyse.github.io/induscout/",
         "applicationCategory": "BusinessApplication",
-        "description": "InduScout helps procurement teams find industrial products, compare source options, and build RFQ-ready shortlists from a curated beta catalog.",
+        "description": "InduScout helps procurement teams find industrial products, compare source options, and prepare RFQ-ready sourcing briefs from a curated beta catalog.",
         "operatingSystem": "Any",
         "creator": {
           "@type": "Organization",
@@ -324,6 +324,17 @@
         <button id="copyShortlist" type="button">Copy RFQ summary</button>
         <button class="ghost-button" id="clearShortlist" type="button">Clear</button>
       </div>
+    </aside>
+
+    <aside class="product-detail" id="productDetail" aria-label="Product details and RFQ builder" aria-hidden="true">
+      <div class="detail-head">
+        <div>
+          <p class="eyebrow">Product Detail</p>
+          <h2>RFQ builder</h2>
+        </div>
+        <button class="icon-button close" id="closeProductDetail" type="button" aria-label="Close product detail">&times;</button>
+      </div>
+      <div id="productDetailContent" class="product-detail-content"></div>
     </aside>
     <div class="scrim" id="scrim"></div>
 

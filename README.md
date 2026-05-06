@@ -15,7 +15,7 @@ Industrial buyers waste time searching manufacturer catalogs, distributor sites,
 
 ## Current Beta
 
-This v0.3 version is a static frontend with a structured procurement catalog and early buyer workflow tools. It is designed to launch easily on GitHub Pages while the product model, supplier data strategy, and category focus mature.
+This v0.4 version is a static frontend with a structured procurement catalog and early buyer workflow tools. It is designed to launch easily on GitHub Pages while the product model, supplier data strategy, and category focus mature.
 
 Features included:
 
@@ -24,6 +24,9 @@ Features included:
 - Search by keyword, brand, model, SKU, category, application, source type, and spec terms.
 - Category, region, source type, datasheet, and verified-signal filters.
 - Procurement fit scoring.
+- Product detail drawer with specifications, applications, alternates, source actions, and RFQ fields.
+- Copyable product-level RFQ request with quantity, delivery country, target date, urgency, alternates preference, and buyer notes.
+- Browser-saved buyer notes for each product.
 - Compare desk for up to four selected products.
 - Copyable comparison brief for sourcing discussions.
 - Supplier/source cards for OEM, distributor, marketplace, RFQ, surplus, and data sources.
