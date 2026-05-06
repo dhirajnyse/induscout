@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">InduScout logo</title>
+  <desc id="desc">A dimensional industrial compass mark with connected product nodes.</desc>
+  <defs>
+    <linearGradient id="outer" x1="105" y1="92" x2="536" y2="552" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7dd3fc"/>
+      <stop offset="0.38" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="inner" x1="178" y1="144" x2="470" y2="502" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.52" stop-color="#dbeafe"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="164" y1="174" x2="486" y2="477" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.22" stop-color="#94a3b8"/>
+      <stop offset="0.52" stop-color="#334155"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="face" x1="213" y1="166" x2="424" y2="451" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#eff6ff"/>
+      <stop offset="1" stop-color="#bae6fd"/>
+    </linearGradient>
+    <filter id="shadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#020617" flood-opacity="0.25"/>
+    </filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+  </defs>
+  <rect width="640" height="640" rx="148" fill="#f8fafc"/>
+  <circle cx="320" cy="328" r="232" fill="#dbeafe" opacity="0.55" filter="url(#soft)"/>
+  <g filter="url(#shadow)">
+    <path d="M320 76 542 198v252L320 574 98 450V198L320 76Z" fill="url(#outer)"/>
+    <path d="M320 120 504 220v208L320 530 136 428V220l184-100Z" fill="#052e35" opacity="0.34"/>
+    <path d="M320 120 504 220 320 322 136 220l184-100Z" fill="url(#inner)"/>
+    <path d="M136 220 320 322v208L136 428V220Z" fill="#0f766e"/>
+    <path d="M504 220 320 322v208l184-102V220Z" fill="#115e59"/>
+    <path d="M320 166 456 240v154L320 470 184 394V240l136-74Z" fill="url(#steel)"/>
+    <path d="M320 198 420 252v112L320 420 220 364V252l100-54Z" fill="url(#face)"/>
+    <path d="M320 198 420 252 320 308 220 252l100-54Z" fill="#ffffff" opacity="0.82"/>
+    <path d="M220 252 320 308v112l-100-56V252Z" fill="#93c5fd" opacity="0.86"/>
+    <path d="M420 252 320 308v112l100-56V252Z" fill="#0ea5e9" opacity="0.88"/>
+    <path d="M320 246 370 274v56l-50 28-50-28v-56l50-28Z" fill="#0f172a"/>
+    <path d="M320 269 349 285v33l-29 16-29-16v-33l29-16Z" fill="#22c55e"/>
+    <path d="M190 185 246 216M450 185l-56 31M190 455l58-34M450 455l-58-34" stroke="#f8fafc" stroke-width="16" stroke-linecap="round" opacity="0.92"/>
+    <circle cx="180" cy="180" r="32" fill="#0f172a"/>
+    <circle cx="180" cy="180" r="15" fill="#22c55e"/>
+    <circle cx="460" cy="180" r="32" fill="#0f172a"/>
+    <circle cx="460" cy="180" r="15" fill="#38bdf8"/>
+    <circle cx="180" cy="460" r="32" fill="#0f172a"/>
+    <circle cx="180" cy="460" r="15" fill="#38bdf8"/>
+    <circle cx="460" cy="460" r="32" fill="#0f172a"/>
+    <circle cx="460" cy="460" r="15" fill="#22c55e"/>
+    <path d="M320 82v86M320 472v94M99 198l82 45M459 242l82-44M98 450l82-46M459 405l82 45" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.35"/>
+  </g>
+</svg>
