@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="InduScout helps procurement teams find industrial products, compare source options, and prepare RFQ-ready sourcing briefs from a curated beta catalog.">
+    <meta name="description" content="InduScout helps procurement teams find industrial products, compare source options, review confidence signals, and prepare RFQ-ready sourcing briefs.">
     <meta name="application-name" content="InduScout">
     <meta name="theme-color" content="#0f766e">
     <meta name="robots" content="index, follow">
@@ -13,7 +13,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dhirajnyse.github.io/induscout/">
     <meta property="og:title" content="InduScout | Global Industrial Product Finder">
-    <meta property="og:description" content="Find industrial products, compare source options, and prepare RFQ-ready sourcing briefs from a curated beta catalog.">
+    <meta property="og:description" content="Find industrial products, compare source options, review confidence signals, and prepare RFQ-ready sourcing briefs.">
     <meta property="og:image" content="https://dhirajnyse.github.io/induscout/assets/induscout-social-card.jpg">
     <meta property="og:image:width" content="600">
     <meta property="og:image:height" content="315">
@@ -21,7 +21,7 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="InduScout | Global Industrial Product Finder">
-    <meta name="twitter:description" content="Find industrial products, compare source options, and prepare RFQ-ready sourcing briefs from a curated beta catalog.">
+    <meta name="twitter:description" content="Find industrial products, compare source options, review confidence signals, and prepare RFQ-ready sourcing briefs.">
     <meta name="twitter:image" content="https://dhirajnyse.github.io/induscout/assets/induscout-social-card.jpg">
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
@@ -34,7 +34,7 @@
         "name": "InduScout",
         "url": "https://dhirajnyse.github.io/induscout/",
         "applicationCategory": "BusinessApplication",
-        "description": "InduScout helps procurement teams find industrial products, compare source options, and prepare RFQ-ready sourcing briefs from a curated beta catalog.",
+        "description": "InduScout helps procurement teams find industrial products, compare source options, review confidence signals, and prepare RFQ-ready sourcing briefs.",
         "operatingSystem": "Any",
         "creator": {
           "@type": "Organization",
@@ -57,6 +57,7 @@
         <a href="#finder">Finder</a>
         <a href="#compare">Compare</a>
         <a href="#sources">Sources</a>
+        <a href="#trust">Trust</a>
         <a href="#methodology">Method</a>
         <a href="#roadmap">Roadmap</a>
         <button class="icon-button" id="shortlistToggle" type="button" aria-label="Open shortlist">
@@ -144,6 +145,15 @@
               <label for="sourceTypeFilter">Source type</label>
               <select id="sourceTypeFilter">
                 <option value="all">All source types</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="confidenceFilter">Confidence</label>
+              <select id="confidenceFilter">
+                <option value="all">All confidence levels</option>
+                <option value="high">High confidence</option>
+                <option value="standard">Standard confidence</option>
+                <option value="review">Review required</option>
               </select>
             </div>
             <div class="filter-group">
@@ -243,6 +253,42 @@
             <h3>Next catalog targets</h3>
             <p>Grow category-by-category with real product families, manufacturer pages, authorized distributor links, datasheets, and verified regional availability notes.</p>
           </article>
+        </div>
+      </section>
+
+      <section class="trust-band" id="trust" aria-labelledby="trust-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Trust Layer</p>
+            <h2 id="trust-title">Confidence signals for sourcing decisions</h2>
+          </div>
+          <p>InduScout should make data quality visible. Confidence labels help buyers see which records are ready to source and which need extra verification.</p>
+        </div>
+        <div class="trust-grid">
+          <article>
+            <span class="trust-pill high">High</span>
+            <h3>High confidence</h3>
+            <p>Verified source signal, datasheet availability, and at least one OEM or distributor path are present.</p>
+          </article>
+          <article>
+            <span class="trust-pill standard">Standard</span>
+            <h3>Standard confidence</h3>
+            <p>Useful discovery record with several procurement signals, but buyer confirmation is still needed before purchasing.</p>
+          </article>
+          <article>
+            <span class="trust-pill review">Review</span>
+            <h3>Review required</h3>
+            <p>Record needs extra checks on source path, stock, compatibility, certification, or alternate validity.</p>
+          </article>
+        </div>
+        <div class="trust-process">
+          <h3>Data update workflow</h3>
+          <ol>
+            <li>Buyer spots outdated, missing, or questionable data.</li>
+            <li>Buyer opens Details / RFQ and copies a product update request.</li>
+            <li>InduScout reviews source evidence and updates the catalog record.</li>
+            <li>Confidence status is revised after datasheet and source checks.</li>
+          </ol>
         </div>
       </section>
 

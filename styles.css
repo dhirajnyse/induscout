@@ -363,6 +363,7 @@ h1 {
 .compare-band,
 .source-band,
 .buyer-band,
+.trust-band,
 .method-band,
 .roadmap {
   padding: clamp(46px, 7vw, 86px) clamp(18px, 4vw, 56px);
@@ -665,6 +666,47 @@ input[type="checkbox"] {
   font-size: 0.76rem;
   font-weight: 900;
   white-space: nowrap;
+}
+
+.badge-stack {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.confidence-badge,
+.trust-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.confidence-badge.high,
+.trust-pill.high {
+  color: #064e3b;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+}
+
+.confidence-badge.standard,
+.trust-pill.standard {
+  color: #075985;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+}
+
+.confidence-badge.review,
+.trust-pill.review {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
 }
 
 .badge.blue {
@@ -1078,6 +1120,12 @@ input[type="checkbox"] {
     #f8fafc;
 }
 
+.trust-band {
+  background: #ffffff;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
 .buyer-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1121,6 +1169,61 @@ input[type="checkbox"] {
 .buyer-grid a {
   color: var(--sky);
   font-weight: 900;
+}
+
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.trust-grid article,
+.trust-process {
+  padding: 18px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.trust-grid h3 {
+  margin: 14px 0 8px;
+}
+
+.trust-grid p,
+.trust-process li {
+  color: #475569;
+}
+
+.trust-grid p {
+  margin: 0;
+}
+
+.trust-process {
+  max-width: 1180px;
+  margin: 14px auto 0;
+}
+
+.trust-process h3 {
+  margin: 0 0 12px;
+}
+
+.trust-process ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style-position: inside;
+}
+
+.trust-process li {
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-weight: 700;
 }
 
 .method-grid {
@@ -1347,6 +1450,41 @@ input[type="checkbox"] {
   border-radius: var(--radius);
 }
 
+.detail-confidence {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border-radius: var(--radius);
+}
+
+.detail-confidence.high {
+  color: #064e3b;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+}
+
+.detail-confidence.standard {
+  color: #075985;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+}
+
+.detail-confidence.review {
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.detail-confidence span {
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.detail-confidence strong {
+  color: inherit;
+}
+
 .detail-score div:first-child {
   display: flex;
   align-items: end;
@@ -1379,6 +1517,16 @@ input[type="checkbox"] {
   color: #ffffff;
   background: var(--ink);
   border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+.data-update-builder button {
+  min-height: 44px;
+  padding: 0 16px;
+  color: var(--teal);
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
   border-radius: var(--radius);
   font-weight: 900;
 }
@@ -1470,13 +1618,18 @@ input[type="checkbox"] {
   color: var(--muted);
 }
 
-.rfq-builder {
+.rfq-builder,
+.data-update-builder {
   display: grid;
   gap: 14px;
   padding: 16px;
   background: #f8fafc;
   border: 1px solid var(--line);
   border-radius: var(--radius);
+}
+
+.data-update-builder {
+  background: #ffffff;
 }
 
 .rfq-heading p {
@@ -1599,8 +1752,13 @@ footer a {
   .source-directory,
   .compare-grid,
   .buyer-grid,
+  .trust-grid,
   .method-grid,
   .timeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trust-process ol {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1677,8 +1835,13 @@ footer a {
   .source-directory,
   .compare-grid,
   .buyer-grid,
+  .trust-grid,
   .method-grid,
   .timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-process ol {
     grid-template-columns: 1fr;
   }
 

@@ -15,23 +15,27 @@ Industrial buyers waste time searching manufacturer catalogs, distributor sites,
 
 ## Current Beta
 
-This v0.4 version is a static frontend with a structured procurement catalog and early buyer workflow tools. It is designed to launch easily on GitHub Pages while the product model, supplier data strategy, and category focus mature.
+This v0.5 version is a static frontend with a structured procurement catalog, early buyer workflow tools, and visible trust signals. It is designed to launch easily on GitHub Pages while the product model, supplier data strategy, and category focus mature.
 
 Features included:
 
 - 12 procurement categories, 36 product records, and 108 product source links.
 - Separate `data/catalog.js` data layer for product records, taxonomy, source channels, and source directory entries.
 - Search by keyword, brand, model, SKU, category, application, source type, and spec terms.
-- Category, region, source type, datasheet, and verified-signal filters.
+- Category, region, source type, confidence, datasheet, and verified-signal filters.
 - Procurement fit scoring.
+- Product confidence labels for high, standard, and review-required records.
+- Source confidence hints for primary trust paths, discovery paths, and seller-term verification.
 - Product detail drawer with specifications, applications, alternates, source actions, and RFQ fields.
 - Copyable product-level RFQ request with quantity, delivery country, target date, urgency, alternates preference, and buyer notes.
+- Copyable product data update/report request for missing sources, outdated specs, certificate issues, or supplier verification concerns.
 - Browser-saved buyer notes for each product.
 - Compare desk for up to four selected products.
 - Copyable comparison brief for sourcing discussions.
 - Supplier/source cards for OEM, distributor, marketplace, RFQ, surplus, and data sources.
 - Launch source directory with global distributor, marketplace, RFQ, and specification-discovery starting points.
 - Buyer desk with RFQ checklist, supplier listing prompt, and data expansion priorities.
+- Trust layer explaining confidence levels and the data update workflow.
 - Shortlist drawer with exportable RFQ-style summary.
 - Responsive corporate UI and SVG 3D-style brand mark.
 - SEO metadata, social sharing preview, and installable site manifest.

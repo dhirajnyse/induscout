@@ -9,6 +9,7 @@ const state = {
   category: "all",
   region: "all",
   sourceType: "all",
+  confidence: "all",
   priority: "balanced",
   datasheetOnly: false,
   verifiedOnly: false,
@@ -24,6 +25,7 @@ const els = {
   category: document.querySelector("#categoryFilter"),
   region: document.querySelector("#regionFilter"),
   sourceType: document.querySelector("#sourceTypeFilter"),
+  confidence: document.querySelector("#confidenceFilter"),
   datasheetOnly: document.querySelector("#datasheetOnly"),
   verifiedOnly: document.querySelector("#verifiedOnly"),
   resultCount: document.querySelector("#resultCount"),
@@ -125,6 +127,11 @@ function wireEvents() {
     render();
   });
 
+  els.confidence.addEventListener("change", (event) => {
+    state.confidence = event.target.value;
+    render();
+  });
+
   els.datasheetOnly.addEventListener("change", (event) => {
     state.datasheetOnly = event.target.checked;
     render();
@@ -149,6 +156,7 @@ function wireEvents() {
       category: "all",
       region: "all",
       sourceType: "all",
+      confidence: "all",
       priority: "balanced",
       datasheetOnly: false,
       verifiedOnly: false
@@ -157,6 +165,7 @@ function wireEvents() {
     els.category.value = "all";
     els.region.value = "all";
     els.sourceType.value = "all";
+    els.confidence.value = "all";
     els.datasheetOnly.checked = false;
     els.verifiedOnly.checked = false;
     els.priorityButtons.forEach((button) => {
@@ -216,11 +225,16 @@ function wireEvents() {
   els.scrim.addEventListener("click", closeOverlays);
   els.productDetailContent.addEventListener("click", (event) => {
     const copyButton = event.target.closest("[data-copy-rfq]");
+    const updateButton = event.target.closest("[data-copy-update]");
     const shortlistButton = event.target.closest("[data-detail-add]");
     const compareButton = event.target.closest("[data-detail-compare]");
 
     if (copyButton) {
       copyProductRfq(copyButton.dataset.copyRfq);
+    }
+
+    if (updateButton) {
+      copyDataUpdate(updateButton.dataset.copyUpdate);
     }
 
     if (shortlistButton) {
@@ -286,14 +300,15 @@ function matchesFilters(product) {
   const categoryMatch = state.category === "all" || product.category === state.category;
   const regionMatch = state.region === "all" || product.regions.includes(state.region);
   const sourceTypeMatch = state.sourceType === "all" || product.sources.some((source) => source.type === state.sourceType);
+  const confidenceMatch = state.confidence === "all" || confidenceForProduct(product).level === state.confidence;
   const datasheetMatch = !state.datasheetOnly || product.datasheet;
   const verifiedMatch = !state.verifiedOnly || product.verified;
 
-  return queryMatch && categoryMatch && regionMatch && sourceTypeMatch && datasheetMatch && verifiedMatch;
+  return queryMatch && categoryMatch && regionMatch && sourceTypeMatch && confidenceMatch && datasheetMatch && verifiedMatch;
 }
 
 function summaryText(count) {
-  if (!state.query && state.category === "all" && state.region === "all" && state.sourceType === "all") {
+  if (!state.query && state.category === "all" && state.region === "all" && state.sourceType === "all" && state.confidence === "all") {
     return "Showing beta catalog records";
   }
   if (!count) {
@@ -309,6 +324,7 @@ function productTemplate(product) {
   const score = product[state.priority];
   const isShortlisted = state.shortlist.includes(product.id);
   const isCompared = state.compare.includes(product.id);
+  const confidence = confidenceForProduct(product);
   const sourceLinks = product.sources.map(sourceLinkTemplate).join("");
   const applicationList = product.applications.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   const specList = product.specs.map((spec) => `<li>${escapeHtml(spec)}</li>`).join("");
@@ -322,13 +338,17 @@ function productTemplate(product) {
             <h3>${escapeHtml(product.name)}</h3>
             <div class="sku">${escapeHtml(product.brand)} &middot; ${escapeHtml(product.sku)} &middot; ${escapeHtml(product.category)}</div>
           </div>
-          <span class="badge ${product.verified ? "" : "amber"}">${product.verified ? "Verified signal" : "Needs verification"}</span>
+          <div class="badge-stack">
+            <span class="badge ${product.verified ? "" : "amber"}">${product.verified ? "Verified signal" : "Needs verification"}</span>
+            <span class="confidence-badge ${confidence.level}">${escapeHtml(confidence.label)}</span>
+          </div>
         </div>
         <p class="description">${escapeHtml(product.description)}</p>
         <div class="product-flags">
           <span>${escapeHtml(product.family)}</span>
           <span>Lifecycle: ${escapeHtml(product.lifecycle)}</span>
           <span>Certs: ${escapeHtml(certs)}</span>
+          <span>Trust: ${escapeHtml(confidence.short)}</span>
         </div>
         <ul class="spec-list">
           ${specList}
@@ -421,6 +441,57 @@ function renderSourceDirectory() {
     .join("");
 }
 
+function confidenceForProduct(product) {
+  const hasStrongSource = product.sources.some((source) => ["OEM", "Distributor"].includes(source.type));
+  const hasMultipleSources = product.sources.length >= 3;
+
+  if (!product.verified) {
+    return {
+      level: "review",
+      label: "Review required",
+      short: "Needs source verification",
+      reason: "Source signal, seller path, certification, or alternate validity needs additional buyer checks."
+    };
+  }
+
+  if (product.verified && product.datasheet && hasStrongSource) {
+    return {
+      level: "high",
+      label: "High confidence",
+      short: "Verified source + datasheet",
+      reason: "Verified source signal, datasheet availability, and OEM or distributor path are present."
+    };
+  }
+
+  if (product.verified || (product.datasheet && hasMultipleSources)) {
+    return {
+      level: "standard",
+      label: "Standard confidence",
+      short: "Useful discovery record",
+      reason: "Several procurement signals are present, but buyer confirmation is still required."
+    };
+  }
+
+  return {
+    level: "review",
+    label: "Review required",
+    short: "Needs buyer verification",
+    reason: "Source path, datasheet, supplier status, or alternate validity needs additional checks."
+  };
+}
+
+function confidenceForSource(source) {
+  if (source.type === "OEM" || source.type === "Distributor") {
+    return { level: "high", label: "Primary trust path" };
+  }
+
+  if (source.type === "Data" || source.type === "RFQ") {
+    return { level: "standard", label: "Discovery path" };
+  }
+
+  return { level: "review", label: "Verify seller terms" };
+}
+
 function openProductDetail(id) {
   const product = products.find((item) => item.id === id);
   if (!product) {
@@ -440,6 +511,7 @@ function productDetailTemplate(product) {
   const note = state.notes[product.id] || "";
   const isShortlisted = state.shortlist.includes(product.id);
   const isCompared = state.compare.includes(product.id);
+  const confidence = confidenceForProduct(product);
   const certs = product.certifications.length ? product.certifications.join(", ") : "Check with supplier";
   const sourceActions = product.sources.map(detailSourceTemplate).join("");
   const specs = product.specs.map((spec) => `<li>${escapeHtml(spec)}</li>`).join("");
@@ -452,6 +524,10 @@ function productDetailTemplate(product) {
         <span>${escapeHtml(product.category)}</span>
         <h3>${escapeHtml(product.brand)} ${escapeHtml(product.sku)}</h3>
         <p>${escapeHtml(product.name)}</p>
+      </div>
+      <div class="detail-confidence ${confidence.level}">
+        <span>${escapeHtml(confidence.label)}</span>
+        <strong>${escapeHtml(confidence.reason)}</strong>
       </div>
       <div class="detail-score">
         <div>
@@ -472,6 +548,7 @@ function productDetailTemplate(product) {
         <div><span>Lifecycle</span><strong>${escapeHtml(product.lifecycle)}</strong></div>
         <div><span>Datasheet</span><strong>${product.datasheet ? "Available" : "Check"}</strong></div>
         <div><span>Certifications</span><strong>${escapeHtml(certs)}</strong></div>
+        <div><span>Confidence</span><strong>${escapeHtml(confidence.short)}</strong></div>
       </div>
       <div class="detail-section">
         <h4>Specifications</h4>
@@ -519,16 +596,41 @@ function productDetailTemplate(product) {
         </label>
         <button type="button" data-copy-rfq="${escapeHtml(product.id)}">Copy RFQ request</button>
       </form>
+      <form class="data-update-builder">
+        <div class="rfq-heading">
+          <h4>Report or update product data</h4>
+          <p>Use this when a product record has a missing source, outdated lead time, wrong alternate, or certification concern.</p>
+        </div>
+        <div class="rfq-grid">
+          <label>Issue type
+            <select id="dataIssueType">
+              <option>Missing buying source</option>
+              <option>Wrong or outdated specification</option>
+              <option>Datasheet or certificate issue</option>
+              <option>Alternate product concern</option>
+              <option>Supplier verification concern</option>
+            </select>
+          </label>
+          <label>Your contact
+            <input id="dataReporterContact" type="text" placeholder="Optional email or company" autocomplete="off">
+          </label>
+        </div>
+        <label class="note-field">Suggested correction or evidence
+          <textarea id="dataCorrection" rows="4" placeholder="Paste corrected source link, datasheet note, supplier name, or issue details"></textarea>
+        </label>
+        <button type="button" data-copy-update="${escapeHtml(product.id)}">Copy data update request</button>
+      </form>
     </article>
   `;
 }
 
 function detailSourceTemplate(source) {
+  const confidence = confidenceForSource(source);
   return `
-    <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">
+    <a class="${escapeHtml(confidence.level)}" href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">
       <span>${escapeHtml(source.type)}</span>
       <strong>${escapeHtml(source.name)}</strong>
-      <small>${escapeHtml(source.action)} &middot; ${escapeHtml(source.region)}</small>
+      <small>${escapeHtml(source.action)} &middot; ${escapeHtml(source.region)} &middot; ${escapeHtml(confidence.label)}</small>
     </a>
   `;
 }
@@ -750,6 +852,48 @@ Please confirm price, lead time, stock availability, warranty path, certificate 
     }
   } catch {
     window.prompt("Copy RFQ request", text);
+  }
+}
+
+async function copyDataUpdate(id) {
+  const product = products.find((item) => item.id === id);
+  if (!product) {
+    return;
+  }
+
+  const confidence = confidenceForProduct(product);
+  const issueType = getFieldValue("#dataIssueType", "Product data update");
+  const reporter = getFieldValue("#dataReporterContact", "Not provided");
+  const correction = getFieldValue("#dataCorrection", "No correction details added");
+  const sources = product.sources.map((source) => `${source.type} - ${source.name}: ${source.url}`).join("; ");
+  const text = `InduScout product data update request
+
+Product: ${product.brand} ${product.sku} - ${product.name}
+Category: ${product.category}
+Current confidence: ${confidence.label}
+Issue type: ${issueType}
+Reporter/contact: ${reporter}
+
+Suggested correction or evidence:
+${correction}
+
+Current specs: ${product.specs.join(", ")}
+Current alternates: ${product.alternatives.join(", ")}
+Current source links: ${sources}
+
+Please review this record and update source confidence, specifications, alternates, datasheet status, or supplier links if the evidence is valid.`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    const button = els.productDetailContent.querySelector("[data-copy-update]");
+    if (button) {
+      button.textContent = "Update request copied";
+      setTimeout(() => {
+        button.textContent = "Copy data update request";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy data update request", text);
   }
 }
 
