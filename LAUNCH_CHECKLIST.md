@@ -1,4 +1,4 @@
-# InduScout v1.5 Launch Checklist
+# InduScout v1.6 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -22,6 +22,7 @@ Use this checklist after each public GitHub Pages upload.
 - Open one product detail drawer and confirm the verify-before-buying notice appears before RFQ fields.
 - Copy one procurement brief from the RFQ drawer and confirm it includes sources, alternates, confidence, and verification checklist.
 - Copy one supplier email from the RFQ drawer and confirm it includes a subject line, quantity, delivery country, target date, confirmation checklist, and buyer notes.
+- Add two products to shortlist, download RFQ pack, and confirm the HTML file opens with product details, source links, and verification checklist.
 - Add two products to shortlist, download CSV, and confirm it opens in Excel with source links and buyer notes.
 - Check the back-to-top button after scrolling.
 

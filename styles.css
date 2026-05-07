@@ -1607,7 +1607,8 @@ input[type="checkbox"] {
   border-top: 1px solid var(--line);
 }
 
-.shortlist-actions #copyShortlist {
+.shortlist-actions #copyShortlist,
+.shortlist-actions #downloadRfqPack {
   grid-column: 1 / -1;
 }
 

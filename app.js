@@ -49,6 +49,7 @@ const els = {
   shortlistCount: document.querySelector("#shortlistCount"),
   clearShortlist: document.querySelector("#clearShortlist"),
   copyShortlist: document.querySelector("#copyShortlist"),
+  downloadRfqPack: document.querySelector("#downloadRfqPack"),
   downloadShortlist: document.querySelector("#downloadShortlist"),
   exportShortlist: document.querySelector("#exportShortlist"),
   openCompare: document.querySelector("#openCompare"),
@@ -301,6 +302,7 @@ function wireEvents() {
     render();
   });
   els.copyShortlist.addEventListener("click", copyShortlist);
+  els.downloadRfqPack.addEventListener("click", downloadRfqPack);
   els.downloadShortlist.addEventListener("click", downloadShortlistCsv);
 }
 
@@ -844,6 +846,137 @@ Sources: ${sources}`;
   }
 }
 
+function downloadRfqPack() {
+  const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+
+  if (!selected.length) {
+    els.downloadRfqPack.textContent = "Add items first";
+    setTimeout(() => {
+      els.downloadRfqPack.textContent = "Download RFQ pack";
+    }, 1200);
+    return;
+  }
+
+  const totalSources = selected.reduce((count, product) => count + product.sources.length, 0);
+  const productCards = selected
+    .map((product, index) => {
+      const confidence = confidenceForProduct(product);
+      const sources = product.sources
+        .map((source) => `<li><strong>${escapeHtml(source.type)}:</strong> <a href="${escapeHtml(source.url)}">${escapeHtml(source.name)}</a></li>`)
+        .join("");
+      const notes = state.notes[product.id] || "None added";
+      return `
+        <section class="product">
+          <div class="product-head">
+            <div>
+              <p class="eyebrow">Item ${index + 1}</p>
+              <h2>${escapeHtml(product.brand)} ${escapeHtml(product.sku)} - ${escapeHtml(product.name)}</h2>
+              <p>${escapeHtml(product.description)}</p>
+            </div>
+            <div class="score">
+              <span>${escapeHtml(priorityLabel())} fit</span>
+              <strong>${escapeHtml(product[state.priority])}</strong>
+            </div>
+          </div>
+          <dl>
+            <div><dt>Category</dt><dd>${escapeHtml(product.category)}</dd></div>
+            <div><dt>Family</dt><dd>${escapeHtml(product.family)}</dd></div>
+            <div><dt>Lead time</dt><dd>${escapeHtml(product.lead)}</dd></div>
+            <div><dt>MOQ</dt><dd>${escapeHtml(product.moq)}</dd></div>
+            <div><dt>Lifecycle</dt><dd>${escapeHtml(product.lifecycle)}</dd></div>
+            <div><dt>Datasheet</dt><dd>${product.datasheet ? "Available" : "Check with supplier"}</dd></div>
+            <div><dt>Certifications</dt><dd>${escapeHtml(product.certifications.join(", ") || "Check with supplier")}</dd></div>
+            <div><dt>Confidence</dt><dd>${escapeHtml(confidence.label)} - ${escapeHtml(confidence.reason)}</dd></div>
+          </dl>
+          <h3>Key specifications</h3>
+          <ul>${product.specs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+          <h3>Applications</h3>
+          <ul>${product.applications.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+          <h3>Alternates for review</h3>
+          <ul>${product.alternatives.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+          <h3>Source paths</h3>
+          <ul>${sources}</ul>
+          <h3>Buyer notes</h3>
+          <p class="notes">${escapeHtml(notes)}</p>
+        </section>
+      `;
+    })
+    .join("");
+
+  const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>InduScout RFQ Pack</title>
+    <style>
+      :root { color: #0f172a; background: #f8fafc; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 32px; }
+      main { max-width: 980px; margin: 0 auto; }
+      header, section, .checklist { background: #ffffff; border: 1px solid #dbe4ef; border-radius: 8px; box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08); }
+      header { padding: 28px; margin-bottom: 18px; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { font-size: 34px; margin-bottom: 8px; }
+      h2 { font-size: 22px; margin-bottom: 8px; }
+      h3 { font-size: 14px; margin: 20px 0 8px; text-transform: uppercase; color: #007a78; }
+      a { color: #007a78; }
+      .meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+      .meta div, dl div { padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
+      .meta span, dt, .eyebrow { display: block; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+      .meta strong, dd { margin: 3px 0 0; font-weight: 700; }
+      .product { padding: 24px; margin-bottom: 18px; }
+      .product-head { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 20px; align-items: start; }
+      .score { text-align: right; padding: 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; }
+      .score strong { display: block; font-size: 34px; }
+      dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 18px 0 0; }
+      ul { margin: 0; padding-left: 22px; }
+      li { margin: 5px 0; }
+      .notes { padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; }
+      .checklist { padding: 24px; }
+      .disclaimer { margin-top: 20px; color: #475569; font-size: 13px; }
+      @media print {
+        body { background: #ffffff; padding: 0; }
+        header, section, .checklist { box-shadow: none; break-inside: avoid; }
+        a { color: inherit; text-decoration: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">InduScout sourcing document</p>
+        <h1>RFQ Shortlist Pack</h1>
+        <p>Prepared for buyer review, supplier outreach, and RFQ preparation. Confirm all purchase decisions with the OEM, authorized distributor, or supplier.</p>
+        <div class="meta">
+          <div><span>Prepared</span><strong>${escapeHtml(formatCopyDate())}</strong></div>
+          <div><span>Products</span><strong>${selected.length}</strong></div>
+          <div><span>Source links</span><strong>${totalSources}</strong></div>
+          <div><span>Fit priority</span><strong>${escapeHtml(priorityLabel())}</strong></div>
+        </div>
+      </header>
+      ${productCards}
+      <div class="checklist">
+        <h2>Buyer verification checklist</h2>
+        <ul>
+          <li>Confirm exact part number, suffix, voltage, size, material, and configuration.</li>
+          <li>Confirm compatibility with installed equipment or project specification.</li>
+          <li>Request latest datasheet, certificate, warranty path, and country of origin.</li>
+          <li>Confirm stock, unit price, offer validity, lead time, MOQ, payment terms, delivery terms, and seller legitimacy.</li>
+          <li>Treat alternates as technical review items, not automatic substitutes.</li>
+        </ul>
+        <p class="disclaimer">InduScout is a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.</p>
+      </div>
+    </main>
+  </body>
+</html>`;
+
+  downloadFile(`induscout-rfq-pack-${new Date().toISOString().slice(0, 10)}.html`, html, "text/html;charset=utf-8");
+  els.downloadRfqPack.textContent = "RFQ pack downloaded";
+  setTimeout(() => {
+    els.downloadRfqPack.textContent = "Download RFQ pack";
+  }, 1200);
+}
+
 function downloadShortlistCsv() {
   const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
 
@@ -902,15 +1035,7 @@ function downloadShortlistCsv() {
     ];
   });
   const csv = [headers, ...rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
-  const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `induscout-shortlist-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  downloadFile(`induscout-shortlist-${new Date().toISOString().slice(0, 10)}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
 
   els.downloadShortlist.textContent = "CSV downloaded";
   setTimeout(() => {
@@ -1228,6 +1353,18 @@ function defaultQuantity(moq) {
 function csvEscape(value) {
   const text = String(value ?? "");
   return `"${text.replace(/"/g, '""')}"`;
+}
+
+function downloadFile(filename, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function priorityLabel() {
