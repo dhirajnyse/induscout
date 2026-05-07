@@ -17,6 +17,7 @@ const state = {
   compare: [],
   notes: loadNotes(),
   productRequests: loadProductRequests(),
+  project: loadProjectProfile(),
   activeProductId: null
 };
 
@@ -37,6 +38,17 @@ const els = {
   importSession: document.querySelector("#importSession"),
   importSessionFile: document.querySelector("#importSessionFile"),
   sessionStatus: document.querySelector("#sessionStatus"),
+  projectWorkspace: document.querySelector("#projectWorkspace"),
+  projectStatus: document.querySelector("#projectStatus"),
+  projectName: document.querySelector("#projectName"),
+  projectBuyer: document.querySelector("#projectBuyer"),
+  projectContact: document.querySelector("#projectContact"),
+  projectCountry: document.querySelector("#projectCountry"),
+  projectTargetDate: document.querySelector("#projectTargetDate"),
+  projectNotes: document.querySelector("#projectNotes"),
+  saveProject: document.querySelector("#saveProject"),
+  copyProjectBrief: document.querySelector("#copyProjectBrief"),
+  clearProject: document.querySelector("#clearProject"),
   productRequestPanel: document.querySelector("#productRequestPanel"),
   requestPart: document.querySelector("#requestPart"),
   requestBrand: document.querySelector("#requestBrand"),
@@ -65,6 +77,7 @@ const els = {
   closeShortlist: document.querySelector("#closeShortlist"),
   closeProductDetail: document.querySelector("#closeProductDetail"),
   scrim: document.querySelector("#scrim"),
+  shortlistProjectSummary: document.querySelector("#shortlistProjectSummary"),
   shortlistItems: document.querySelector("#shortlistItems"),
   productDetailContent: document.querySelector("#productDetailContent"),
   shortlistCount: document.querySelector("#shortlistCount"),
@@ -98,11 +111,13 @@ function init() {
   renderMetrics();
   populateFilters();
   hydrateFromUrl();
+  hydrateProjectFields();
   renderCategories();
   renderSources();
   renderSourceDirectory();
   renderQualityDashboard();
   wireEvents();
+  renderProjectStatus();
   renderProductRequests();
   renderCompare();
   render();
@@ -331,6 +346,12 @@ function wireEvents() {
   els.exportSession.addEventListener("click", exportSessionFile);
   els.importSession.addEventListener("click", () => els.importSessionFile.click());
   els.importSessionFile.addEventListener("change", importSessionFile);
+  projectInputs().forEach((input) => {
+    input.addEventListener("input", updateProjectFromFields);
+  });
+  els.saveProject.addEventListener("click", saveProjectFromFields);
+  els.copyProjectBrief.addEventListener("click", copyProjectBrief);
+  els.clearProject.addEventListener("click", clearProjectProfile);
   els.copyProductRequest.addEventListener("click", copyProductRequest);
   els.saveProductRequest.addEventListener("click", saveProductRequest);
   els.copyResearchBrief.addEventListener("click", copyResearchBrief);
@@ -913,10 +934,10 @@ function productDetailTemplate(product) {
             <input id="rfqQuantity" type="text" value="${escapeHtml(defaultQuantity(product.moq))}" autocomplete="off">
           </label>
           <label>Delivery country
-            <input id="rfqCountry" type="text" placeholder="e.g. UAE, India, USA" autocomplete="off">
+            <input id="rfqCountry" type="text" value="${escapeHtml(projectValue("country", ""))}" placeholder="e.g. UAE, India, USA" autocomplete="off">
           </label>
           <label>Target date
-            <input id="rfqDate" type="date">
+            <input id="rfqDate" type="date" value="${escapeHtml(projectValue("targetDate", ""))}">
           </label>
           <label>Urgency
             <select id="rfqUrgency">
@@ -1073,6 +1094,7 @@ function toggleShortlist(id) {
 function renderShortlist() {
   const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
   updateShortlistControls(selected);
+  renderShortlistProjectSummary();
 
   if (!selected.length) {
     els.shortlistItems.innerHTML = '<div class="empty-state">Your shortlist is empty. Add products from the finder to draft an RFQ.</div>';
@@ -1118,10 +1140,12 @@ function defaultFilters() {
 }
 
 function createSessionSnapshot() {
+  updateProjectFromFields();
   return {
     app: "InduScout",
-    version: "2.2",
+    version: "2.3",
     savedAt: new Date().toISOString(),
+    project: state.project,
     filters: {
       query: state.query,
       category: state.category,
@@ -1157,8 +1181,10 @@ function applySession(session) {
   state.compare = [...new Set(session.compare || [])].filter((id) => validProductIds.has(id)).slice(0, 4);
   state.notes = { ...state.notes, ...(session.notes || {}) };
   state.productRequests = Array.isArray(session.productRequests) ? session.productRequests.slice(0, 30) : state.productRequests;
+  state.project = { ...defaultProjectProfile(), ...(session.project || {}) };
 
   setQuery(state.query);
+  hydrateProjectFields();
   els.category.value = state.category;
   els.region.value = state.region;
   els.sourceType.value = state.sourceType;
@@ -1170,6 +1196,8 @@ function applySession(session) {
   });
   saveNotes();
   saveProductRequests();
+  saveProjectProfile();
+  renderProjectStatus();
   renderProductRequests();
   renderCompare();
   renderShortlist();
@@ -1232,12 +1260,143 @@ function setSessionStatus(message) {
   }, 1800);
 }
 
+function projectInputs() {
+  return [els.projectName, els.projectBuyer, els.projectContact, els.projectCountry, els.projectTargetDate, els.projectNotes];
+}
+
+function defaultProjectProfile() {
+  return {
+    name: "",
+    buyer: "",
+    contact: "",
+    country: "",
+    targetDate: "",
+    notes: ""
+  };
+}
+
+function hydrateProjectFields() {
+  els.projectName.value = state.project.name || "";
+  els.projectBuyer.value = state.project.buyer || "";
+  els.projectContact.value = state.project.contact || "";
+  els.projectCountry.value = state.project.country || "";
+  els.projectTargetDate.value = state.project.targetDate || "";
+  els.projectNotes.value = state.project.notes || "";
+}
+
+function updateProjectFromFields() {
+  state.project = projectFromFields();
+  saveProjectProfile();
+  renderProjectStatus();
+}
+
+function saveProjectFromFields() {
+  updateProjectFromFields();
+  els.saveProject.textContent = "Project saved";
+  setTimeout(() => {
+    els.saveProject.textContent = "Save project";
+  }, 1200);
+}
+
+async function copyProjectBrief() {
+  updateProjectFromFields();
+  const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  const text = `InduScout project RFQ brief
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "Unnamed sourcing project")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Buyer contact: ${projectValue("contact", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
+Fit priority: ${priorityLabel()}
+Shortlisted products: ${selected.length}
+
+Project notes:
+${projectValue("notes", "No project notes added")}
+
+Shortlist:
+${selected.length ? selected.map((product, index) => `${index + 1}. ${product.brand} ${product.sku} - ${product.name} (${product.category})`).join("\n") : "- No products shortlisted yet"}
+
+Buyer verification:
+- Confirm exact part numbers, suffixes, voltage, size, material, and configuration.
+- Confirm compatibility with installed equipment or project specification.
+- Request latest datasheets, certificates, warranty path, country of origin, price, lead time, payment terms, and delivery terms.
+- Treat alternates as technical review items, not automatic substitutes.`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    els.copyProjectBrief.textContent = "Project brief copied";
+    setTimeout(() => {
+      els.copyProjectBrief.textContent = "Copy project brief";
+    }, 1400);
+  } catch {
+    window.prompt("Copy project brief", text);
+  }
+}
+
+function clearProjectProfile() {
+  state.project = defaultProjectProfile();
+  hydrateProjectFields();
+  saveProjectProfile();
+  renderProjectStatus();
+}
+
+function projectFromFields() {
+  return {
+    name: els.projectName.value.trim(),
+    buyer: els.projectBuyer.value.trim(),
+    contact: els.projectContact.value.trim(),
+    country: els.projectCountry.value.trim(),
+    targetDate: els.projectTargetDate.value,
+    notes: els.projectNotes.value.trim()
+  };
+}
+
+function projectHasValue() {
+  return Object.values(state.project).some((value) => String(value || "").trim());
+}
+
+function projectValue(key, fallback) {
+  const value = String(state.project[key] || "").trim();
+  return value || fallback;
+}
+
+function renderProjectStatus() {
+  els.projectStatus.textContent = projectHasValue() ? projectValue("name", "Project context added") : "Add project context for exports";
+  renderShortlistProjectSummary();
+}
+
+function renderShortlistProjectSummary() {
+  if (!els.shortlistProjectSummary) {
+    return;
+  }
+
+  if (!projectHasValue()) {
+    els.shortlistProjectSummary.innerHTML = `
+      <strong>No project profile yet</strong>
+      <span>Add project details in Finder so RFQ exports include buyer, delivery, target date, and notes.</span>
+    `;
+    els.shortlistProjectSummary.classList.add("empty");
+    return;
+  }
+
+  els.shortlistProjectSummary.classList.remove("empty");
+  els.shortlistProjectSummary.innerHTML = `
+    <strong>${escapeHtml(projectValue("name", "Project RFQ workspace"))}</strong>
+    <span>${escapeHtml(projectValue("buyer", "Buyer TBC"))} &middot; ${escapeHtml(projectValue("country", "Delivery TBC"))} &middot; Target ${escapeHtml(projectValue("targetDate", "TBC"))}</span>
+  `;
+}
+
 function openProductRequestPanel() {
   if (state.query && !els.requestPart.value.trim()) {
     els.requestPart.value = state.query;
   }
   if (state.category !== "all" && categories.includes(state.category)) {
     els.requestCategory.value = state.category;
+  }
+  if (state.project.country && !els.requestCountry.value.trim()) {
+    els.requestCountry.value = state.project.country;
   }
   els.productRequestPanel.open = true;
   els.productRequestPanel.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1337,7 +1496,7 @@ function productRequestSnapshot() {
     part,
     brand: requestFieldValue(els.requestBrand, "TBC"),
     category,
-    country: requestFieldValue(els.requestCountry, "TBC"),
+    country: requestFieldValue(els.requestCountry, projectValue("country", "TBC")),
     urgency: requestFieldValue(els.requestUrgency, "Standard sourcing"),
     quantity: requestFieldValue(els.requestQuantity, "TBC"),
     notes: requestFieldValue(els.requestNotes, "No extra notes added"),
@@ -1455,9 +1614,18 @@ function requestFieldValue(element, fallback) {
 }
 
 async function copyShortlist() {
+  updateProjectFromFields();
   const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
   const text = selected.length
-    ? selected
+    ? `InduScout RFQ shortlist
+Project: ${projectValue("name", "Unnamed sourcing project")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Buyer contact: ${projectValue("contact", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
+Project notes: ${projectValue("notes", "No project notes added")}
+
+${selected
         .map((product, index) => {
           const sources = product.sources.map((source) => `${source.type} - ${source.name}: ${source.url}`).join("; ");
           return `${index + 1}. ${product.brand} ${product.sku} - ${product.name}
@@ -1467,7 +1635,7 @@ Applications: ${product.applications.join(", ")}
 Alternatives: ${product.alternatives.join(", ")}
 Sources: ${sources}`;
         })
-        .join("\n\n")
+        .join("\n\n")}`
     : "InduScout RFQ shortlist is empty.";
 
   try {
@@ -1482,6 +1650,7 @@ Sources: ${sources}`;
 }
 
 function downloadRfqPack() {
+  updateProjectFromFields();
   const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
 
   if (!selected.length) {
@@ -1495,8 +1664,13 @@ function downloadRfqPack() {
   const totalSources = selected.reduce((count, product) => count + product.sources.length, 0);
   const isoDate = new Date().toISOString().slice(0, 10);
   const productWord = selected.length === 1 ? "Product" : "Products";
-  const packFilenameBase = `InduScout-RFQ-Pack-${isoDate}-${selected.length}-${productWord}`;
-  const packTitle = `InduScout RFQ Pack - ${isoDate} - ${selected.length} ${productWord}`;
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const packFilenameBase = projectSlug
+    ? `InduScout-RFQ-Pack-${projectSlug}-${isoDate}-${selected.length}-${productWord}`
+    : `InduScout-RFQ-Pack-${isoDate}-${selected.length}-${productWord}`;
+  const packTitle = projectHasValue()
+    ? `InduScout RFQ Pack - ${projectValue("name", "Project")} - ${isoDate}`
+    : `InduScout RFQ Pack - ${isoDate} - ${selected.length} ${productWord}`;
   const productCards = selected
     .map((product, index) => {
       const confidence = confidenceForProduct(product);
@@ -1567,6 +1741,9 @@ function downloadRfqPack() {
       .meta div, dl div { padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
       .meta span, dt, .eyebrow { display: block; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; }
       .meta strong, dd { margin: 3px 0 0; font-weight: 700; }
+      .project-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+      .project-meta div { padding: 9px; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 6px; }
+      .project-notes { margin: 10px 0 0; padding: 9px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; }
       .product { padding: 18px; margin-bottom: 14px; }
       .product-head { display: grid; grid-template-columns: minmax(0, 1fr) 94px; gap: 14px; align-items: start; }
       .score { text-align: right; padding: 10px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; }
@@ -1588,6 +1765,8 @@ function downloadRfqPack() {
         h3 { font-size: 10px; margin: 8px 0 3px; }
         .meta { margin-top: 8px; gap: 4px; }
         .meta div, dl div { padding: 5px; }
+        .project-meta { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+        .project-meta div, .project-notes { padding: 5px; }
         .product { padding: 8px 0; margin: 0; border: 0; border-top: 1px solid #dbe4ef; break-inside: auto; page-break-inside: auto; }
         .product-head { grid-template-columns: minmax(0, 1fr) 64px; gap: 8px; }
         .score { padding: 5px; }
@@ -1610,7 +1789,7 @@ function downloadRfqPack() {
     <main>
       <header>
         <p class="eyebrow">InduScout sourcing document</p>
-        <h1>RFQ Shortlist Pack</h1>
+        <h1>${escapeHtml(projectHasValue() ? projectValue("name", "RFQ Shortlist Pack") : "RFQ Shortlist Pack")}</h1>
         <p>Prepared for buyer review, supplier outreach, and RFQ preparation. Confirm all purchase decisions with the OEM, authorized distributor, or supplier.</p>
         <div class="meta">
           <div><span>Prepared</span><strong>${escapeHtml(formatCopyDate())}</strong></div>
@@ -1618,6 +1797,14 @@ function downloadRfqPack() {
           <div><span>Source links</span><strong>${totalSources}</strong></div>
           <div><span>Fit priority</span><strong>${escapeHtml(priorityLabel())}</strong></div>
         </div>
+        <div class="project-meta">
+          <div><span>Project</span><strong>${escapeHtml(projectValue("name", "Not provided"))}</strong></div>
+          <div><span>Buyer / company</span><strong>${escapeHtml(projectValue("buyer", "TBC"))}</strong></div>
+          <div><span>Buyer contact</span><strong>${escapeHtml(projectValue("contact", "TBC"))}</strong></div>
+          <div><span>Delivery country</span><strong>${escapeHtml(projectValue("country", "TBC"))}</strong></div>
+          <div><span>Target date</span><strong>${escapeHtml(projectValue("targetDate", "TBC"))}</strong></div>
+        </div>
+        <p class="project-notes"><strong>Project notes:</strong> ${escapeHtml(projectValue("notes", "No project notes added"))}</p>
       </header>
       ${productCards}
       <div class="checklist">
@@ -1653,7 +1840,11 @@ function downloadShortlistCsv() {
   }
 
   const csv = [table.headers, ...table.rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
-  downloadFile(`induscout-shortlist-${new Date().toISOString().slice(0, 10)}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const filename = projectSlug
+    ? `InduScout-Shortlist-${projectSlug}-${new Date().toISOString().slice(0, 10)}.csv`
+    : `induscout-shortlist-${new Date().toISOString().slice(0, 10)}.csv`;
+  downloadFile(filename, `\ufeff${csv}`, "text/csv;charset=utf-8");
 
   els.downloadShortlist.textContent = "CSV downloaded";
   setTimeout(() => {
@@ -1672,8 +1863,11 @@ function downloadShortlistXlsx() {
   }
 
   const workbook = createXlsxWorkbook(table.headers, table.rows);
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
   downloadFile(
-    `InduScout-Shortlist-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    projectSlug
+      ? `InduScout-Shortlist-${projectSlug}-${new Date().toISOString().slice(0, 10)}.xlsx`
+      : `InduScout-Shortlist-${new Date().toISOString().slice(0, 10)}.xlsx`,
     workbook,
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
@@ -1684,8 +1878,15 @@ function downloadShortlistXlsx() {
 }
 
 function shortlistExportTable() {
+  updateProjectFromFields();
   const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
   const headers = [
+    "Project Name",
+    "Buyer / Company",
+    "Buyer Contact",
+    "Delivery Country",
+    "Target Date",
+    "Project Notes",
     "Brand",
     "SKU",
     "Product Name",
@@ -1710,6 +1911,12 @@ function shortlistExportTable() {
     const sourceNames = product.sources.map((source) => `${source.type}: ${source.name}`).join(" | ");
     const sourceUrls = product.sources.map((source) => source.url).join(" | ");
     return [
+      projectValue("name", ""),
+      projectValue("buyer", ""),
+      projectValue("contact", ""),
+      projectValue("country", ""),
+      projectValue("targetDate", ""),
+      projectValue("notes", ""),
       product.brand,
       product.sku,
       product.name,
@@ -1767,6 +1974,7 @@ Sources: ${sources}`;
 }
 
 async function copyProductRfq(id) {
+  updateProjectFromFields();
   const product = products.find((item) => item.id === id);
   if (!product) {
     return;
@@ -1783,6 +1991,9 @@ async function copyProductRfq(id) {
   const text = `RFQ request prepared with InduScout
 
 Product: ${product.brand} ${product.sku} - ${product.name}
+Project: ${projectValue("name", "Unnamed sourcing project")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Buyer contact: ${projectValue("contact", "TBC")}
 Category: ${product.category}
 Family: ${product.family}
 Required quantity: ${quantity}
@@ -1817,6 +2028,7 @@ Please confirm exact part number, compatibility, datasheet revision, price, lead
 }
 
 async function copySupplierOutreach(id, triggerButton) {
+  updateProjectFromFields();
   const product = products.find((item) => item.id === id);
   if (!product) {
     return;
@@ -1837,6 +2049,8 @@ Hello,
 Please provide your quotation and availability for the item below.
 
 Product: ${product.brand} ${product.sku} - ${product.name}
+Project: ${projectValue("name", "Unnamed sourcing project")}
+Buyer/company: ${projectValue("buyer", "TBC")}
 Category: ${product.category}
 Family: ${product.family}
 Description: ${product.description}
@@ -1882,6 +2096,7 @@ Thank you.`;
 }
 
 async function copyProcurementBrief(id, triggerButton) {
+  updateProjectFromFields();
   const product = products.find((item) => item.id === id);
   if (!product) {
     return;
@@ -1900,6 +2115,11 @@ async function copyProcurementBrief(id, triggerButton) {
 Prepared from InduScout beta catalog on ${formatCopyDate()}
 
 Product: ${product.brand} ${product.sku} - ${product.name}
+Project: ${projectValue("name", "Unnamed sourcing project")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Buyer contact: ${projectValue("contact", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
 Category: ${product.category}
 Family: ${product.family}
 Lifecycle: ${product.lifecycle}
@@ -2191,7 +2411,7 @@ function createXlsxWorkbook(headers, rows) {
 }
 
 function buildWorksheetXml(rows) {
-  const columnWidths = [18, 16, 34, 26, 28, 14, 16, 10, 15, 10, 12, 24, 36, 36, 40, 40, 58, 36, 42];
+  const columnWidths = [28, 24, 28, 18, 15, 42, 18, 16, 34, 26, 28, 14, 16, 10, 15, 10, 12, 24, 36, 36, 40, 40, 58, 36, 42];
   const cols = columnWidths
     .map((width, index) => `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`)
     .join("");
@@ -2375,6 +2595,14 @@ function priorityLabel() {
   return `${state.priority.charAt(0).toUpperCase()}${state.priority.slice(1)}`;
 }
 
+function safeFilenamePart(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 54);
+}
+
 function formatCopyDate() {
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
@@ -2396,6 +2624,22 @@ function saveNotes() {
     window.localStorage.setItem("induscoutBuyerNotes", JSON.stringify(state.notes));
   } catch {
     // Notes are a convenience only; the RFQ still works if storage is blocked.
+  }
+}
+
+function loadProjectProfile() {
+  try {
+    return { ...defaultProjectProfile(), ...JSON.parse(window.localStorage.getItem("induscoutProjectProfile") || "{}") };
+  } catch {
+    return defaultProjectProfile();
+  }
+}
+
+function saveProjectProfile() {
+  try {
+    window.localStorage.setItem("induscoutProjectProfile", JSON.stringify(state.project));
+  } catch {
+    // Project context is a convenience only; exports still work if storage is blocked.
   }
 }
 
