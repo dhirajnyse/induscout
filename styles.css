@@ -408,6 +408,7 @@ h1 {
 .finder-shell,
 .category-band,
 .compare-band,
+.quote-band,
 .quality-band,
 .source-band,
 .buyer-band,
@@ -1251,6 +1252,281 @@ input[type="checkbox"] {
   background: #ffffff;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+}
+
+.quote-band {
+  background: #f8fafc;
+  border-bottom: 1px solid var(--line);
+}
+
+.quote-desk {
+  display: grid;
+  gap: 18px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.quote-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.quote-summary article {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.05);
+}
+
+.quote-summary article.wide {
+  grid-column: span 4;
+}
+
+.quote-summary span,
+.quote-register-head span,
+.quote-form-head span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.quote-summary article > span {
+  color: var(--teal);
+  font-size: 0.73rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.quote-summary strong {
+  min-width: 0;
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.quote-summary small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.quote-form,
+.quote-register {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 38px rgba(15, 23, 42, 0.06);
+}
+
+.quote-form-head,
+.quote-register-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+
+.quote-form-head > div:first-child,
+.quote-register-head > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.quote-form-head strong,
+.quote-register-head strong {
+  font-size: 1rem;
+}
+
+.quote-actions,
+.quote-export-actions,
+.quote-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.quote-actions button:first-child {
+  min-height: 38px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+.quote-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 18px 18px 0;
+}
+
+.quote-grid label,
+.quote-form .note-field {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.quote-grid input,
+.quote-grid select,
+.quote-form textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+.quote-grid label:first-child {
+  grid-column: span 2;
+}
+
+.quote-form .note-field {
+  padding: 12px 18px 0;
+}
+
+.quote-form textarea {
+  resize: vertical;
+}
+
+.quote-export-actions {
+  justify-content: flex-start;
+  padding: 14px 18px 18px;
+}
+
+.quote-list {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.quote-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.quote-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quote-card-head span {
+  color: var(--teal);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.quote-card h3 {
+  margin: 3px 0;
+  font-size: 1.08rem;
+}
+
+.quote-card p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.quote-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  color: #075985;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.quote-status.received,
+.quote-status.best-option {
+  color: #166534;
+  background: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.quote-status.follow-up-needed {
+  color: #92400e;
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.quote-status.rejected {
+  color: #991b1b;
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+
+.quote-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.quote-facts div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.quote-facts dt {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.quote-facts dd {
+  min-width: 0;
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.86rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.quote-card-actions {
+  justify-content: flex-start;
+}
+
+.quote-card-actions button {
+  min-height: 34px;
+  padding: 0 11px;
+  color: var(--teal);
+  background: #ecfeff;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
 .compare-panel {
@@ -2980,7 +3256,17 @@ footer a {
     flex-direction: column;
   }
 
+  .quote-form-head,
+  .quote-register-head,
+  .quote-card-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .compare-toolbar div,
+  .quote-actions,
+  .quote-export-actions,
+  .quote-card-actions,
   .results-actions,
   .session-actions {
     justify-content: start;
@@ -3003,6 +3289,9 @@ footer a {
 
   .request-actions > *,
   .project-actions > *,
+  .quote-actions > *,
+  .quote-export-actions > *,
+  .quote-card-actions > *,
   .saved-request-card > div:last-child,
   .saved-request-card button {
     width: 100%;
@@ -3024,6 +3313,9 @@ footer a {
   .filters,
   .project-grid,
   .request-grid,
+  .quote-grid,
+  .quote-summary,
+  .quote-facts,
   .quality-stats,
   .quality-layout,
   .category-grid,
@@ -3037,6 +3329,11 @@ footer a {
   .method-grid,
   .timeline {
     grid-template-columns: 1fr;
+  }
+
+  .quote-grid label:first-child,
+  .quote-summary article.wide {
+    grid-column: auto;
   }
 
   .trust-process ol {

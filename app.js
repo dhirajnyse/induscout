@@ -17,6 +17,7 @@ const state = {
   compare: [],
   notes: loadNotes(),
   productRequests: loadProductRequests(),
+  quotes: loadQuoteRecords(),
   project: loadProjectProfile(),
   activeProductId: null
 };
@@ -93,6 +94,31 @@ const els = {
   compareGrid: document.querySelector("#compareGrid"),
   clearCompare: document.querySelector("#clearCompare"),
   copyCompare: document.querySelector("#copyCompare"),
+  quoteSummary: document.querySelector("#quoteSummary"),
+  quoteForm: document.querySelector("#quoteForm"),
+  quoteId: document.querySelector("#quoteId"),
+  quoteProduct: document.querySelector("#quoteProduct"),
+  quoteSupplier: document.querySelector("#quoteSupplier"),
+  quoteStatus: document.querySelector("#quoteStatus"),
+  quoteCurrency: document.querySelector("#quoteCurrency"),
+  quoteUnitPrice: document.querySelector("#quoteUnitPrice"),
+  quoteQuantity: document.querySelector("#quoteQuantity"),
+  quoteLeadTime: document.querySelector("#quoteLeadTime"),
+  quoteMoq: document.querySelector("#quoteMoq"),
+  quotePaymentTerms: document.querySelector("#quotePaymentTerms"),
+  quoteDeliveryTerms: document.querySelector("#quoteDeliveryTerms"),
+  quoteValidUntil: document.querySelector("#quoteValidUntil"),
+  quoteSourceUrl: document.querySelector("#quoteSourceUrl"),
+  quoteNotes: document.querySelector("#quoteNotes"),
+  saveQuote: document.querySelector("#saveQuote"),
+  clearQuote: document.querySelector("#clearQuote"),
+  copyQuoteSummary: document.querySelector("#copyQuoteSummary"),
+  copyQuoteFollowup: document.querySelector("#copyQuoteFollowup"),
+  exportQuoteCsv: document.querySelector("#exportQuoteCsv"),
+  exportQuoteXlsx: document.querySelector("#exportQuoteXlsx"),
+  clearQuotes: document.querySelector("#clearQuotes"),
+  quoteRegisterStatus: document.querySelector("#quoteRegisterStatus"),
+  quoteList: document.querySelector("#quoteList"),
   qualityStats: document.querySelector("#qualityStats"),
   qualityCategoryGrid: document.querySelector("#qualityCategoryGrid"),
   qualityReviewList: document.querySelector("#qualityReviewList"),
@@ -110,6 +136,7 @@ const sourceTypes = [...new Set(products.flatMap((product) => product.sources.ma
 function init() {
   renderMetrics();
   populateFilters();
+  populateQuoteProducts();
   hydrateFromUrl();
   hydrateProjectFields();
   renderCategories();
@@ -120,6 +147,7 @@ function init() {
   renderProjectStatus();
   renderProductRequests();
   renderCompare();
+  renderQuoteTracker();
   render();
 }
 
@@ -153,6 +181,20 @@ function populateFilters() {
     option.value = sourceType;
     option.textContent = sourceType;
     els.sourceType.append(option);
+  });
+}
+
+function populateQuoteProducts() {
+  if (!els.quoteProduct) {
+    return;
+  }
+
+  els.quoteProduct.innerHTML = "";
+  products.forEach((product) => {
+    const option = document.createElement("option");
+    option.value = product.id;
+    option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
+    els.quoteProduct.append(option);
   });
 }
 
@@ -284,6 +326,49 @@ function wireEvents() {
       toggleCompare(button.dataset.removeCompare);
     }
   });
+  if (els.saveQuote) {
+    els.saveQuote.addEventListener("click", saveQuoteFromForm);
+  }
+  if (els.quoteProduct) {
+    els.quoteProduct.addEventListener("change", prefillQuoteFromProduct);
+  }
+  if (els.clearQuote) {
+    els.clearQuote.addEventListener("click", clearQuoteForm);
+  }
+  if (els.copyQuoteSummary) {
+    els.copyQuoteSummary.addEventListener("click", copyQuoteSummary);
+  }
+  if (els.copyQuoteFollowup) {
+    els.copyQuoteFollowup.addEventListener("click", copyQuoteFollowupFromForm);
+  }
+  if (els.exportQuoteCsv) {
+    els.exportQuoteCsv.addEventListener("click", exportQuoteCsv);
+  }
+  if (els.exportQuoteXlsx) {
+    els.exportQuoteXlsx.addEventListener("click", exportQuoteXlsx);
+  }
+  if (els.clearQuotes) {
+    els.clearQuotes.addEventListener("click", clearQuoteRecords);
+  }
+  if (els.quoteList) {
+    els.quoteList.addEventListener("click", (event) => {
+      const loadButton = event.target.closest("[data-load-quote]");
+      const copyButton = event.target.closest("[data-copy-quote-followup]");
+      const removeButton = event.target.closest("[data-remove-quote]");
+
+      if (loadButton) {
+        loadQuoteToForm(loadButton.dataset.loadQuote);
+      }
+
+      if (copyButton) {
+        copyQuoteFollowup(copyButton.dataset.copyQuoteFollowup, copyButton);
+      }
+
+      if (removeButton) {
+        removeQuoteRecord(removeButton.dataset.removeQuote);
+      }
+    });
+  }
   els.closeShortlist.addEventListener("click", closeShortlist);
   els.closeProductDetail.addEventListener("click", closeProductDetail);
   els.scrim.addEventListener("click", closeOverlays);
@@ -293,6 +378,7 @@ function wireEvents() {
     const updateButton = event.target.closest("[data-copy-update]");
     const briefButton = event.target.closest("[data-copy-brief]");
     const sourcePassportButton = event.target.closest("[data-copy-source-passport]");
+    const startQuoteButton = event.target.closest("[data-start-quote]");
     const shortlistButton = event.target.closest("[data-detail-add]");
     const compareButton = event.target.closest("[data-detail-compare]");
 
@@ -314,6 +400,10 @@ function wireEvents() {
 
     if (sourcePassportButton) {
       copySourcePassport(sourcePassportButton.dataset.sourceProduct, Number(sourcePassportButton.dataset.sourceIndex), sourcePassportButton);
+    }
+
+    if (startQuoteButton) {
+      startQuoteForProduct(startQuoteButton.dataset.startQuote);
     }
 
     if (shortlistButton) {
@@ -962,6 +1052,7 @@ function productDetailTemplate(product) {
           <button type="button" data-copy-rfq="${escapeHtml(product.id)}">Copy RFQ request</button>
           <button class="secondary-copy" type="button" data-copy-supplier="${escapeHtml(product.id)}">Copy supplier email</button>
           <button class="muted-copy" type="button" data-copy-brief="${escapeHtml(product.id)}">Copy procurement brief</button>
+          <button class="muted-copy" type="button" data-start-quote="${escapeHtml(product.id)}">Track quote</button>
         </div>
       </form>
       <form class="data-update-builder">
@@ -1081,6 +1172,442 @@ function compareTemplate(product) {
   `;
 }
 
+function selectedQuoteProduct() {
+  return products.find((product) => product.id === els.quoteProduct?.value) || products[0];
+}
+
+function quoteFieldValue(element, fallback = "") {
+  const value = String(element?.value || "").trim();
+  return value || fallback;
+}
+
+function quoteFormSnapshot() {
+  updateProjectFromFields();
+  const product = selectedQuoteProduct();
+  const existing = state.quotes.find((quote) => quote.id === els.quoteId?.value);
+  const supplier = quoteFieldValue(els.quoteSupplier, "Supplier TBC");
+  return {
+    id: quoteFieldValue(els.quoteId, `${Date.now()}-${safeFilenamePart(`${supplier}-${product?.sku || "quote"}`).toLowerCase() || "quote"}`),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    projectName: projectValue("name", ""),
+    buyer: projectValue("buyer", ""),
+    buyerContact: projectValue("contact", ""),
+    deliveryCountry: projectValue("country", ""),
+    targetDate: projectValue("targetDate", ""),
+    productId: product?.id || "",
+    brand: product?.brand || "",
+    sku: product?.sku || "",
+    productName: product?.name || "",
+    category: product?.category || "",
+    supplier,
+    status: quoteFieldValue(els.quoteStatus, "Requested"),
+    currency: quoteFieldValue(els.quoteCurrency, "USD"),
+    unitPrice: quoteFieldValue(els.quoteUnitPrice, ""),
+    quantity: quoteFieldValue(els.quoteQuantity, product ? defaultQuantity(product.moq) : ""),
+    leadTime: quoteFieldValue(els.quoteLeadTime, product?.lead || ""),
+    moq: quoteFieldValue(els.quoteMoq, product?.moq || ""),
+    paymentTerms: quoteFieldValue(els.quotePaymentTerms, "TBC"),
+    deliveryTerms: quoteFieldValue(els.quoteDeliveryTerms, "TBC"),
+    validUntil: quoteFieldValue(els.quoteValidUntil, ""),
+    sourceUrl: quoteFieldValue(els.quoteSourceUrl, product?.sources[0]?.url || ""),
+    notes: quoteFieldValue(els.quoteNotes, "")
+  };
+}
+
+function hydrateQuoteForm(quote = {}) {
+  if (!els.quoteProduct) {
+    return;
+  }
+
+  const productId = quote.productId && products.some((product) => product.id === quote.productId) ? quote.productId : products[0]?.id || "";
+  els.quoteId.value = quote.id || "";
+  els.quoteProduct.value = productId;
+  els.quoteSupplier.value = quote.supplier || "";
+  els.quoteStatus.value = quote.status || "Requested";
+  els.quoteCurrency.value = quote.currency || "USD";
+  els.quoteUnitPrice.value = quote.unitPrice || "";
+  els.quoteQuantity.value = quote.quantity || "";
+  els.quoteLeadTime.value = quote.leadTime || "";
+  els.quoteMoq.value = quote.moq || "";
+  els.quotePaymentTerms.value = quote.paymentTerms || "";
+  els.quoteDeliveryTerms.value = quote.deliveryTerms || "";
+  els.quoteValidUntil.value = quote.validUntil || "";
+  els.quoteSourceUrl.value = quote.sourceUrl || "";
+  els.quoteNotes.value = quote.notes || "";
+}
+
+function prefillQuoteFromProduct() {
+  const product = selectedQuoteProduct();
+  if (!product) {
+    return;
+  }
+
+  if (!els.quoteId.value) {
+    els.quoteQuantity.value ||= defaultQuantity(product.moq);
+    els.quoteLeadTime.value ||= product.lead;
+    els.quoteMoq.value ||= product.moq;
+    els.quoteSourceUrl.value ||= product.sources[0]?.url || "";
+  }
+}
+
+function startQuoteForProduct(id) {
+  if (!els.quoteProduct) {
+    return;
+  }
+
+  closeProductDetail();
+  clearQuoteForm();
+  els.quoteProduct.value = id;
+  prefillQuoteFromProduct();
+  document.querySelector("#quotes")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function saveQuoteFromForm() {
+  if (!els.quoteProduct) {
+    return;
+  }
+
+  const quote = quoteFormSnapshot();
+  if (!quote.supplier || quote.supplier === "Supplier TBC") {
+    els.saveQuote.textContent = "Add supplier first";
+    setTimeout(() => {
+      els.saveQuote.textContent = "Save quote";
+    }, 1200);
+    return;
+  }
+
+  state.quotes = [quote, ...state.quotes.filter((item) => item.id !== quote.id)].slice(0, 80);
+  saveQuoteRecords();
+  hydrateQuoteForm(quote);
+  renderQuoteTracker();
+  els.saveQuote.textContent = "Quote saved";
+  setTimeout(() => {
+    els.saveQuote.textContent = "Save quote";
+  }, 1200);
+}
+
+function clearQuoteForm() {
+  hydrateQuoteForm();
+}
+
+function clearQuoteRecords() {
+  state.quotes = [];
+  saveQuoteRecords();
+  renderQuoteTracker();
+}
+
+function loadQuoteToForm(id) {
+  const quote = state.quotes.find((item) => item.id === id);
+  if (!quote) {
+    return;
+  }
+
+  hydrateQuoteForm(quote);
+  els.quoteForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function removeQuoteRecord(id) {
+  state.quotes = state.quotes.filter((quote) => quote.id !== id);
+  saveQuoteRecords();
+  renderQuoteTracker();
+}
+
+function renderQuoteTracker() {
+  if (!els.quoteList || !els.quoteSummary) {
+    return;
+  }
+
+  const total = state.quotes.length;
+  const received = state.quotes.filter((quote) => ["Received", "Best option"].includes(quote.status)).length;
+  const best = state.quotes.filter((quote) => quote.status === "Best option").length;
+  const followUp = state.quotes.filter((quote) => quote.status === "Follow-up needed").length;
+  const totalsByCurrency = quoteTotalsByCurrency();
+  const valueSummary = Object.entries(totalsByCurrency)
+    .map(([currency, value]) => `${currency} ${formatAmount(value)}`)
+    .join(" | ") || "Add price + quantity";
+
+  els.quoteSummary.innerHTML = `
+    <article><span>Total quotes</span><strong>${total}</strong><small>Saved locally</small></article>
+    <article><span>Received</span><strong>${received}</strong><small>Commercial replies logged</small></article>
+    <article><span>Best options</span><strong>${best}</strong><small>Marked for buyer review</small></article>
+    <article><span>Follow-ups</span><strong>${followUp}</strong><small>Need supplier action</small></article>
+    <article class="wide"><span>Estimated value</span><strong>${escapeHtml(valueSummary)}</strong><small>Calculated when unit price and numeric quantity are available</small></article>
+  `;
+
+  if (els.quoteRegisterStatus) {
+    els.quoteRegisterStatus.textContent = total ? `${total} saved ${total === 1 ? "quote" : "quotes"} in this browser` : "Stored locally in this browser";
+  }
+
+  if (!total) {
+    els.quoteList.innerHTML = `
+      <div class="empty-state quote-empty">
+        Save supplier replies here after sending RFQs. Quote records can be exported as CSV/XLSX or copied into buyer review notes.
+      </div>
+    `;
+    return;
+  }
+
+  els.quoteList.innerHTML = state.quotes.map(quoteCardTemplate).join("");
+}
+
+function quoteCardTemplate(quote) {
+  const total = quoteEstimatedTotal(quote);
+  const totalLabel = total ? `${quote.currency} ${formatAmount(total)}` : "Price TBC";
+  const statusClass = quote.status.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return `
+    <article class="quote-card">
+      <div class="quote-card-head">
+        <div>
+          <span>${escapeHtml(quote.category || "Product quote")}</span>
+          <h3>${escapeHtml(quote.supplier)}</h3>
+          <p>${escapeHtml(quote.brand)} ${escapeHtml(quote.sku)} - ${escapeHtml(quote.productName)}</p>
+        </div>
+        <strong class="quote-status ${escapeHtml(statusClass)}">${escapeHtml(quote.status)}</strong>
+      </div>
+      <dl class="quote-facts">
+        <div><dt>Unit price</dt><dd>${escapeHtml(quote.currency)} ${escapeHtml(quote.unitPrice || "TBC")}</dd></div>
+        <div><dt>Quantity</dt><dd>${escapeHtml(quote.quantity || "TBC")}</dd></div>
+        <div><dt>Total est.</dt><dd>${escapeHtml(totalLabel)}</dd></div>
+        <div><dt>Lead time</dt><dd>${escapeHtml(quote.leadTime || "TBC")}</dd></div>
+        <div><dt>Payment</dt><dd>${escapeHtml(quote.paymentTerms || "TBC")}</dd></div>
+        <div><dt>Delivery</dt><dd>${escapeHtml(quote.deliveryTerms || "TBC")}</dd></div>
+        <div><dt>Valid until</dt><dd>${escapeHtml(quote.validUntil || "TBC")}</dd></div>
+      </dl>
+      <p>${escapeHtml(quote.notes || "No supplier notes added.")}</p>
+      <div class="quote-card-actions">
+        <button type="button" data-load-quote="${escapeHtml(quote.id)}">Load</button>
+        <button type="button" data-copy-quote-followup="${escapeHtml(quote.id)}">Copy follow-up</button>
+        <button type="button" data-remove-quote="${escapeHtml(quote.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function quoteEstimatedTotal(quote) {
+  const price = parseFirstNumber(quote.unitPrice);
+  const quantity = parseFirstNumber(quote.quantity);
+  if (!Number.isFinite(price) || !Number.isFinite(quantity)) {
+    return 0;
+  }
+  return price * quantity;
+}
+
+function quoteTotalsByCurrency() {
+  return state.quotes.reduce((totals, quote) => {
+    const total = quoteEstimatedTotal(quote);
+    if (!total) {
+      return totals;
+    }
+    totals[quote.currency] = (totals[quote.currency] || 0) + total;
+    return totals;
+  }, {});
+}
+
+function parseFirstNumber(value) {
+  const match = String(value || "").replace(/,/g, "").match(/\d+(\.\d+)?/);
+  return match ? Number(match[0]) : NaN;
+}
+
+function formatAmount(value) {
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value);
+}
+
+function quoteExportTable() {
+  updateProjectFromFields();
+  const headers = [
+    "Project Name",
+    "Buyer / Company",
+    "Buyer Contact",
+    "Delivery Country",
+    "Target Date",
+    "Product",
+    "Brand",
+    "SKU",
+    "Category",
+    "Supplier",
+    "Status",
+    "Currency",
+    "Unit Price",
+    "Quantity",
+    "Estimated Total",
+    "Lead Time",
+    "MOQ",
+    "Payment Terms",
+    "Delivery Terms",
+    "Valid Until",
+    "Source / Warranty URL",
+    "Supplier Notes",
+    "Saved At"
+  ];
+  const rows = state.quotes.map((quote) => [
+    projectValue("name", quote.projectName || ""),
+    projectValue("buyer", quote.buyer || ""),
+    projectValue("contact", quote.buyerContact || ""),
+    projectValue("country", quote.deliveryCountry || ""),
+    projectValue("targetDate", quote.targetDate || ""),
+    quote.productName,
+    quote.brand,
+    quote.sku,
+    quote.category,
+    quote.supplier,
+    quote.status,
+    quote.currency,
+    quote.unitPrice,
+    quote.quantity,
+    quoteEstimatedTotal(quote) ? formatAmount(quoteEstimatedTotal(quote)) : "",
+    quote.leadTime,
+    quote.moq,
+    quote.paymentTerms,
+    quote.deliveryTerms,
+    quote.validUntil,
+    quote.sourceUrl,
+    quote.notes,
+    quote.savedAt
+  ]);
+  return { headers, rows };
+}
+
+async function copyQuoteSummary() {
+  const table = quoteExportTable();
+  const text = table.rows.length
+    ? `InduScout quote tracker summary
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "Unnamed sourcing project")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
+
+${state.quotes
+        .map((quote, index) => `${index + 1}. ${quote.supplier} - ${quote.brand} ${quote.sku}
+Status: ${quote.status}
+Unit price: ${quote.currency} ${quote.unitPrice || "TBC"}
+Quantity: ${quote.quantity || "TBC"}
+Estimated total: ${quoteEstimatedTotal(quote) ? `${quote.currency} ${formatAmount(quoteEstimatedTotal(quote))}` : "TBC"}
+Lead time: ${quote.leadTime || "TBC"}
+Payment terms: ${quote.paymentTerms || "TBC"}
+Delivery terms: ${quote.deliveryTerms || "TBC"}
+Valid until: ${quote.validUntil || "TBC"}
+Notes: ${quote.notes || "None"}`)
+        .join("\n\n")}`
+    : "No InduScout quote records saved yet.";
+
+  try {
+    await navigator.clipboard.writeText(text);
+    els.copyQuoteSummary.textContent = "Summary copied";
+    setTimeout(() => {
+      els.copyQuoteSummary.textContent = "Copy quote summary";
+    }, 1200);
+  } catch {
+    window.prompt("Copy quote summary", text);
+  }
+}
+
+async function copyQuoteFollowupFromForm() {
+  const quote = quoteFormSnapshot();
+  await copyQuoteText(quoteFollowupText(quote), els.copyQuoteFollowup, "Follow-up copied", "Copy follow-up email");
+}
+
+async function copyQuoteFollowup(id, triggerButton) {
+  const quote = state.quotes.find((item) => item.id === id);
+  if (!quote) {
+    return;
+  }
+
+  await copyQuoteText(quoteFollowupText(quote), triggerButton, "Follow-up copied", "Copy follow-up");
+}
+
+function quoteFollowupText(quote) {
+  return `Subject: Follow-up - ${quote.brand} ${quote.sku} quote
+
+Hello,
+
+Thank you for your quotation. Please confirm the details below so we can complete buyer review.
+
+Project: ${projectValue("name", quote.projectName || "Unnamed sourcing project")}
+Buyer/company: ${projectValue("buyer", quote.buyer || "TBC")}
+Delivery country: ${projectValue("country", quote.deliveryCountry || "TBC")}
+Target date: ${projectValue("targetDate", quote.targetDate || "TBC")}
+
+Product: ${quote.brand} ${quote.sku} - ${quote.productName}
+Supplier: ${quote.supplier}
+Quoted unit price: ${quote.currency} ${quote.unitPrice || "TBC"}
+Quantity: ${quote.quantity || "TBC"}
+Lead time: ${quote.leadTime || "TBC"}
+MOQ: ${quote.moq || "TBC"}
+Payment terms: ${quote.paymentTerms || "TBC"}
+Delivery terms: ${quote.deliveryTerms || "TBC"}
+Quote validity: ${quote.validUntil || "TBC"}
+
+Please confirm:
+- Exact part number and suffix/configuration.
+- Stock availability and latest possible shipment date.
+- Datasheet, certificate, warranty path, and country of origin.
+- Final price, currency, payment terms, delivery terms, and quote validity.
+- Whether any alternate offered is technically equivalent or only a suggested substitute.
+
+Notes:
+${quote.notes || "No extra notes added."}
+
+InduScout is being used as a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.`;
+}
+
+async function copyQuoteText(text, triggerButton, copiedLabel, defaultLabel) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = copiedLabel;
+      setTimeout(() => {
+        triggerButton.textContent = defaultLabel;
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy quote follow-up", text);
+  }
+}
+
+function exportQuoteCsv() {
+  const table = quoteExportTable();
+  if (!table.rows.length) {
+    els.exportQuoteCsv.textContent = "Add quotes first";
+    setTimeout(() => {
+      els.exportQuoteCsv.textContent = "Export CSV";
+    }, 1200);
+    return;
+  }
+
+  const csv = [table.headers, ...table.rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  downloadFile(
+    projectSlug
+      ? `InduScout-Quote-Tracker-${projectSlug}-${new Date().toISOString().slice(0, 10)}.csv`
+      : `InduScout-Quote-Tracker-${new Date().toISOString().slice(0, 10)}.csv`,
+    `\ufeff${csv}`,
+    "text/csv;charset=utf-8"
+  );
+}
+
+function exportQuoteXlsx() {
+  const table = quoteExportTable();
+  if (!table.rows.length) {
+    els.exportQuoteXlsx.textContent = "Add quotes first";
+    setTimeout(() => {
+      els.exportQuoteXlsx.textContent = "Export XLSX";
+    }, 1200);
+    return;
+  }
+
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  downloadFile(
+    projectSlug
+      ? `InduScout-Quote-Tracker-${projectSlug}-${new Date().toISOString().slice(0, 10)}.xlsx`
+      : `InduScout-Quote-Tracker-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    createXlsxWorkbook(table.headers, table.rows, "Quotes", "InduScout Quote Tracker"),
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+}
+
 function removeFromShortlist(id) {
   state.shortlist = state.shortlist.filter((item) => item !== id);
   renderShortlist();
@@ -1149,7 +1676,7 @@ function createSessionSnapshot() {
   updateProjectFromFields();
   return {
     app: "InduScout",
-    version: "2.3",
+    version: "2.4",
     savedAt: new Date().toISOString(),
     project: state.project,
     filters: {
@@ -1167,7 +1694,8 @@ function createSessionSnapshot() {
     notes: Object.fromEntries(
       Object.entries(state.notes).filter(([id, note]) => products.some((product) => product.id === id) && String(note).trim())
     ),
-    productRequests: state.productRequests
+    productRequests: state.productRequests,
+    quotes: state.quotes
   };
 }
 
@@ -1187,6 +1715,7 @@ function applySession(session) {
   state.compare = [...new Set(session.compare || [])].filter((id) => validProductIds.has(id)).slice(0, 4);
   state.notes = { ...state.notes, ...(session.notes || {}) };
   state.productRequests = Array.isArray(session.productRequests) ? session.productRequests.slice(0, 30) : state.productRequests;
+  state.quotes = Array.isArray(session.quotes) ? session.quotes.map(sanitizeQuoteRecord).filter(Boolean).slice(0, 80) : state.quotes;
   state.project = { ...defaultProjectProfile(), ...(session.project || {}) };
 
   setQuery(state.query);
@@ -1202,10 +1731,12 @@ function applySession(session) {
   });
   saveNotes();
   saveProductRequests();
+  saveQuoteRecords();
   saveProjectProfile();
   renderProjectStatus();
   renderProductRequests();
   renderCompare();
+  renderQuoteTracker();
   renderShortlist();
   closeOverlays();
 }
@@ -1262,7 +1793,7 @@ function importSessionFile(event) {
 function setSessionStatus(message) {
   els.sessionStatus.textContent = message;
   setTimeout(() => {
-    els.sessionStatus.textContent = "Save shortlist, filters, compare list, and notes locally.";
+    els.sessionStatus.textContent = "Save shortlist, filters, compare list, quote tracker, and notes locally.";
   }, 1800);
 }
 
@@ -2359,8 +2890,9 @@ function csvEscape(value) {
   return `"${text.replace(/"/g, '""')}"`;
 }
 
-function createXlsxWorkbook(headers, rows) {
+function createXlsxWorkbook(headers, rows, sheetName = "Shortlist", title = "InduScout Shortlist") {
   const allRows = [headers, ...rows];
+  const safeSheetName = String(sheetName || "Sheet1").replace(/[\[\]:*?/\\]/g, " ").trim().slice(0, 31) || "Sheet1";
   const files = [
     {
       path: "[Content_Types].xml",
@@ -2395,7 +2927,7 @@ function createXlsxWorkbook(headers, rows) {
       path: "docProps/core.xml",
       content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <dc:title>InduScout Shortlist</dc:title>
+  <dc:title>${xmlEscape(title)}</dc:title>
   <dc:creator>InduScout</dc:creator>
   <dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:created>
 </cp:coreProperties>`
@@ -2404,7 +2936,7 @@ function createXlsxWorkbook(headers, rows) {
       path: "xl/workbook.xml",
       content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <sheets><sheet name="Shortlist" sheetId="1" r:id="rId1"/></sheets>
+  <sheets><sheet name="${xmlEscape(safeSheetName)}" sheetId="1" r:id="rId1"/></sheets>
 </workbook>`
     },
     {
@@ -2437,7 +2969,8 @@ function createXlsxWorkbook(headers, rows) {
 }
 
 function buildWorksheetXml(rows) {
-  const columnWidths = [28, 24, 28, 18, 15, 42, 18, 16, 34, 26, 28, 14, 16, 10, 15, 10, 12, 24, 36, 36, 40, 40, 58, 36, 42];
+  const baseWidths = [28, 24, 28, 18, 15, 42, 18, 16, 34, 26, 28, 14, 16, 10, 15, 10, 12, 24, 36, 36, 40, 40, 58, 36, 42];
+  const columnWidths = Array.from({ length: rows[0].length }, (_, index) => baseWidths[index] || 24);
   const cols = columnWidths
     .map((width, index) => `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`)
     .join("");
@@ -2684,6 +3217,58 @@ function saveProductRequests() {
   } catch {
     // Product requests are a convenience only; copy actions still work if storage is blocked.
   }
+}
+
+function loadQuoteRecords() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutQuoteRecords") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizeQuoteRecord).filter(Boolean).slice(0, 80) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveQuoteRecords() {
+  try {
+    window.localStorage.setItem("induscoutQuoteRecords", JSON.stringify(state.quotes));
+  } catch {
+    // Quote tracking is a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
+function sanitizeQuoteRecord(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const product = products.find((item) => item.id === record.productId) || products.find((item) => item.sku === record.sku) || products[0];
+  return {
+    id: String(record.id || `${Date.now()}-${safeFilenamePart(record.supplier || product?.sku || "quote")}`),
+    savedAt: String(record.savedAt || new Date().toISOString()),
+    updatedAt: String(record.updatedAt || record.savedAt || new Date().toISOString()),
+    projectName: String(record.projectName || ""),
+    buyer: String(record.buyer || ""),
+    buyerContact: String(record.buyerContact || ""),
+    deliveryCountry: String(record.deliveryCountry || ""),
+    targetDate: String(record.targetDate || ""),
+    productId: product?.id || String(record.productId || ""),
+    brand: String(record.brand || product?.brand || ""),
+    sku: String(record.sku || product?.sku || ""),
+    productName: String(record.productName || product?.name || ""),
+    category: String(record.category || product?.category || ""),
+    supplier: String(record.supplier || "Supplier TBC"),
+    status: ["Requested", "Received", "Follow-up needed", "Best option", "Rejected"].includes(record.status) ? record.status : "Requested",
+    currency: String(record.currency || "USD"),
+    unitPrice: String(record.unitPrice || ""),
+    quantity: String(record.quantity || ""),
+    leadTime: String(record.leadTime || product?.lead || ""),
+    moq: String(record.moq || product?.moq || ""),
+    paymentTerms: String(record.paymentTerms || ""),
+    deliveryTerms: String(record.deliveryTerms || ""),
+    validUntil: String(record.validUntil || ""),
+    sourceUrl: String(record.sourceUrl || product?.sources[0]?.url || ""),
+    notes: String(record.notes || "")
+  };
 }
 
 function escapeHtml(value) {

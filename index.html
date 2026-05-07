@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=2.3.1">
+    <link rel="stylesheet" href="styles.css?v=2.4">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -56,6 +56,7 @@
         <a href="#categories">Categories</a>
         <a href="#finder">Finder</a>
         <a href="#compare">Compare</a>
+        <a href="#quotes">Quotes</a>
         <a href="categories/">SEO Catalog</a>
         <a href="#quality">Quality</a>
         <a href="#sources">Sources</a>
@@ -224,7 +225,7 @@
             <div class="session-tools" aria-label="Session tools">
               <div>
                 <strong>Session desk</strong>
-                <span id="sessionStatus">Save shortlist, filters, compare list, and notes locally.</span>
+                <span id="sessionStatus">Save shortlist, filters, compare list, quote tracker, and notes locally.</span>
               </div>
               <div class="session-actions">
                 <button class="ghost-button compact" id="saveSession" type="button">Save session</button>
@@ -334,6 +335,102 @@
             </div>
           </div>
           <div class="compare-grid" id="compareGrid"></div>
+        </div>
+      </section>
+
+      <section class="quote-band" id="quotes" aria-labelledby="quotes-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Quote Tracker</p>
+            <h2 id="quotes-title">Turn supplier replies into a decision desk</h2>
+          </div>
+          <p>Record received quotes, compare commercial terms, copy supplier follow-ups, and export a clean quote register for buyer review.</p>
+        </div>
+        <div class="quote-desk">
+          <div class="quote-summary" id="quoteSummary"></div>
+          <form class="quote-form" id="quoteForm">
+            <input id="quoteId" type="hidden">
+            <div class="quote-form-head">
+              <div>
+                <strong>Add supplier quote</strong>
+                <span>Use shortlist or catalog products, then capture price, terms, validity, and follow-up notes.</span>
+              </div>
+              <div class="quote-actions">
+                <button type="button" id="saveQuote">Save quote</button>
+                <button class="ghost-button compact" type="button" id="clearQuote">Clear form</button>
+              </div>
+            </div>
+            <div class="quote-grid">
+              <label>Product
+                <select id="quoteProduct"></select>
+              </label>
+              <label>Supplier
+                <input id="quoteSupplier" type="text" placeholder="e.g. Mouser, RS, local supplier">
+              </label>
+              <label>Status
+                <select id="quoteStatus">
+                  <option>Requested</option>
+                  <option>Received</option>
+                  <option>Follow-up needed</option>
+                  <option>Best option</option>
+                  <option>Rejected</option>
+                </select>
+              </label>
+              <label>Currency
+                <select id="quoteCurrency">
+                  <option>USD</option>
+                  <option>EUR</option>
+                  <option>GBP</option>
+                  <option>AED</option>
+                  <option>INR</option>
+                  <option>Other</option>
+                </select>
+              </label>
+              <label>Unit price
+                <input id="quoteUnitPrice" type="text" inputmode="decimal" placeholder="e.g. 125.00">
+              </label>
+              <label>Quantity
+                <input id="quoteQuantity" type="text" placeholder="e.g. 1 pc, 10 pcs">
+              </label>
+              <label>Lead time
+                <input id="quoteLeadTime" type="text" placeholder="e.g. 3-5 days, 2 weeks">
+              </label>
+              <label>MOQ
+                <input id="quoteMoq" type="text" placeholder="e.g. 1 pc">
+              </label>
+              <label>Payment terms
+                <input id="quotePaymentTerms" type="text" placeholder="e.g. advance, net 30">
+              </label>
+              <label>Delivery terms
+                <input id="quoteDeliveryTerms" type="text" placeholder="e.g. EXW, FCA, delivered">
+              </label>
+              <label>Valid until
+                <input id="quoteValidUntil" type="date">
+              </label>
+              <label>Warranty / source URL
+                <input id="quoteSourceUrl" type="text" placeholder="Quote link, warranty note, or supplier URL">
+              </label>
+            </div>
+            <label class="note-field">Supplier notes
+              <textarea id="quoteNotes" rows="4" placeholder="Add stock note, certificate promise, delivery caveat, alternate offered, warranty path, or buyer concern"></textarea>
+            </label>
+            <div class="quote-export-actions">
+              <button class="ghost-button compact" type="button" id="copyQuoteSummary">Copy quote summary</button>
+              <button class="ghost-button compact" type="button" id="copyQuoteFollowup">Copy follow-up email</button>
+              <button class="ghost-button compact" type="button" id="exportQuoteCsv">Export CSV</button>
+              <button class="ghost-button compact" type="button" id="exportQuoteXlsx">Export XLSX</button>
+            </div>
+          </form>
+          <div class="quote-register">
+            <div class="quote-register-head">
+              <div>
+                <strong>Saved quote register</strong>
+                <span id="quoteRegisterStatus">Stored locally in this browser</span>
+              </div>
+              <button class="ghost-button compact" type="button" id="clearQuotes">Clear quotes</button>
+            </div>
+            <div class="quote-list" id="quoteList"></div>
+          </div>
         </div>
       </section>
 
@@ -621,8 +718,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=2.3.1"></script>
-    <script src="back-to-top.js?v=2.3.1"></script>
-    <script src="app.js?v=2.3.1"></script>
+    <script src="catalog.js?v=2.4"></script>
+    <script src="back-to-top.js?v=2.4"></script>
+    <script src="app.js?v=2.4"></script>
   </body>
 </html>

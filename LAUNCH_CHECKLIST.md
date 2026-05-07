@@ -1,4 +1,4 @@
-# InduScout v2.3.1 Launch Checklist
+# InduScout v2.4 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -14,7 +14,7 @@ Use this checklist after each public GitHub Pages upload.
 - Open `https://dhirajnyse.github.io/induscout/`.
 - Confirm the hero counters show 12 categories, 84 product records, and 252 source links.
 - Open Finder and search for `Danfoss FC 51`.
-- Hard refresh once after upload and confirm Finder still renders products; v2.3.1 guards against GitHub Pages cache mixing old HTML with newer JavaScript.
+- Hard refresh once after upload and confirm Finder still renders products; v2.4 keeps the cache-safety guard for GitHub Pages mixed HTML/JavaScript loads.
 - Confirm the Finder shows the buyer verification reminder above search.
 - Fill the Project RFQ workspace, save it, copy the project brief, and confirm the shortlist drawer shows project context.
 - Search for a missing item, open `Can't find it? Create a product request`, save the request, copy the product request, copy the research brief, and confirm saved requests can be loaded or removed.
@@ -28,6 +28,10 @@ Use this checklist after each public GitHub Pages upload.
 - Open one product detail drawer and confirm the verify-before-buying notice appears before RFQ fields.
 - Copy one procurement brief from the RFQ drawer and confirm it includes sources, alternates, confidence, and verification checklist.
 - Copy one supplier email from the RFQ drawer and confirm it includes a subject line, quantity, delivery country, target date, confirmation checklist, and buyer notes.
+- Click `Track quote` from a product detail drawer and confirm the Quotes section opens with that product selected.
+- Save one quote with supplier, status, unit price, quantity, lead time, payment terms, delivery terms, and notes.
+- Confirm the Quote Tracker summary counts update, the saved quote card appears, and the Load, Copy follow-up, and Remove actions work.
+- Export the quote tracker as CSV and XLSX.
 - Save a session with one shortlist item, one compare item, filters, and notes; reload the page, load session, and confirm work is restored.
 - Export a session JSON, import it, and confirm shortlist and filters are restored.
 - Add one product to shortlist and confirm `Export shortlist (1)` appears in Finder and the product button changes to `Remove shortlist`.
