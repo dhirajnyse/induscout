@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v1.2 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v1.5 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
 - 12 procurement categories, 60 product records, and 180 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -25,11 +25,15 @@ This v1.2 public beta is still static and lightweight, but it already demonstrat
 - Product confidence labels for high, standard, and review-required records.
 - Source confidence hints for primary trust paths, discovery paths, and seller-term verification.
 - Product detail drawer with specifications, applications, alternates, source actions, and RFQ fields.
+- Copyable procurement brief for internal buyer review, source validation, and shortlist decisions.
+- Procurement brief action repeated near the RFQ copy controls so buyers can find it while preparing a request.
+- Copyable supplier outreach email with subject line, quantity, delivery country, target date, alternates preference, confirmation checklist, and buyer notes.
 - Copyable product-level RFQ request with quantity, delivery country, target date, urgency, alternates preference, and buyer notes.
 - Copyable product data update/report request.
 - Browser-saved buyer notes for each product.
 - Compare desk for up to four selected products.
 - Shortlist drawer with exportable RFQ-style summary.
+- Downloadable shortlist CSV for spreadsheet, ERP prep, or internal buyer review.
 - Buyer desk, trust layer, source directory, launch-readiness section, and roadmap.
 - Static SEO category pages and product record pages generated from the catalog.
 - Breadcrumbs, related records, buyer checklists, and richer structured data on SEO pages.

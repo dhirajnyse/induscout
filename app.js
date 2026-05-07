@@ -49,6 +49,7 @@ const els = {
   shortlistCount: document.querySelector("#shortlistCount"),
   clearShortlist: document.querySelector("#clearShortlist"),
   copyShortlist: document.querySelector("#copyShortlist"),
+  downloadShortlist: document.querySelector("#downloadShortlist"),
   exportShortlist: document.querySelector("#exportShortlist"),
   openCompare: document.querySelector("#openCompare"),
   compareCount: document.querySelector("#compareCount"),
@@ -256,6 +257,7 @@ function wireEvents() {
   els.scrim.addEventListener("click", closeOverlays);
   els.productDetailContent.addEventListener("click", (event) => {
     const copyButton = event.target.closest("[data-copy-rfq]");
+    const supplierButton = event.target.closest("[data-copy-supplier]");
     const updateButton = event.target.closest("[data-copy-update]");
     const briefButton = event.target.closest("[data-copy-brief]");
     const shortlistButton = event.target.closest("[data-detail-add]");
@@ -263,6 +265,10 @@ function wireEvents() {
 
     if (copyButton) {
       copyProductRfq(copyButton.dataset.copyRfq);
+    }
+
+    if (supplierButton) {
+      copySupplierOutreach(supplierButton.dataset.copySupplier, supplierButton);
     }
 
     if (briefButton) {
@@ -295,6 +301,7 @@ function wireEvents() {
     render();
   });
   els.copyShortlist.addEventListener("click", copyShortlist);
+  els.downloadShortlist.addEventListener("click", downloadShortlistCsv);
 }
 
 function setQuery(value) {
@@ -656,7 +663,8 @@ function productDetailTemplate(product) {
         </label>
         <div class="rfq-copy-actions">
           <button type="button" data-copy-rfq="${escapeHtml(product.id)}">Copy RFQ request</button>
-          <button class="secondary-copy" type="button" data-copy-brief="${escapeHtml(product.id)}">Copy procurement brief</button>
+          <button class="secondary-copy" type="button" data-copy-supplier="${escapeHtml(product.id)}">Copy supplier email</button>
+          <button class="muted-copy" type="button" data-copy-brief="${escapeHtml(product.id)}">Copy procurement brief</button>
         </div>
       </form>
       <form class="data-update-builder">
@@ -836,6 +844,80 @@ Sources: ${sources}`;
   }
 }
 
+function downloadShortlistCsv() {
+  const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+
+  if (!selected.length) {
+    els.downloadShortlist.textContent = "Add items first";
+    setTimeout(() => {
+      els.downloadShortlist.textContent = "Download CSV";
+    }, 1200);
+    return;
+  }
+
+  const headers = [
+    "Brand",
+    "SKU",
+    "Product Name",
+    "Category",
+    "Family",
+    "Lifecycle",
+    "Fit Priority",
+    "Fit Score",
+    "Lead Time",
+    "MOQ",
+    "Datasheet",
+    "Certifications",
+    "Specifications",
+    "Applications",
+    "Alternates",
+    "Source Names",
+    "Source URLs",
+    "Primary Source",
+    "Buyer Notes"
+  ];
+  const rows = selected.map((product) => {
+    const sourceNames = product.sources.map((source) => `${source.type}: ${source.name}`).join(" | ");
+    const sourceUrls = product.sources.map((source) => source.url).join(" | ");
+    return [
+      product.brand,
+      product.sku,
+      product.name,
+      product.category,
+      product.family,
+      product.lifecycle,
+      priorityLabel(),
+      product[state.priority],
+      product.lead,
+      product.moq,
+      product.datasheet ? "Yes" : "Check",
+      product.certifications.join(" | ") || "Check with supplier",
+      product.specs.join(" | "),
+      product.applications.join(" | "),
+      product.alternatives.join(" | "),
+      sourceNames,
+      sourceUrls,
+      product.sources[0]?.url || "",
+      state.notes[product.id] || ""
+    ];
+  });
+  const csv = [headers, ...rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `induscout-shortlist-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+
+  els.downloadShortlist.textContent = "CSV downloaded";
+  setTimeout(() => {
+    els.downloadShortlist.textContent = "Download CSV";
+  }, 1200);
+}
+
 async function copyCompare() {
   const selected = state.compare.map((id) => products.find((product) => product.id === id)).filter(Boolean);
   const text = selected.length
@@ -918,6 +1000,71 @@ Please confirm exact part number, compatibility, datasheet revision, price, lead
   }
 }
 
+async function copySupplierOutreach(id, triggerButton) {
+  const product = products.find((item) => item.id === id);
+  if (!product) {
+    return;
+  }
+
+  const quantity = getFieldValue("#rfqQuantity", defaultQuantity(product.moq));
+  const country = getFieldValue("#rfqCountry", "TBC");
+  const targetDate = getFieldValue("#rfqDate", "TBC");
+  const urgency = getFieldValue("#rfqUrgency", "Standard sourcing");
+  const acceptAlternates = document.querySelector("#rfqAlternates")?.checked ? "Yes" : "No";
+  const buyerNotes = getFieldValue("#buyerNotes", "None added");
+  const certs = product.certifications.length ? product.certifications.join(", ") : "Please confirm available certificates";
+  const alternatives = product.alternatives.length ? product.alternatives.map((item) => `- ${item}`).join("\n") : "- None listed";
+  const text = `Subject: RFQ - ${product.brand} ${product.sku} - ${product.name}
+
+Hello,
+
+Please provide your quotation and availability for the item below.
+
+Product: ${product.brand} ${product.sku} - ${product.name}
+Category: ${product.category}
+Family: ${product.family}
+Description: ${product.description}
+Required quantity: ${quantity}
+Delivery country: ${country}
+Target date: ${targetDate}
+Urgency: ${urgency}
+Accept equivalent alternates if exact part is unavailable: ${acceptAlternates}
+
+Key specifications:
+${product.specs.map((item) => `- ${item}`).join("\n")}
+
+Certifications requested:
+${certs}
+
+Please confirm:
+- Exact part number, suffix, voltage, size, material, and configuration.
+- Current stock, unit price, currency, offer validity, MOQ, and pack quantity.
+- Lead time, delivery terms, payment terms, and shipping weight or dimensions if available.
+- Latest datasheet revision, certificate availability, warranty path, and country of origin.
+- Whether supply is through an OEM, authorized distributor, or other verified channel.
+
+Known alternates for technical review only:
+${alternatives}
+
+Buyer notes:
+${buyerNotes}
+
+Thank you.`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    const button = triggerButton || els.productDetailContent.querySelector("[data-copy-supplier]");
+    if (button) {
+      button.textContent = "Supplier email copied";
+      setTimeout(() => {
+        button.textContent = "Copy supplier email";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy supplier email", text);
+  }
+}
+
 async function copyProcurementBrief(id, triggerButton) {
   const product = products.find((item) => item.id === id);
   if (!product) {
@@ -934,12 +1081,13 @@ async function copyProcurementBrief(id, triggerButton) {
     .join("\n");
   const note = state.notes[product.id] || "None added";
   const text = `InduScout procurement brief
+Prepared from InduScout beta catalog on ${formatCopyDate()}
 
 Product: ${product.brand} ${product.sku} - ${product.name}
 Category: ${product.category}
 Family: ${product.family}
 Lifecycle: ${product.lifecycle}
-${state.priority} fit score: ${product[state.priority]}
+${priorityLabel()} fit score: ${product[state.priority]}
 Lead time signal: ${product.lead}
 MOQ signal: ${product.moq}
 Datasheet signal: ${product.datasheet ? "Available" : "Check with supplier"}
@@ -1075,6 +1223,23 @@ function getFieldValue(selector, fallback) {
 function defaultQuantity(moq) {
   const numeric = String(moq).match(/\d+/);
   return numeric ? numeric[0] : "";
+}
+
+function csvEscape(value) {
+  const text = String(value ?? "");
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function priorityLabel() {
+  return `${state.priority.charAt(0).toUpperCase()}${state.priority.slice(1)}`;
+}
+
+function formatCopyDate() {
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  }).format(new Date());
 }
 
 function loadNotes() {
