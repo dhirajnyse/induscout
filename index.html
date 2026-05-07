@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=2.2">
+    <link rel="stylesheet" href="styles.css?v=2.3.1">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -188,6 +188,39 @@
                 <button type="submit">Search</button>
               </div>
             </form>
+            <details class="project-workspace" id="projectWorkspace" open>
+              <summary>
+                <span>Project RFQ workspace</span>
+                <small id="projectStatus">Add project context for exports</small>
+              </summary>
+              <div class="project-workspace-body">
+                <div class="project-grid">
+                  <label>Project name
+                    <input id="projectName" type="text" placeholder="e.g. Pump room upgrade, Line 4 breakdown, MRO May 2026">
+                  </label>
+                  <label>Buyer or company
+                    <input id="projectBuyer" type="text" placeholder="Buyer name, department, or company">
+                  </label>
+                  <label>Buyer contact
+                    <input id="projectContact" type="text" placeholder="Email, phone, or internal contact">
+                  </label>
+                  <label>Delivery country
+                    <input id="projectCountry" type="text" placeholder="e.g. UAE, India, USA">
+                  </label>
+                  <label>Target date
+                    <input id="projectTargetDate" type="date">
+                  </label>
+                </div>
+                <label class="note-field">Project notes
+                  <textarea id="projectNotes" rows="3" placeholder="Add plant, equipment, tender, shutdown, compatibility, or supplier instructions"></textarea>
+                </label>
+                <div class="project-actions">
+                  <button type="button" id="saveProject">Save project</button>
+                  <button type="button" id="copyProjectBrief">Copy project brief</button>
+                  <button type="button" id="clearProject">Clear project</button>
+                </div>
+              </div>
+            </details>
             <div class="session-tools" aria-label="Session tools">
               <div>
                 <strong>Session desk</strong>
@@ -553,6 +586,7 @@
         </div>
         <button class="icon-button close" id="closeShortlist" type="button" aria-label="Close shortlist">&times;</button>
       </div>
+      <div id="shortlistProjectSummary" class="shortlist-project-summary"></div>
       <div id="shortlistItems" class="shortlist-items"></div>
       <div class="shortlist-actions">
         <button id="copyShortlist" type="button">Copy RFQ summary</button>
@@ -587,8 +621,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=2.2"></script>
-    <script src="back-to-top.js?v=2.2"></script>
-    <script src="app.js?v=2.2"></script>
+    <script src="catalog.js?v=2.3.1"></script>
+    <script src="back-to-top.js?v=2.3.1"></script>
+    <script src="app.js?v=2.3.1"></script>
   </body>
 </html>

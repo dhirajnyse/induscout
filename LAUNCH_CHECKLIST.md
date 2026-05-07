@@ -1,4 +1,4 @@
-# InduScout v2.2 Launch Checklist
+# InduScout v2.3.1 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -14,7 +14,9 @@ Use this checklist after each public GitHub Pages upload.
 - Open `https://dhirajnyse.github.io/induscout/`.
 - Confirm the hero counters show 12 categories, 84 product records, and 252 source links.
 - Open Finder and search for `Danfoss FC 51`.
+- Hard refresh once after upload and confirm Finder still renders products; v2.3.1 guards against GitHub Pages cache mixing old HTML with newer JavaScript.
 - Confirm the Finder shows the buyer verification reminder above search.
+- Fill the Project RFQ workspace, save it, copy the project brief, and confirm the shortlist drawer shows project context.
 - Search for a missing item, open `Can't find it? Create a product request`, save the request, copy the product request, copy the research brief, and confirm saved requests can be loaded or removed.
 - Open the Quality dashboard and confirm verified coverage, datasheet coverage, high-confidence count, category strength rows, and review queue render.
 - Open Sources, confirm supplier trust passport cards render, and copy one source checklist.
@@ -31,6 +33,7 @@ Use this checklist after each public GitHub Pages upload.
 - Add one product to shortlist and confirm `Export shortlist (1)` appears in Finder and the product button changes to `Remove shortlist`.
 - Click `Remove shortlist` and confirm the count returns to zero.
 - Add two products to shortlist, download RFQ pack, confirm the HTML file opens with product details, source links, verification checklist, and a Save as PDF button.
+- Confirm RFQ pack, XLSX, and CSV include project name, buyer/company, contact, delivery country, target date, and project notes.
 - Use the RFQ pack Save as PDF button and confirm the first PDF page starts with visible pack content.
 - Add two products to shortlist, download XLSX, and confirm it opens in Excel without the CSV feature-loss warning.
 - Add two products to shortlist, download CSV, and confirm it opens in Excel with source links and buyer notes.

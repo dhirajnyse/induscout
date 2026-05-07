@@ -16,11 +16,12 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v2.2 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v2.3.1 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v2.3.1 also adds a Finder cache-safety fix so search keeps working if GitHub Pages briefly serves mixed old HTML and newer JavaScript.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
 - Search, category, region, source type, confidence, datasheet, and verified-signal filters.
+- Project RFQ workspace for project name, buyer/company, contact, delivery country, target date, and project notes.
 - "Can't find it?" product request workflow for missing items, with saved request intake, copyable request text, research briefs, and a structured GitHub request path.
 - Procurement fit scoring for balanced, speed, and cost priorities.
 - Product confidence labels for high, standard, and review-required records.
@@ -32,9 +33,10 @@ This v2.2 public beta is still static and lightweight, but it already demonstrat
 - Procurement brief action repeated near the RFQ copy controls so buyers can find it while preparing a request.
 - Copyable supplier outreach email with subject line, quantity, delivery country, target date, alternates preference, confirmation checklist, and buyer notes.
 - Copyable product-level RFQ request with quantity, delivery country, target date, urgency, alternates preference, and buyer notes.
+- RFQ pack, XLSX, CSV, procurement brief, supplier email, and RFQ copy actions include project workspace context.
 - Copyable product data update/report request.
 - Browser-saved buyer notes for each product.
-- Save/load session desk for filters, shortlist, compare list, and notes, with JSON export/import for moving work between browsers or machines.
+- Save/load session desk for project profile, filters, shortlist, compare list, and notes, with JSON export/import for moving work between browsers or machines.
 - Saved missing-product requests are included in session JSON export/import.
 - Compare desk for up to four selected products.
 - Shortlist drawer with exportable RFQ-style summary.

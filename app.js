@@ -349,9 +349,15 @@ function wireEvents() {
   projectInputs().forEach((input) => {
     input.addEventListener("input", updateProjectFromFields);
   });
-  els.saveProject.addEventListener("click", saveProjectFromFields);
-  els.copyProjectBrief.addEventListener("click", copyProjectBrief);
-  els.clearProject.addEventListener("click", clearProjectProfile);
+  if (els.saveProject) {
+    els.saveProject.addEventListener("click", saveProjectFromFields);
+  }
+  if (els.copyProjectBrief) {
+    els.copyProjectBrief.addEventListener("click", copyProjectBrief);
+  }
+  if (els.clearProject) {
+    els.clearProject.addEventListener("click", clearProjectProfile);
+  }
   els.copyProductRequest.addEventListener("click", copyProductRequest);
   els.saveProductRequest.addEventListener("click", saveProductRequest);
   els.copyResearchBrief.addEventListener("click", copyResearchBrief);
@@ -1261,7 +1267,7 @@ function setSessionStatus(message) {
 }
 
 function projectInputs() {
-  return [els.projectName, els.projectBuyer, els.projectContact, els.projectCountry, els.projectTargetDate, els.projectNotes];
+  return [els.projectName, els.projectBuyer, els.projectContact, els.projectCountry, els.projectTargetDate, els.projectNotes].filter(Boolean);
 }
 
 function defaultProjectProfile() {
@@ -1276,6 +1282,10 @@ function defaultProjectProfile() {
 }
 
 function hydrateProjectFields() {
+  if (!els.projectName) {
+    return;
+  }
+
   els.projectName.value = state.project.name || "";
   els.projectBuyer.value = state.project.buyer || "";
   els.projectContact.value = state.project.contact || "";
@@ -1285,12 +1295,20 @@ function hydrateProjectFields() {
 }
 
 function updateProjectFromFields() {
+  if (!els.projectName) {
+    return;
+  }
+
   state.project = projectFromFields();
   saveProjectProfile();
   renderProjectStatus();
 }
 
 function saveProjectFromFields() {
+  if (!els.saveProject) {
+    return;
+  }
+
   updateProjectFromFields();
   els.saveProject.textContent = "Project saved";
   setTimeout(() => {
@@ -1326,6 +1344,9 @@ Buyer verification:
 
   try {
     await navigator.clipboard.writeText(text);
+    if (!els.copyProjectBrief) {
+      return;
+    }
     els.copyProjectBrief.textContent = "Project brief copied";
     setTimeout(() => {
       els.copyProjectBrief.textContent = "Copy project brief";
@@ -1344,12 +1365,12 @@ function clearProjectProfile() {
 
 function projectFromFields() {
   return {
-    name: els.projectName.value.trim(),
-    buyer: els.projectBuyer.value.trim(),
-    contact: els.projectContact.value.trim(),
-    country: els.projectCountry.value.trim(),
-    targetDate: els.projectTargetDate.value,
-    notes: els.projectNotes.value.trim()
+    name: els.projectName?.value.trim() || "",
+    buyer: els.projectBuyer?.value.trim() || "",
+    contact: els.projectContact?.value.trim() || "",
+    country: els.projectCountry?.value.trim() || "",
+    targetDate: els.projectTargetDate?.value || "",
+    notes: els.projectNotes?.value.trim() || ""
   };
 }
 
@@ -1363,6 +1384,11 @@ function projectValue(key, fallback) {
 }
 
 function renderProjectStatus() {
+  if (!els.projectStatus) {
+    renderShortlistProjectSummary();
+    return;
+  }
+
   els.projectStatus.textContent = projectHasValue() ? projectValue("name", "Project context added") : "Add project context for exports";
   renderShortlistProjectSummary();
 }

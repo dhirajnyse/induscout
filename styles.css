@@ -679,6 +679,90 @@ input[type="checkbox"] {
   gap: 8px;
 }
 
+.project-workspace {
+  padding: 12px 18px 14px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+
+.project-workspace summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.project-workspace summary small {
+  color: #0f766e;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.project-workspace-body {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.project-grid label,
+.project-workspace .note-field {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.project-grid input,
+.project-workspace textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+.project-workspace textarea {
+  resize: vertical;
+}
+
+.project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.project-actions button {
+  display: inline-grid;
+  place-items: center;
+  min-height: 42px;
+  padding: 0 16px;
+  color: #0f766e;
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+.project-actions button:first-child {
+  color: #ffffff;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
 .product-request {
   padding: 12px 18px 14px;
   background: #ffffff;
@@ -2001,6 +2085,33 @@ input[type="checkbox"] {
   padding: 18px;
 }
 
+.shortlist-project-summary {
+  display: grid;
+  gap: 5px;
+  margin: 18px 18px 0;
+  padding: 12px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-left: 4px solid #0f766e;
+  border-radius: var(--radius);
+}
+
+.shortlist-project-summary.empty {
+  background: #f8fafc;
+  border-color: var(--line);
+  border-left-color: #94a3b8;
+}
+
+.shortlist-project-summary strong {
+  color: var(--ink);
+}
+
+.shortlist-project-summary span {
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
 .shortlist-item {
   padding: 14px;
   border: 1px solid var(--line);
@@ -2891,6 +3002,7 @@ footer a {
   }
 
   .request-actions > *,
+  .project-actions > *,
   .saved-request-card > div:last-child,
   .saved-request-card button {
     width: 100%;
@@ -2910,6 +3022,7 @@ footer a {
   }
 
   .filters,
+  .project-grid,
   .request-grid,
   .quality-stats,
   .quality-layout,
