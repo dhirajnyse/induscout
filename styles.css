@@ -685,8 +685,18 @@ input[type="checkbox"] {
 }
 
 .product-request summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   cursor: pointer;
   color: var(--ink);
+  font-weight: 900;
+}
+
+.product-request summary small {
+  color: #0f766e;
+  font-size: 0.76rem;
   font-weight: 900;
 }
 
@@ -694,6 +704,21 @@ input[type="checkbox"] {
   display: grid;
   gap: 12px;
   margin-top: 12px;
+}
+
+.request-intro {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-left: 4px solid #0f766e;
+  border-radius: var(--radius);
+}
+
+.request-intro span {
+  color: #475569;
+  font-size: 0.88rem;
 }
 
 .request-grid {
@@ -751,10 +776,92 @@ input[type="checkbox"] {
   border: 1px solid var(--ink);
 }
 
+.request-actions button:nth-of-type(n + 2) {
+  color: #0f766e;
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+}
+
 .request-actions a {
   color: #0f766e;
   background: #ecfeff;
   border: 1px solid #99f6e4;
+}
+
+.saved-requests {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.saved-requests-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.saved-requests-head span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.request-list {
+  display: grid;
+  gap: 8px;
+}
+
+.request-list-empty {
+  padding: 12px;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius);
+}
+
+.saved-request-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.saved-request-card > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.saved-request-card span,
+.saved-request-card small {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.saved-request-card strong {
+  color: var(--ink);
+}
+
+.saved-request-card > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.saved-request-card button {
+  min-height: 34px;
+  padding: 0 10px;
+  color: #0f766e;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-weight: 900;
 }
 
 .results-head {
@@ -2535,6 +2642,16 @@ footer a {
   .results-actions button,
   .session-actions button {
     flex: 1 1 150px;
+  }
+
+  .request-actions > *,
+  .saved-request-card > div:last-child,
+  .saved-request-card button {
+    width: 100%;
+  }
+
+  .saved-request-card {
+    grid-template-columns: 1fr;
   }
 
   .catalog-link-panel {

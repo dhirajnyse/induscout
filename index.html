@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=1.9">
+    <link rel="stylesheet" href="styles.css?v=2.0">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -201,8 +201,15 @@
               </div>
             </div>
             <details class="product-request" id="productRequestPanel">
-              <summary>Can't find it? Create a product request</summary>
+              <summary>
+                <span>Can't find it? Create a product request</span>
+                <small id="requestCount">0 saved requests</small>
+              </summary>
               <div class="product-request-body">
+                <div class="request-intro">
+                  <strong>Missing item intake</strong>
+                  <span>Capture unknown parts, old numbers, or project items that need source research before they become catalog records.</span>
+                </div>
                 <div class="request-grid">
                   <label>Product or part number
                     <input id="requestPart" type="text" placeholder="e.g. Pepperl+Fuchs NBB, Siemens 6ES7, unknown sensor">
@@ -247,7 +254,17 @@
                 </label>
                 <div class="request-actions">
                   <button type="button" id="copyProductRequest">Copy product request</button>
+                  <button type="button" id="saveProductRequest">Save request</button>
+                  <button type="button" id="copyResearchBrief">Copy research brief</button>
+                  <button type="button" id="clearProductRequest">Clear form</button>
                   <a href="https://github.com/dhirajnyse/induscout/issues/new?template=product-request.yml" target="_blank" rel="noreferrer">Open GitHub request</a>
+                </div>
+                <div class="saved-requests" aria-live="polite">
+                  <div class="saved-requests-head">
+                    <strong>Saved missing-product requests</strong>
+                    <span>Stored in this browser</span>
+                  </div>
+                  <div id="requestList" class="request-list"></div>
                 </div>
               </div>
             </details>
@@ -540,8 +557,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=1.9"></script>
-    <script src="back-to-top.js?v=1.9"></script>
-    <script src="app.js?v=1.9"></script>
+    <script src="catalog.js?v=2.0"></script>
+    <script src="back-to-top.js?v=2.0"></script>
+    <script src="app.js?v=2.0"></script>
   </body>
 </html>

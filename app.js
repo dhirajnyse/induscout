@@ -16,6 +16,7 @@ const state = {
   shortlist: [],
   compare: [],
   notes: loadNotes(),
+  productRequests: loadProductRequests(),
   activeProductId: null
 };
 
@@ -45,6 +46,11 @@ const els = {
   requestQuantity: document.querySelector("#requestQuantity"),
   requestNotes: document.querySelector("#requestNotes"),
   copyProductRequest: document.querySelector("#copyProductRequest"),
+  saveProductRequest: document.querySelector("#saveProductRequest"),
+  copyResearchBrief: document.querySelector("#copyResearchBrief"),
+  clearProductRequest: document.querySelector("#clearProductRequest"),
+  requestList: document.querySelector("#requestList"),
+  requestCount: document.querySelector("#requestCount"),
   resultCount: document.querySelector("#resultCount"),
   resultSummary: document.querySelector("#resultSummary"),
   results: document.querySelector("#resultsGrid"),
@@ -93,6 +99,7 @@ function init() {
   renderSources();
   renderSourceDirectory();
   wireEvents();
+  renderProductRequests();
   renderCompare();
   render();
 }
@@ -316,6 +323,26 @@ function wireEvents() {
   els.importSession.addEventListener("click", () => els.importSessionFile.click());
   els.importSessionFile.addEventListener("change", importSessionFile);
   els.copyProductRequest.addEventListener("click", copyProductRequest);
+  els.saveProductRequest.addEventListener("click", saveProductRequest);
+  els.copyResearchBrief.addEventListener("click", copyResearchBrief);
+  els.clearProductRequest.addEventListener("click", clearProductRequestForm);
+  els.requestList.addEventListener("click", (event) => {
+    const copyButton = event.target.closest("[data-copy-request]");
+    const loadButton = event.target.closest("[data-load-request]");
+    const removeButton = event.target.closest("[data-remove-request]");
+
+    if (copyButton) {
+      copySavedProductRequest(copyButton.dataset.copyRequest);
+    }
+
+    if (loadButton) {
+      loadSavedProductRequest(loadButton.dataset.loadRequest);
+    }
+
+    if (removeButton) {
+      removeSavedProductRequest(removeButton.dataset.removeRequest);
+    }
+  });
 }
 
 function setQuery(value) {
@@ -437,7 +464,7 @@ function productTemplate(product) {
       </div>
       <div class="product-side">
         <div class="score">
-          <span>${escapeHtml(state.priority)} fit</span>
+          <span>${escapeHtml(priorityLabel())} fit</span>
           <strong>${score}</strong>
           <div class="bar" aria-hidden="true"><i style="width:${score}%"></i></div>
         </div>
@@ -612,7 +639,7 @@ function productDetailTemplate(product) {
       </div>
       <div class="detail-score">
         <div>
-          <span>${escapeHtml(state.priority)} fit</span>
+          <span>${escapeHtml(priorityLabel())} fit</span>
           <strong>${score}</strong>
         </div>
         <div class="bar" aria-hidden="true"><i style="width:${score}%"></i></div>
@@ -779,7 +806,7 @@ function compareTemplate(product) {
       </div>
       <p>${escapeHtml(product.name)}</p>
       <div class="compare-score">
-        <span>${escapeHtml(state.priority)} fit</span>
+        <span>${escapeHtml(priorityLabel())} fit</span>
         <strong>${score}</strong>
         <div class="bar" aria-hidden="true"><i style="width:${score}%"></i></div>
       </div>
@@ -863,7 +890,7 @@ function defaultFilters() {
 function createSessionSnapshot() {
   return {
     app: "InduScout",
-    version: "1.9",
+    version: "2.0",
     savedAt: new Date().toISOString(),
     filters: {
       query: state.query,
@@ -879,7 +906,8 @@ function createSessionSnapshot() {
     compare: state.compare.filter((id) => products.some((product) => product.id === id)),
     notes: Object.fromEntries(
       Object.entries(state.notes).filter(([id, note]) => products.some((product) => product.id === id) && String(note).trim())
-    )
+    ),
+    productRequests: state.productRequests
   };
 }
 
@@ -892,12 +920,13 @@ function applySession(session) {
   state.region = filters.region || "all";
   state.sourceType = filters.sourceType || "all";
   state.confidence = filters.confidence || "all";
-  state.priority = ["balanced", "fastest", "cost"].includes(filters.priority) ? filters.priority : "balanced";
+  state.priority = ["balanced", "speed", "cost"].includes(filters.priority) ? filters.priority : "balanced";
   state.datasheetOnly = Boolean(filters.datasheetOnly);
   state.verifiedOnly = Boolean(filters.verifiedOnly);
   state.shortlist = [...new Set(session.shortlist || [])].filter((id) => validProductIds.has(id));
   state.compare = [...new Set(session.compare || [])].filter((id) => validProductIds.has(id)).slice(0, 4);
   state.notes = { ...state.notes, ...(session.notes || {}) };
+  state.productRequests = Array.isArray(session.productRequests) ? session.productRequests.slice(0, 30) : state.productRequests;
 
   setQuery(state.query);
   els.category.value = state.category;
@@ -910,6 +939,8 @@ function applySession(session) {
     button.classList.toggle("active", button.dataset.priority === state.priority);
   });
   saveNotes();
+  saveProductRequests();
+  renderProductRequests();
   renderCompare();
   renderShortlist();
   closeOverlays();
@@ -986,30 +1017,7 @@ function openProductRequestPanel() {
 }
 
 async function copyProductRequest() {
-  const selectedCategory = requestFieldValue(els.requestCategory, "Not sure");
-  const requestText = `InduScout product request
-Prepared from InduScout finder on ${formatCopyDate()}
-
-Requested item or part number: ${requestFieldValue(els.requestPart, state.query || "TBC")}
-Brand or maker: ${requestFieldValue(els.requestBrand, "TBC")}
-Likely category: ${selectedCategory}
-Delivery country: ${requestFieldValue(els.requestCountry, "TBC")}
-Urgency: ${requestFieldValue(els.requestUrgency, "Standard sourcing")}
-Quantity: ${requestFieldValue(els.requestQuantity, "TBC")}
-
-Current finder context:
-- Search query: ${state.query || "None"}
-- Category filter: ${state.category === "all" ? "All categories" : state.category}
-- Region filter: ${state.region === "all" ? "Global" : state.region}
-- Source type filter: ${state.sourceType === "all" ? "All source types" : state.sourceType}
-- Confidence filter: ${state.confidence === "all" ? "All confidence levels" : state.confidence}
-
-Application or notes:
-${requestFieldValue(els.requestNotes, "No extra notes added")}
-
-Please help identify the exact part number, manufacturer page, datasheet, authorized distributors or supplier paths, alternates for technical review, lead time, MOQ, certifications, and buying/source links.
-
-InduScout is a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.`;
+  const requestText = productRequestText(productRequestSnapshot());
 
   try {
     await navigator.clipboard.writeText(requestText);
@@ -1020,6 +1028,195 @@ InduScout is a discovery and RFQ preparation aid. Final purchasing validation re
   } catch {
     window.prompt("Copy product request", requestText);
   }
+}
+
+function saveProductRequest() {
+  const request = productRequestSnapshot();
+  if (!request.part || request.part === "TBC") {
+    els.saveProductRequest.textContent = "Add item first";
+    setTimeout(() => {
+      els.saveProductRequest.textContent = "Save request";
+    }, 1200);
+    return;
+  }
+
+  state.productRequests = [request, ...state.productRequests.filter((item) => item.id !== request.id)].slice(0, 30);
+  saveProductRequests();
+  renderProductRequests();
+  els.saveProductRequest.textContent = "Request saved";
+  setTimeout(() => {
+    els.saveProductRequest.textContent = "Save request";
+  }, 1200);
+}
+
+async function copyResearchBrief() {
+  const request = productRequestSnapshot();
+  const text = `InduScout missing-product research brief
+Prepared on ${formatCopyDate()}
+
+Research target: ${request.part}
+Brand or maker: ${request.brand}
+Likely category: ${request.category}
+Delivery country: ${request.country}
+Urgency: ${request.urgency}
+Quantity: ${request.quantity}
+
+Research objective:
+- Identify exact manufacturer part number and possible suffix/configuration variants.
+- Find official OEM page, datasheet, manual, certificate, and lifecycle status.
+- Find authorized distributor or reliable supplier paths for the requested delivery country.
+- Identify alternates for technical review only, not automatic substitution.
+- Capture lead time, MOQ, warranty path, seller legitimacy, and country-of-origin questions.
+
+Suggested source path:
+- OEM/manufacturer website first.
+- Authorized distributors or regional distributors second.
+- Datasheet/specification directories for comparison.
+- Marketplace or surplus channels only after seller and warranty terms are reviewed.
+
+Finder context:
+- Search query: ${request.query}
+- Category filter: ${request.filters.category}
+- Region filter: ${request.filters.region}
+- Source type filter: ${request.filters.sourceType}
+- Confidence filter: ${request.filters.confidence}
+
+Application or notes:
+${request.notes}
+
+Output requested:
+Return candidate product record details, source links, datasheet link, alternates, and buyer verification questions before adding to the catalog.`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    els.copyResearchBrief.textContent = "Research brief copied";
+    setTimeout(() => {
+      els.copyResearchBrief.textContent = "Copy research brief";
+    }, 1400);
+  } catch {
+    window.prompt("Copy research brief", text);
+  }
+}
+
+function productRequestSnapshot() {
+  const category = requestFieldValue(els.requestCategory, "Not sure");
+  const part = requestFieldValue(els.requestPart, state.query || "TBC");
+  return {
+    id: `${Date.now()}-${part.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 42) || "request"}`,
+    savedAt: new Date().toISOString(),
+    part,
+    brand: requestFieldValue(els.requestBrand, "TBC"),
+    category,
+    country: requestFieldValue(els.requestCountry, "TBC"),
+    urgency: requestFieldValue(els.requestUrgency, "Standard sourcing"),
+    quantity: requestFieldValue(els.requestQuantity, "TBC"),
+    notes: requestFieldValue(els.requestNotes, "No extra notes added"),
+    query: state.query || "None",
+    filters: {
+      category: state.category === "all" ? "All categories" : state.category,
+      region: state.region === "all" ? "Global" : state.region,
+      sourceType: state.sourceType === "all" ? "All source types" : state.sourceType,
+      confidence: state.confidence === "all" ? "All confidence levels" : state.confidence
+    }
+  };
+}
+
+function productRequestText(request) {
+  return `InduScout product request
+Prepared from InduScout finder on ${formatCopyDate()}
+
+Requested item or part number: ${request.part}
+Brand or maker: ${request.brand}
+Likely category: ${request.category}
+Delivery country: ${request.country}
+Urgency: ${request.urgency}
+Quantity: ${request.quantity}
+
+Current finder context:
+- Search query: ${request.query}
+- Category filter: ${request.filters.category}
+- Region filter: ${request.filters.region}
+- Source type filter: ${request.filters.sourceType}
+- Confidence filter: ${request.filters.confidence}
+
+Application or notes:
+${request.notes}
+
+Please help identify the exact part number, manufacturer page, datasheet, authorized distributors or supplier paths, alternates for technical review, lead time, MOQ, certifications, and buying/source links.
+
+InduScout is a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.`;
+}
+
+function renderProductRequests() {
+  const count = state.productRequests.length;
+  els.requestCount.textContent = count ? `${count} saved ${count === 1 ? "request" : "requests"}` : "0 saved requests";
+
+  if (!count) {
+    els.requestList.innerHTML = '<div class="request-list-empty">No saved missing-product requests yet.</div>';
+    return;
+  }
+
+  els.requestList.innerHTML = state.productRequests
+    .map(
+      (request) => `
+        <article class="saved-request-card">
+          <div>
+            <span>${escapeHtml(request.category)}</span>
+            <strong>${escapeHtml(request.part)}</strong>
+            <small>${escapeHtml(request.brand)} &middot; ${escapeHtml(request.country)} &middot; ${escapeHtml(request.urgency)}</small>
+          </div>
+          <div>
+            <button type="button" data-load-request="${escapeHtml(request.id)}">Load</button>
+            <button type="button" data-copy-request="${escapeHtml(request.id)}">Copy</button>
+            <button type="button" data-remove-request="${escapeHtml(request.id)}">Remove</button>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+async function copySavedProductRequest(id) {
+  const request = state.productRequests.find((item) => item.id === id);
+  if (!request) {
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(productRequestText(request));
+  } catch {
+    window.prompt("Copy saved product request", productRequestText(request));
+  }
+}
+
+function loadSavedProductRequest(id) {
+  const request = state.productRequests.find((item) => item.id === id);
+  if (!request) {
+    return;
+  }
+  els.requestPart.value = request.part === "TBC" ? "" : request.part;
+  els.requestBrand.value = request.brand === "TBC" ? "" : request.brand;
+  els.requestCategory.value = request.category;
+  els.requestCountry.value = request.country === "TBC" ? "" : request.country;
+  els.requestUrgency.value = request.urgency;
+  els.requestQuantity.value = request.quantity === "TBC" ? "" : request.quantity;
+  els.requestNotes.value = request.notes === "No extra notes added" ? "" : request.notes;
+  els.productRequestPanel.open = true;
+}
+
+function removeSavedProductRequest(id) {
+  state.productRequests = state.productRequests.filter((item) => item.id !== id);
+  saveProductRequests();
+  renderProductRequests();
+}
+
+function clearProductRequestForm() {
+  els.requestPart.value = "";
+  els.requestBrand.value = "";
+  els.requestCategory.value = "Not sure";
+  els.requestCountry.value = "";
+  els.requestUrgency.value = "Standard sourcing";
+  els.requestQuantity.value = "";
+  els.requestNotes.value = "";
 }
 
 function requestFieldValue(element, fallback) {
@@ -1316,7 +1513,7 @@ async function copyCompare() {
           const certs = product.certifications.length ? product.certifications.join(", ") : "Check";
           return `${index + 1}. ${product.brand} ${product.sku} - ${product.name}
 Category: ${product.category}
-${state.priority} fit: ${product[state.priority]}
+${priorityLabel()} fit: ${product[state.priority]}
 Lead time: ${product.lead}
 MOQ: ${product.moq}
 Lifecycle: ${product.lifecycle}
@@ -1875,6 +2072,9 @@ function downloadFile(filename, content, type) {
 }
 
 function priorityLabel() {
+  if (state.priority === "speed") {
+    return "Fastest";
+  }
   return `${state.priority.charAt(0).toUpperCase()}${state.priority.slice(1)}`;
 }
 
@@ -1899,6 +2099,23 @@ function saveNotes() {
     window.localStorage.setItem("induscoutBuyerNotes", JSON.stringify(state.notes));
   } catch {
     // Notes are a convenience only; the RFQ still works if storage is blocked.
+  }
+}
+
+function loadProductRequests() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutProductRequests") || "[]");
+    return Array.isArray(saved) ? saved.slice(0, 30) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveProductRequests() {
+  try {
+    window.localStorage.setItem("induscoutProductRequests", JSON.stringify(state.productRequests));
+  } catch {
+    // Product requests are a convenience only; copy actions still work if storage is blocked.
   }
 }
 
