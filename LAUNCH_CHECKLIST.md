@@ -1,4 +1,4 @@
-# InduScout v1.6.1 Launch Checklist
+# InduScout v1.6.2 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -24,7 +24,8 @@ Use this checklist after each public GitHub Pages upload.
 - Copy one supplier email from the RFQ drawer and confirm it includes a subject line, quantity, delivery country, target date, confirmation checklist, and buyer notes.
 - Add one product to shortlist and confirm `Export shortlist (1)` appears in Finder and the product button changes to `Remove shortlist`.
 - Click `Remove shortlist` and confirm the count returns to zero.
-- Add two products to shortlist, download RFQ pack, and confirm the HTML file opens with product details, source links, and verification checklist.
+- Add two products to shortlist, download RFQ pack, confirm the HTML file opens with product details, source links, verification checklist, and a Save as PDF button.
+- Use the RFQ pack Save as PDF button and confirm the first PDF page starts with visible pack content.
 - Add two products to shortlist, download CSV, and confirm it opens in Excel with source links and buyer notes.
 - Check the back-to-top button after scrolling.
 

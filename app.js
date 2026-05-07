@@ -868,6 +868,10 @@ function downloadRfqPack() {
   }
 
   const totalSources = selected.reduce((count, product) => count + product.sources.length, 0);
+  const isoDate = new Date().toISOString().slice(0, 10);
+  const productWord = selected.length === 1 ? "Product" : "Products";
+  const packFilenameBase = `InduScout-RFQ-Pack-${isoDate}-${selected.length}-${productWord}`;
+  const packTitle = `InduScout RFQ Pack - ${isoDate} - ${selected.length} ${productWord}`;
   const productCards = selected
     .map((product, index) => {
       const confidence = confidenceForProduct(product);
@@ -918,40 +922,66 @@ function downloadRfqPack() {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>InduScout RFQ Pack</title>
+    <title>${escapeHtml(packTitle)}</title>
     <style>
+      @page { size: A4; margin: 11mm; }
       :root { color: #0f172a; background: #f8fafc; font-family: Arial, sans-serif; }
-      body { margin: 0; padding: 32px; }
+      body { margin: 0; padding: 24px; font-size: 14px; line-height: 1.45; }
       main { max-width: 980px; margin: 0 auto; }
       header, section, .checklist { background: #ffffff; border: 1px solid #dbe4ef; border-radius: 8px; box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08); }
-      header { padding: 28px; margin-bottom: 18px; }
+      header { padding: 22px; margin-bottom: 14px; }
       h1, h2, h3, p { margin-top: 0; }
-      h1 { font-size: 34px; margin-bottom: 8px; }
-      h2 { font-size: 22px; margin-bottom: 8px; }
-      h3 { font-size: 14px; margin: 20px 0 8px; text-transform: uppercase; color: #007a78; }
+      h1 { font-size: 30px; margin-bottom: 8px; }
+      h2 { font-size: 20px; margin-bottom: 8px; }
+      h3 { font-size: 12px; margin: 14px 0 6px; text-transform: uppercase; color: #007a78; }
       a { color: #007a78; }
-      .meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
-      .meta div, dl div { padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
+      .print-toolbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 14px; max-width: 980px; margin: 0 auto 14px; padding: 12px; background: #ffffff; border: 1px solid #dbe4ef; border-radius: 8px; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12); }
+      .print-toolbar button { min-height: 42px; padding: 0 18px; color: #ffffff; background: #0f172a; border: 1px solid #0f172a; border-radius: 8px; font-weight: 700; }
+      .print-toolbar span { color: #475569; font-size: 12px; }
+      .meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+      .meta div, dl div { padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
       .meta span, dt, .eyebrow { display: block; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; }
       .meta strong, dd { margin: 3px 0 0; font-weight: 700; }
-      .product { padding: 24px; margin-bottom: 18px; }
-      .product-head { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 20px; align-items: start; }
-      .score { text-align: right; padding: 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; }
-      .score strong { display: block; font-size: 34px; }
-      dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 18px 0 0; }
+      .product { padding: 18px; margin-bottom: 14px; }
+      .product-head { display: grid; grid-template-columns: minmax(0, 1fr) 94px; gap: 14px; align-items: start; }
+      .score { text-align: right; padding: 10px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; }
+      .score strong { display: block; font-size: 30px; }
+      dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; }
       ul { margin: 0; padding-left: 22px; }
-      li { margin: 5px 0; }
-      .notes { padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; }
-      .checklist { padding: 24px; }
-      .disclaimer { margin-top: 20px; color: #475569; font-size: 13px; }
+      li { margin: 3px 0; }
+      .notes { padding: 8px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; }
+      .checklist { padding: 18px; }
+      .disclaimer { margin-top: 14px; color: #475569; font-size: 12px; }
       @media print {
-        body { background: #ffffff; padding: 0; }
-        header, section, .checklist { box-shadow: none; break-inside: avoid; }
+        body { background: #ffffff; padding: 0; font-size: 11px; line-height: 1.28; }
+        main { max-width: none; }
+        .print-toolbar { display: none; }
+        header, section, .checklist { box-shadow: none; border-radius: 0; }
+        header { padding: 0 0 8px; margin: 0 0 8px; border: 0; border-bottom: 2px solid #007a78; }
+        h1 { font-size: 22px; margin-bottom: 4px; }
+        h2 { font-size: 15px; margin-bottom: 4px; }
+        h3 { font-size: 10px; margin: 8px 0 3px; }
+        .meta { margin-top: 8px; gap: 4px; }
+        .meta div, dl div { padding: 5px; }
+        .product { padding: 8px 0; margin: 0; border: 0; border-top: 1px solid #dbe4ef; break-inside: auto; page-break-inside: auto; }
+        .product-head { grid-template-columns: minmax(0, 1fr) 64px; gap: 8px; }
+        .score { padding: 5px; }
+        .score strong { font-size: 22px; }
+        dl { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+        ul { padding-left: 16px; }
+        li { margin: 1px 0; }
+        .notes { padding: 5px; }
+        .checklist { padding: 8px 0 0; border: 0; border-top: 2px solid #007a78; }
+        .disclaimer { margin-top: 8px; font-size: 10px; }
         a { color: inherit; text-decoration: none; }
       }
     </style>
   </head>
   <body>
+    <div class="print-toolbar">
+      <button type="button" onclick="window.print()">Save as PDF</button>
+      <span>Suggested PDF name: ${escapeHtml(packFilenameBase)}.pdf</span>
+    </div>
     <main>
       <header>
         <p class="eyebrow">InduScout sourcing document</p>
@@ -980,7 +1010,7 @@ function downloadRfqPack() {
   </body>
 </html>`;
 
-  downloadFile(`induscout-rfq-pack-${new Date().toISOString().slice(0, 10)}.html`, html, "text/html;charset=utf-8");
+  downloadFile(`${packFilenameBase}.html`, html, "text/html;charset=utf-8");
   els.downloadRfqPack.textContent = "RFQ pack downloaded";
   setTimeout(() => {
     els.downloadRfqPack.textContent = "Download RFQ pack";
