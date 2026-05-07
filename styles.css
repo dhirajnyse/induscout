@@ -259,6 +259,13 @@ h1 {
   border-color: #99f6e4;
 }
 
+.card-actions .remove-action,
+.detail-actions .remove-action {
+  color: var(--danger);
+  background: #fff1f2;
+  border-color: #fecaca;
+}
+
 .hero-stats {
   display: flex;
   flex-wrap: wrap;

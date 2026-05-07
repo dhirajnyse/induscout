@@ -213,7 +213,7 @@ function wireEvents() {
     const detailButton = event.target.closest("[data-detail]");
 
     if (shortlistButton) {
-      addToShortlist(shortlistButton.dataset.add);
+      toggleShortlist(shortlistButton.dataset.add);
     }
 
     if (compareButton) {
@@ -281,7 +281,7 @@ function wireEvents() {
     }
 
     if (shortlistButton) {
-      addToShortlist(shortlistButton.dataset.detailAdd);
+      toggleShortlist(shortlistButton.dataset.detailAdd);
       openProductDetail(shortlistButton.dataset.detailAdd);
     }
 
@@ -324,6 +324,7 @@ function render() {
     .filter(matchesFilters)
     .sort((a, b) => b[state.priority] - a[state.priority]);
 
+  updateShortlistControls();
   els.resultCount.textContent = `${matches.length} ${matches.length === 1 ? "product" : "products"}`;
   els.resultSummary.textContent = summaryText(matches.length);
 
@@ -429,7 +430,7 @@ function productTemplate(product) {
         </div>
         <div class="card-actions">
           <button class="detail-action" type="button" data-detail="${escapeHtml(product.id)}">Details / RFQ</button>
-          <button type="button" data-add="${escapeHtml(product.id)}">${isShortlisted ? "Shortlisted" : "Add to shortlist"}</button>
+          <button class="${isShortlisted ? "remove-action" : ""}" type="button" data-add="${escapeHtml(product.id)}">${isShortlisted ? "Remove shortlist" : "Add to shortlist"}</button>
           <button class="secondary-action" type="button" data-compare="${escapeHtml(product.id)}">${isCompared ? "In compare" : "Compare"}</button>
           <a class="button-link ghost-button" href="${escapeHtml(product.sources[0].url)}" target="_blank" rel="noreferrer">Open primary source</a>
         </div>
@@ -600,7 +601,7 @@ function productDetailTemplate(product) {
       </div>
       <p class="detail-description">${escapeHtml(product.description)}</p>
       <div class="detail-actions">
-        <button type="button" data-detail-add="${escapeHtml(product.id)}">${isShortlisted ? "Shortlisted" : "Add to shortlist"}</button>
+        <button class="${isShortlisted ? "remove-action" : ""}" type="button" data-detail-add="${escapeHtml(product.id)}">${isShortlisted ? "Remove shortlist" : "Add to shortlist"}</button>
         <button class="secondary-action" type="button" data-detail-compare="${escapeHtml(product.id)}">${isCompared ? "In compare" : "Compare"}</button>
       </div>
       <div class="detail-facts">
@@ -778,23 +779,25 @@ function compareTemplate(product) {
   `;
 }
 
-function addToShortlist(id) {
-  if (!state.shortlist.includes(id)) {
-    state.shortlist.push(id);
-  }
-  renderShortlist();
-  render();
-}
-
 function removeFromShortlist(id) {
   state.shortlist = state.shortlist.filter((item) => item !== id);
   renderShortlist();
   render();
 }
 
+function toggleShortlist(id) {
+  if (state.shortlist.includes(id)) {
+    state.shortlist = state.shortlist.filter((item) => item !== id);
+  } else {
+    state.shortlist.push(id);
+  }
+  renderShortlist();
+  render();
+}
+
 function renderShortlist() {
   const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
-  els.shortlistCount.textContent = selected.length;
+  updateShortlistControls(selected);
 
   if (!selected.length) {
     els.shortlistItems.innerHTML = '<div class="empty-state">Your shortlist is empty. Add products from the finder to draft an RFQ.</div>';
@@ -817,6 +820,13 @@ function renderShortlist() {
   els.shortlistItems.querySelectorAll("[data-remove]").forEach((button) => {
     button.addEventListener("click", () => removeFromShortlist(button.dataset.remove));
   });
+}
+
+function updateShortlistControls(selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean)) {
+  const count = selected.length;
+  els.shortlistCount.textContent = count;
+  els.exportShortlist.textContent = count ? `Export shortlist (${count})` : "Export shortlist";
+  els.shortlistToggle.setAttribute("aria-label", count ? `Open shortlist with ${count} ${count === 1 ? "item" : "items"}` : "Open shortlist");
 }
 
 async function copyShortlist() {
