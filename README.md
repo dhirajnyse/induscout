@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v1.6.2 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v1.7 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
 - 12 procurement categories, 60 product records, and 180 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -31,6 +31,7 @@ This v1.6.2 public beta is still static and lightweight, but it already demonstr
 - Copyable product-level RFQ request with quantity, delivery country, target date, urgency, alternates preference, and buyer notes.
 - Copyable product data update/report request.
 - Browser-saved buyer notes for each product.
+- Save/load session desk for filters, shortlist, compare list, and notes, with JSON export/import for moving work between browsers or machines.
 - Compare desk for up to four selected products.
 - Shortlist drawer with exportable RFQ-style summary.
 - Visible shortlist count on the finder export button, plus add/remove shortlist toggles on product cards and detail drawers.

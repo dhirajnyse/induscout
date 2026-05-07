@@ -30,6 +30,12 @@ const els = {
   confidence: document.querySelector("#confidenceFilter"),
   datasheetOnly: document.querySelector("#datasheetOnly"),
   verifiedOnly: document.querySelector("#verifiedOnly"),
+  saveSession: document.querySelector("#saveSession"),
+  loadSession: document.querySelector("#loadSession"),
+  exportSession: document.querySelector("#exportSession"),
+  importSession: document.querySelector("#importSession"),
+  importSessionFile: document.querySelector("#importSessionFile"),
+  sessionStatus: document.querySelector("#sessionStatus"),
   resultCount: document.querySelector("#resultCount"),
   resultSummary: document.querySelector("#resultSummary"),
   results: document.querySelector("#resultsGrid"),
@@ -184,25 +190,8 @@ function wireEvents() {
   });
 
   els.reset.addEventListener("click", () => {
-    Object.assign(state, {
-      query: "",
-      category: "all",
-      region: "all",
-      sourceType: "all",
-      confidence: "all",
-      priority: "balanced",
-      datasheetOnly: false,
-      verifiedOnly: false
-    });
-    setQuery("");
-    els.category.value = "all";
-    els.region.value = "all";
-    els.sourceType.value = "all";
-    els.confidence.value = "all";
-    els.datasheetOnly.checked = false;
-    els.verifiedOnly.checked = false;
-    els.priorityButtons.forEach((button) => {
-      button.classList.toggle("active", button.dataset.priority === "balanced");
+    applySession({
+      filters: defaultFilters()
     });
     render();
   });
@@ -304,6 +293,11 @@ function wireEvents() {
   els.copyShortlist.addEventListener("click", copyShortlist);
   els.downloadRfqPack.addEventListener("click", downloadRfqPack);
   els.downloadShortlist.addEventListener("click", downloadShortlistCsv);
+  els.saveSession.addEventListener("click", saveSession);
+  els.loadSession.addEventListener("click", loadSession);
+  els.exportSession.addEventListener("click", exportSessionFile);
+  els.importSession.addEventListener("click", () => els.importSessionFile.click());
+  els.importSessionFile.addEventListener("change", importSessionFile);
 }
 
 function setQuery(value) {
@@ -827,6 +821,130 @@ function updateShortlistControls(selected = state.shortlist.map((id) => products
   els.shortlistCount.textContent = count;
   els.exportShortlist.textContent = count ? `Export shortlist (${count})` : "Export shortlist";
   els.shortlistToggle.setAttribute("aria-label", count ? `Open shortlist with ${count} ${count === 1 ? "item" : "items"}` : "Open shortlist");
+}
+
+function defaultFilters() {
+  return {
+    query: "",
+    category: "all",
+    region: "all",
+    sourceType: "all",
+    confidence: "all",
+    priority: "balanced",
+    datasheetOnly: false,
+    verifiedOnly: false
+  };
+}
+
+function createSessionSnapshot() {
+  return {
+    app: "InduScout",
+    version: "1.7",
+    savedAt: new Date().toISOString(),
+    filters: {
+      query: state.query,
+      category: state.category,
+      region: state.region,
+      sourceType: state.sourceType,
+      confidence: state.confidence,
+      priority: state.priority,
+      datasheetOnly: state.datasheetOnly,
+      verifiedOnly: state.verifiedOnly
+    },
+    shortlist: state.shortlist.filter((id) => products.some((product) => product.id === id)),
+    compare: state.compare.filter((id) => products.some((product) => product.id === id)),
+    notes: Object.fromEntries(
+      Object.entries(state.notes).filter(([id, note]) => products.some((product) => product.id === id) && String(note).trim())
+    )
+  };
+}
+
+function applySession(session) {
+  const filters = { ...defaultFilters(), ...(session.filters || {}) };
+  const validProductIds = new Set(products.map((product) => product.id));
+
+  state.query = String(filters.query || "");
+  state.category = categories.includes(filters.category) ? filters.category : "all";
+  state.region = filters.region || "all";
+  state.sourceType = filters.sourceType || "all";
+  state.confidence = filters.confidence || "all";
+  state.priority = ["balanced", "fastest", "cost"].includes(filters.priority) ? filters.priority : "balanced";
+  state.datasheetOnly = Boolean(filters.datasheetOnly);
+  state.verifiedOnly = Boolean(filters.verifiedOnly);
+  state.shortlist = [...new Set(session.shortlist || [])].filter((id) => validProductIds.has(id));
+  state.compare = [...new Set(session.compare || [])].filter((id) => validProductIds.has(id)).slice(0, 4);
+  state.notes = { ...state.notes, ...(session.notes || {}) };
+
+  setQuery(state.query);
+  els.category.value = state.category;
+  els.region.value = state.region;
+  els.sourceType.value = state.sourceType;
+  els.confidence.value = state.confidence;
+  els.datasheetOnly.checked = state.datasheetOnly;
+  els.verifiedOnly.checked = state.verifiedOnly;
+  els.priorityButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.priority === state.priority);
+  });
+  saveNotes();
+  renderCompare();
+  renderShortlist();
+  closeOverlays();
+}
+
+function saveSession() {
+  try {
+    window.localStorage.setItem("induscoutSession", JSON.stringify(createSessionSnapshot()));
+    setSessionStatus("Session saved locally");
+  } catch {
+    setSessionStatus("Session could not be saved");
+  }
+}
+
+function loadSession() {
+  try {
+    const rawSession = window.localStorage.getItem("induscoutSession");
+    if (!rawSession) {
+      setSessionStatus("No saved session found");
+      return;
+    }
+    applySession(JSON.parse(rawSession));
+    render();
+    setSessionStatus("Saved session loaded");
+  } catch {
+    setSessionStatus("Saved session could not be loaded");
+  }
+}
+
+function exportSessionFile() {
+  const snapshot = createSessionSnapshot();
+  downloadFile(`InduScout-Session-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(snapshot, null, 2), "application/json;charset=utf-8");
+  setSessionStatus("Session JSON exported");
+}
+
+function importSessionFile(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) {
+    return;
+  }
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      applySession(JSON.parse(String(reader.result || "{}")));
+      render();
+      setSessionStatus("Session JSON imported");
+    } catch {
+      setSessionStatus("Session JSON could not be imported");
+    }
+  });
+  reader.readAsText(file);
+}
+
+function setSessionStatus(message) {
+  els.sessionStatus.textContent = message;
+  setTimeout(() => {
+    els.sessionStatus.textContent = "Save shortlist, filters, compare list, and notes locally.";
+  }, 1800);
 }
 
 async function copyShortlist() {
