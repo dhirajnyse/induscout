@@ -56,6 +56,7 @@ const els = {
   clearShortlist: document.querySelector("#clearShortlist"),
   copyShortlist: document.querySelector("#copyShortlist"),
   downloadRfqPack: document.querySelector("#downloadRfqPack"),
+  downloadShortlistXlsx: document.querySelector("#downloadShortlistXlsx"),
   downloadShortlist: document.querySelector("#downloadShortlist"),
   exportShortlist: document.querySelector("#exportShortlist"),
   openCompare: document.querySelector("#openCompare"),
@@ -292,6 +293,7 @@ function wireEvents() {
   });
   els.copyShortlist.addEventListener("click", copyShortlist);
   els.downloadRfqPack.addEventListener("click", downloadRfqPack);
+  els.downloadShortlistXlsx.addEventListener("click", downloadShortlistXlsx);
   els.downloadShortlist.addEventListener("click", downloadShortlistCsv);
   els.saveSession.addEventListener("click", saveSession);
   els.loadSession.addEventListener("click", loadSession);
@@ -1136,9 +1138,8 @@ function downloadRfqPack() {
 }
 
 function downloadShortlistCsv() {
-  const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
-
-  if (!selected.length) {
+  const table = shortlistExportTable();
+  if (!table.rows.length) {
     els.downloadShortlist.textContent = "Add items first";
     setTimeout(() => {
       els.downloadShortlist.textContent = "Download CSV";
@@ -1146,6 +1147,39 @@ function downloadShortlistCsv() {
     return;
   }
 
+  const csv = [table.headers, ...table.rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  downloadFile(`induscout-shortlist-${new Date().toISOString().slice(0, 10)}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
+
+  els.downloadShortlist.textContent = "CSV downloaded";
+  setTimeout(() => {
+    els.downloadShortlist.textContent = "Download CSV";
+  }, 1200);
+}
+
+function downloadShortlistXlsx() {
+  const table = shortlistExportTable();
+  if (!table.rows.length) {
+    els.downloadShortlistXlsx.textContent = "Add items first";
+    setTimeout(() => {
+      els.downloadShortlistXlsx.textContent = "Download XLSX";
+    }, 1200);
+    return;
+  }
+
+  const workbook = createXlsxWorkbook(table.headers, table.rows);
+  downloadFile(
+    `InduScout-Shortlist-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    workbook,
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  els.downloadShortlistXlsx.textContent = "XLSX downloaded";
+  setTimeout(() => {
+    els.downloadShortlistXlsx.textContent = "Download XLSX";
+  }, 1200);
+}
+
+function shortlistExportTable() {
+  const selected = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
   const headers = [
     "Brand",
     "SKU",
@@ -1192,13 +1226,7 @@ function downloadShortlistCsv() {
       state.notes[product.id] || ""
     ];
   });
-  const csv = [headers, ...rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
-  downloadFile(`induscout-shortlist-${new Date().toISOString().slice(0, 10)}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
-
-  els.downloadShortlist.textContent = "CSV downloaded";
-  setTimeout(() => {
-    els.downloadShortlist.textContent = "Download CSV";
-  }, 1200);
+  return { headers, rows };
 }
 
 async function copyCompare() {
@@ -1511,6 +1539,249 @@ function defaultQuantity(moq) {
 function csvEscape(value) {
   const text = String(value ?? "");
   return `"${text.replace(/"/g, '""')}"`;
+}
+
+function createXlsxWorkbook(headers, rows) {
+  const allRows = [headers, ...rows];
+  const files = [
+    {
+      path: "[Content_Types].xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`
+    },
+    {
+      path: "_rels/.rels",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+</Relationships>`
+    },
+    {
+      path: "docProps/app.xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+  <Application>InduScout</Application>
+</Properties>`
+    },
+    {
+      path: "docProps/core.xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dc:title>InduScout Shortlist</dc:title>
+  <dc:creator>InduScout</dc:creator>
+  <dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:created>
+</cp:coreProperties>`
+    },
+    {
+      path: "xl/workbook.xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets><sheet name="Shortlist" sheetId="1" r:id="rId1"/></sheets>
+</workbook>`
+    },
+    {
+      path: "xl/_rels/workbook.xml.rels",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`
+    },
+    {
+      path: "xl/styles.xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>
+  <fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9EDEB"/><bgColor indexed="64"/></patternFill></fill></fills>
+  <borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf></cellXfs>
+  <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`
+    },
+    {
+      path: "xl/worksheets/sheet1.xml",
+      content: buildWorksheetXml(allRows)
+    }
+  ];
+
+  return createZip(files);
+}
+
+function buildWorksheetXml(rows) {
+  const columnWidths = [18, 16, 34, 26, 28, 14, 16, 10, 15, 10, 12, 24, 36, 36, 40, 40, 58, 36, 42];
+  const cols = columnWidths
+    .map((width, index) => `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`)
+    .join("");
+  const sheetRows = rows
+    .map((row, rowIndex) => {
+      const cells = row
+        .map((value, columnIndex) => {
+          const ref = `${columnName(columnIndex + 1)}${rowIndex + 1}`;
+          const style = rowIndex === 0 ? 1 : 2;
+          return `<c r="${ref}" t="inlineStr" s="${style}"><is><t>${xmlEscape(value)}</t></is></c>`;
+        })
+        .join("");
+      return `<row r="${rowIndex + 1}">${cells}</row>`;
+    })
+    .join("");
+  const lastCell = `${columnName(rows[0].length)}${rows.length}`;
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <dimension ref="A1:${lastCell}"/>
+  <sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+  <cols>${cols}</cols>
+  <sheetData>${sheetRows}</sheetData>
+  <autoFilter ref="A1:${lastCell}"/>
+</worksheet>`;
+}
+
+function createZip(files) {
+  const records = [];
+  const centralRecords = [];
+  let offset = 0;
+  const now = new Date();
+  const modTime = ((now.getHours() & 31) << 11) | ((now.getMinutes() & 63) << 5) | ((now.getSeconds() / 2) & 31);
+  const modDate = (((now.getFullYear() - 1980) & 127) << 9) | (((now.getMonth() + 1) & 15) << 5) | (now.getDate() & 31);
+
+  files.forEach((file) => {
+    const nameBytes = utf8Bytes(file.path);
+    const dataBytes = utf8Bytes(file.content);
+    const crc = crc32(dataBytes);
+    const localHeader = zipLocalHeader(nameBytes, dataBytes.length, crc, modTime, modDate);
+    records.push(localHeader, nameBytes, dataBytes);
+    centralRecords.push(zipCentralHeader(nameBytes, dataBytes.length, crc, modTime, modDate, offset), nameBytes);
+    offset += localHeader.length + nameBytes.length + dataBytes.length;
+  });
+
+  const centralSize = centralRecords.reduce((size, item) => size + item.length, 0);
+  const endRecord = zipEndRecord(files.length, centralSize, offset);
+  return concatBytes([...records, ...centralRecords, endRecord]);
+}
+
+function zipLocalHeader(nameBytes, size, crc, modTime, modDate) {
+  const bytes = new Uint8Array(30);
+  writeUint32(bytes, 0, 0x04034b50);
+  writeUint16(bytes, 4, 20);
+  writeUint16(bytes, 6, 0x0800);
+  writeUint16(bytes, 8, 0);
+  writeUint16(bytes, 10, modTime);
+  writeUint16(bytes, 12, modDate);
+  writeUint32(bytes, 14, crc);
+  writeUint32(bytes, 18, size);
+  writeUint32(bytes, 22, size);
+  writeUint16(bytes, 26, nameBytes.length);
+  return bytes;
+}
+
+function zipCentralHeader(nameBytes, size, crc, modTime, modDate, offset) {
+  const bytes = new Uint8Array(46);
+  writeUint32(bytes, 0, 0x02014b50);
+  writeUint16(bytes, 4, 20);
+  writeUint16(bytes, 6, 20);
+  writeUint16(bytes, 8, 0x0800);
+  writeUint16(bytes, 10, 0);
+  writeUint16(bytes, 12, modTime);
+  writeUint16(bytes, 14, modDate);
+  writeUint32(bytes, 16, crc);
+  writeUint32(bytes, 20, size);
+  writeUint32(bytes, 24, size);
+  writeUint16(bytes, 28, nameBytes.length);
+  writeUint32(bytes, 42, offset);
+  return bytes;
+}
+
+function zipEndRecord(count, centralSize, centralOffset) {
+  const bytes = new Uint8Array(22);
+  writeUint32(bytes, 0, 0x06054b50);
+  writeUint16(bytes, 8, count);
+  writeUint16(bytes, 10, count);
+  writeUint32(bytes, 12, centralSize);
+  writeUint32(bytes, 16, centralOffset);
+  return bytes;
+}
+
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  bytes.forEach((byte) => {
+    crc = (crc >>> 8) ^ crc32Table()[(crc ^ byte) & 0xff];
+  });
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function crc32Table() {
+  if (!crc32Table.cache) {
+    crc32Table.cache = Array.from({ length: 256 }, (_, index) => {
+      let c = index;
+      for (let bit = 0; bit < 8; bit += 1) {
+        c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      }
+      return c >>> 0;
+    });
+  }
+  return crc32Table.cache;
+}
+
+function concatBytes(chunks) {
+  const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const output = new Uint8Array(total);
+  let offset = 0;
+  chunks.forEach((chunk) => {
+    output.set(chunk, offset);
+    offset += chunk.length;
+  });
+  return output;
+}
+
+function utf8Bytes(value) {
+  return new TextEncoder().encode(value);
+}
+
+function writeUint16(bytes, offset, value) {
+  bytes[offset] = value & 0xff;
+  bytes[offset + 1] = (value >>> 8) & 0xff;
+}
+
+function writeUint32(bytes, offset, value) {
+  bytes[offset] = value & 0xff;
+  bytes[offset + 1] = (value >>> 8) & 0xff;
+  bytes[offset + 2] = (value >>> 16) & 0xff;
+  bytes[offset + 3] = (value >>> 24) & 0xff;
+}
+
+function columnName(index) {
+  let name = "";
+  let current = index;
+  while (current > 0) {
+    const remainder = (current - 1) % 26;
+    name = String.fromCharCode(65 + remainder) + name;
+    current = Math.floor((current - 1) / 26);
+  }
+  return name;
+}
+
+function xmlEscape(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => {
+    const map = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&apos;"
+    };
+    return map[character];
+  });
 }
 
 function downloadFile(filename, content, type) {

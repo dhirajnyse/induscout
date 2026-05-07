@@ -1,4 +1,4 @@
-# InduScout v1.7 Launch Checklist
+# InduScout v1.8 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -28,6 +28,7 @@ Use this checklist after each public GitHub Pages upload.
 - Click `Remove shortlist` and confirm the count returns to zero.
 - Add two products to shortlist, download RFQ pack, confirm the HTML file opens with product details, source links, verification checklist, and a Save as PDF button.
 - Use the RFQ pack Save as PDF button and confirm the first PDF page starts with visible pack content.
+- Add two products to shortlist, download XLSX, and confirm it opens in Excel without the CSV feature-loss warning.
 - Add two products to shortlist, download CSV, and confirm it opens in Excel with source links and buyer notes.
 - Check the back-to-top button after scrolling.
 

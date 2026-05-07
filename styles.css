@@ -1646,7 +1646,8 @@ input[type="checkbox"] {
 }
 
 .shortlist-actions #copyShortlist,
-.shortlist-actions #downloadRfqPack {
+.shortlist-actions #downloadRfqPack,
+.shortlist-actions #clearShortlist {
   grid-column: 1 / -1;
 }
 
