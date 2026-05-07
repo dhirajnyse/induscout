@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=2.0">
+    <link rel="stylesheet" href="styles.css?v=2.2">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -57,6 +57,7 @@
         <a href="#finder">Finder</a>
         <a href="#compare">Compare</a>
         <a href="categories/">SEO Catalog</a>
+        <a href="#quality">Quality</a>
         <a href="#sources">Sources</a>
         <a href="#trust">Trust</a>
         <a href="#launch">Launch</a>
@@ -303,18 +304,47 @@
         </div>
       </section>
 
+      <section class="quality-band" id="quality" aria-labelledby="quality-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Catalog Quality</p>
+            <h2 id="quality-title">See the strength of the beta catalog</h2>
+          </div>
+          <p>Track verification coverage, datasheet coverage, category balance, source depth, and records that need the next review pass before the catalog scales.</p>
+        </div>
+        <div class="quality-dashboard">
+          <div class="quality-stats" id="qualityStats"></div>
+          <div class="quality-layout">
+            <div class="quality-panel">
+              <div class="quality-panel-head">
+                <span>Category Strength</span>
+                <strong>Depth and coverage by category</strong>
+              </div>
+              <div class="quality-category-grid" id="qualityCategoryGrid"></div>
+            </div>
+            <div class="quality-panel">
+              <div class="quality-panel-head">
+                <span>Review Queue</span>
+                <strong>Records to strengthen next</strong>
+              </div>
+              <div class="quality-review-list" id="qualityReviewList"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="source-band" id="sources" aria-labelledby="sources-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Source Strategy</p>
+            <p class="eyebrow">Supplier Trust Passport</p>
             <h2 id="sources-title">Built for worldwide discovery</h2>
           </div>
-          <p>The platform combines official manufacturer data, distributors, marketplaces, RFQ networks, surplus channels, and data directories.</p>
+          <p>The platform combines official manufacturer data, distributors, marketplaces, RFQ networks, surplus channels, and data directories with clear verification guidance for each channel.</p>
         </div>
         <div class="source-grid" id="sourceGrid"></div>
         <div class="directory-head">
-          <h3>Launch source directory</h3>
-          <p>A practical starting map for global procurement discovery. Links are starting points; buyers still verify price, stock, certificates, and seller terms.</p>
+          <h3>Supplier trust passport directory</h3>
+          <p>A practical source map for global procurement discovery. Each passport explains what the channel is best for, what buyers should verify, and where the risk sits.</p>
         </div>
         <div class="source-directory" id="sourceDirectory"></div>
       </section>
@@ -557,8 +587,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=2.0"></script>
-    <script src="back-to-top.js?v=2.0"></script>
-    <script src="app.js?v=2.0"></script>
+    <script src="catalog.js?v=2.2"></script>
+    <script src="back-to-top.js?v=2.2"></script>
+    <script src="app.js?v=2.2"></script>
   </body>
 </html>

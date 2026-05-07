@@ -1,4 +1,4 @@
-# InduScout v2.0 Launch Checklist
+# InduScout v2.2 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -16,6 +16,9 @@ Use this checklist after each public GitHub Pages upload.
 - Open Finder and search for `Danfoss FC 51`.
 - Confirm the Finder shows the buyer verification reminder above search.
 - Search for a missing item, open `Can't find it? Create a product request`, save the request, copy the product request, copy the research brief, and confirm saved requests can be loaded or removed.
+- Open the Quality dashboard and confirm verified coverage, datasheet coverage, high-confidence count, category strength rows, and review queue render.
+- Open Sources, confirm supplier trust passport cards render, and copy one source checklist.
+- Open a product detail drawer, copy one source trust checklist, and confirm it includes source role, verification checklist, risk notes, and product context.
 - Open the Sensors category SEO page and use the finder handoff link.
 - Open one product page, such as `/products/pepperl-fuchs-nbb/`, and use the product finder handoff link.
 - Confirm SEO category pages show sourcing guidance and RFQ preparation guidance.

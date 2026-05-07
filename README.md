@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v2.0 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v2.2 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -24,7 +24,9 @@ This v2.0 public beta is still static and lightweight, but it already demonstrat
 - "Can't find it?" product request workflow for missing items, with saved request intake, copyable request text, research briefs, and a structured GitHub request path.
 - Procurement fit scoring for balanced, speed, and cost priorities.
 - Product confidence labels for high, standard, and review-required records.
-- Source confidence hints for primary trust paths, discovery paths, and seller-term verification.
+- Source confidence hints and supplier trust passports for primary trust paths, discovery paths, RFQ paths, surplus paths, and seller-term verification.
+- Copyable supplier trust checklists from product source cards and the source directory.
+- Catalog quality dashboard with verified coverage, datasheet coverage, confidence mix, category strength, source depth, and review queue.
 - Product detail drawer with specifications, applications, alternates, source actions, and RFQ fields.
 - Copyable procurement brief for internal buyer review, source validation, and shortlist decisions.
 - Procurement brief action repeated near the RFQ copy controls so buyers can find it while preparing a request.
@@ -40,7 +42,7 @@ This v2.0 public beta is still static and lightweight, but it already demonstrat
 - Downloadable RFQ shortlist pack as a concise print-ready HTML document with a Save as PDF button and suggested PDF filename.
 - Downloadable native XLSX shortlist workbook with formatted headers, frozen header row, source links, and buyer notes.
 - Downloadable shortlist CSV for spreadsheet, ERP prep, or internal buyer review.
-- Buyer desk, trust layer, source directory, launch-readiness section, and roadmap.
+- Buyer desk, trust layer, supplier trust passport directory, launch-readiness section, and roadmap.
 - Static SEO category pages and product record pages generated from the catalog.
 - Breadcrumbs, related records, buyer checklists, and richer structured data on SEO pages.
 - SEO product pages include source-confidence notes, RFQ fields to send, and internal buyer paths.

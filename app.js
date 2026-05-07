@@ -80,6 +80,9 @@ const els = {
   compareGrid: document.querySelector("#compareGrid"),
   clearCompare: document.querySelector("#clearCompare"),
   copyCompare: document.querySelector("#copyCompare"),
+  qualityStats: document.querySelector("#qualityStats"),
+  qualityCategoryGrid: document.querySelector("#qualityCategoryGrid"),
+  qualityReviewList: document.querySelector("#qualityReviewList"),
   categoryCount: document.querySelector("#categoryCount"),
   productCount: document.querySelector("#productCount"),
   sourceCount: document.querySelector("#sourceCount")
@@ -98,6 +101,7 @@ function init() {
   renderCategories();
   renderSources();
   renderSourceDirectory();
+  renderQualityDashboard();
   wireEvents();
   renderProductRequests();
   renderCompare();
@@ -273,6 +277,7 @@ function wireEvents() {
     const supplierButton = event.target.closest("[data-copy-supplier]");
     const updateButton = event.target.closest("[data-copy-update]");
     const briefButton = event.target.closest("[data-copy-brief]");
+    const sourcePassportButton = event.target.closest("[data-copy-source-passport]");
     const shortlistButton = event.target.closest("[data-detail-add]");
     const compareButton = event.target.closest("[data-detail-compare]");
 
@@ -290,6 +295,10 @@ function wireEvents() {
 
     if (updateButton) {
       copyDataUpdate(updateButton.dataset.copyUpdate);
+    }
+
+    if (sourcePassportButton) {
+      copySourcePassport(sourcePassportButton.dataset.sourceProduct, Number(sourcePassportButton.dataset.sourceIndex), sourcePassportButton);
     }
 
     if (shortlistButton) {
@@ -341,6 +350,12 @@ function wireEvents() {
 
     if (removeButton) {
       removeSavedProductRequest(removeButton.dataset.removeRequest);
+    }
+  });
+  els.sourceDirectory.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-copy-directory-passport]");
+    if (button) {
+      copyDirectorySourcePassport(button.dataset.copyDirectoryPassport, button);
     }
   });
 }
@@ -530,19 +545,148 @@ function renderSources() {
 function renderSourceDirectory() {
   els.sourceDirectory.innerHTML = sourceDirectory
     .map(
-      (source) => `
+      (source) => {
+        const passport = sourceTrustPassport(source);
+        return `
         <article class="directory-card">
           <div>
             <span>${escapeHtml(source.type)}</span>
             <h3>${escapeHtml(source.name)}</h3>
           </div>
           <p>${escapeHtml(source.bestFor)}</p>
+          <div class="passport-panel">
+            <strong>${escapeHtml(passport.role)}</strong>
+            <span>${escapeHtml(passport.verify[0])}</span>
+            <small>${escapeHtml(passport.risk)}</small>
+          </div>
           <small>${escapeHtml(source.regions.join(", "))}</small>
-          <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">Open</a>
+          <div class="directory-actions">
+            <button type="button" data-copy-directory-passport="${escapeHtml(source.name)}">Copy checklist</button>
+            <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">Open</a>
+          </div>
+        </article>
+      `;
+      }
+    )
+    .join("");
+}
+
+function renderQualityDashboard() {
+  const totalProducts = products.length || 1;
+  const sourceLinkCount = products.reduce((total, product) => total + product.sources.length, 0);
+  const verifiedProducts = products.filter((product) => product.verified).length;
+  const datasheetProducts = products.filter((product) => product.datasheet).length;
+  const confidenceCounts = products.reduce(
+    (counts, product) => {
+      counts[confidenceForProduct(product).level] += 1;
+      return counts;
+    },
+    { high: 0, standard: 0, review: 0 }
+  );
+  const sourceTypesUsed = new Set(products.flatMap((product) => product.sources.map((source) => source.type))).size;
+  const averageSources = products.length ? (sourceLinkCount / products.length).toFixed(1) : "0.0";
+  const stats = [
+    {
+      label: "Verified records",
+      value: verifiedProducts,
+      meta: `${percentage(verifiedProducts, totalProducts)}% of catalog`
+    },
+    {
+      label: "Datasheet coverage",
+      value: datasheetProducts,
+      meta: `${percentage(datasheetProducts, totalProducts)}% with datasheet signal`
+    },
+    {
+      label: "High confidence",
+      value: confidenceCounts.high,
+      meta: `${confidenceCounts.standard} standard, ${confidenceCounts.review} review`
+    },
+    {
+      label: "Source depth",
+      value: averageSources,
+      meta: `${sourceLinkCount} links across ${sourceTypesUsed} source types`
+    }
+  ];
+
+  els.qualityStats.innerHTML = stats
+    .map(
+      (stat) => `
+        <article class="quality-stat">
+          <span>${escapeHtml(stat.label)}</span>
+          <strong>${escapeHtml(stat.value)}</strong>
+          <small>${escapeHtml(stat.meta)}</small>
         </article>
       `
     )
     .join("");
+
+  const maxCategoryCount = Math.max(...categories.map((category) => products.filter((product) => product.category === category).length), 1);
+  els.qualityCategoryGrid.innerHTML = categories
+    .map((category) => {
+      const categoryProducts = products.filter((product) => product.category === category);
+      const verified = categoryProducts.filter((product) => product.verified).length;
+      const datasheets = categoryProducts.filter((product) => product.datasheet).length;
+      const high = categoryProducts.filter((product) => confidenceForProduct(product).level === "high").length;
+      const width = percentage(categoryProducts.length, maxCategoryCount);
+
+      return `
+        <article class="quality-category-row">
+          <div>
+            <strong>${escapeHtml(category)}</strong>
+            <span>${categoryProducts.length} records &middot; ${high} high confidence</span>
+          </div>
+          <div class="quality-bar" aria-hidden="true"><i style="width:${width}%"></i></div>
+          <small>${verified}/${categoryProducts.length} verified &middot; ${datasheets}/${categoryProducts.length} datasheets</small>
+        </article>
+      `;
+    })
+    .join("");
+
+  const reviewItems = products
+    .filter((product) => {
+      const confidence = confidenceForProduct(product);
+      return confidence.level === "review" || !product.datasheet || product.sources.length < 3;
+    })
+    .slice(0, 8);
+
+  els.qualityReviewList.innerHTML = reviewItems.length
+    ? reviewItems
+        .map((product) => {
+          const gaps = qualityGaps(product);
+          return `
+            <article class="quality-review-row">
+              <div>
+                <strong>${escapeHtml(product.brand)} ${escapeHtml(product.sku)}</strong>
+                <span>${escapeHtml(product.category)} &middot; ${escapeHtml(product.name)}</span>
+              </div>
+              <small>${escapeHtml(gaps.join(", "))}</small>
+              <a href="index.html?q=${encodeURIComponent(`${product.brand} ${product.sku}`)}#finder">Open</a>
+            </article>
+          `;
+        })
+        .join("")
+    : '<div class="quality-empty">No immediate quality gaps in the current catalog view.</div>';
+}
+
+function qualityGaps(product) {
+  const gaps = [];
+  if (!product.verified) {
+    gaps.push("verify source");
+  }
+  if (!product.datasheet) {
+    gaps.push("add datasheet signal");
+  }
+  if (product.sources.length < 3) {
+    gaps.push("add source depth");
+  }
+  if (!product.sources.some((source) => source.type === "OEM")) {
+    gaps.push("add OEM path");
+  }
+  return gaps.length ? gaps : ["review confidence"];
+}
+
+function percentage(value, total) {
+  return Math.round((value / Math.max(total, 1)) * 100);
 }
 
 function confidenceForProduct(product) {
@@ -596,6 +740,84 @@ function confidenceForSource(source) {
   return { level: "review", label: "Verify seller terms" };
 }
 
+function sourceTrustPassport(source) {
+  const passports = {
+    OEM: {
+      role: "Official data authority",
+      verify: [
+        "Confirm exact model, suffix, configuration, datasheet revision, lifecycle, and authorized channel guidance.",
+        "Use OEM content as the primary technical reference before approving alternates or supplier quotes.",
+        "Check certificate, manual, warranty, and regional support path before purchase."
+      ],
+      risk: "OEM pages may not show live stock or local commercial terms."
+    },
+    Distributor: {
+      role: "Primary buying path",
+      verify: [
+        "Confirm authorization, stock, unit price, offer validity, lead time, warranty route, invoice, and delivery terms.",
+        "Check that the exact manufacturer part number and suffix match the buyer requirement.",
+        "Request certificate, datasheet, country of origin, and return/warranty conditions when needed."
+      ],
+      risk: "Regional stock and authorization can vary by country and product line."
+    },
+    Marketplace: {
+      role: "Broad supplier discovery path",
+      verify: [
+        "Verify seller identity, business registration, transaction history, product authenticity, and trade terms.",
+        "Request photos, datasheets, certificate evidence, warranty terms, and exact model confirmation.",
+        "Use secure payment, clear Incoterms, and buyer protection for first transactions."
+      ],
+      risk: "Higher seller-legitimacy, counterfeit, grey-market, and warranty risk."
+    },
+    RFQ: {
+      role: "Quote-first sourcing path",
+      verify: [
+        "Confirm supplier capability, product scope, lead time, commercial terms, and evidence behind the quote.",
+        "Ask for exact part number, datasheet, certificate path, warranty, and alternates with technical justification.",
+        "Compare at least two quotes when project value, lead time, or criticality is high."
+      ],
+      risk: "Quote quality depends on supplier evidence and buyer specification clarity."
+    },
+    Surplus: {
+      role: "Urgent or obsolete spare path",
+      verify: [
+        "Confirm condition, revision, firmware, packaging, test status, warranty, and return rights.",
+        "Ask whether the part is new, refurbished, repaired, used, or surplus stock.",
+        "Match serial, firmware, voltage, and installed-equipment compatibility before approval."
+      ],
+      risk: "Obsolete stock may have limited warranty, no OEM support, or revision mismatch."
+    },
+    Data: {
+      role: "Specification discovery path",
+      verify: [
+        "Use as an early comparison aid, then confirm final data against the OEM or authorized source.",
+        "Check dimensions, standards, alternates, datasheet date, and whether the record is current.",
+        "Do not treat data-directory pages as a buying or warranty path."
+      ],
+      risk: "Data indexes can be incomplete, stale, or detached from stock availability."
+    },
+    MRO: {
+      role: "Maintenance procurement path",
+      verify: [
+        "Confirm brand authenticity, stock, pack quantity, delivery timing, account terms, and return route.",
+        "Check whether the item is equivalent, generic, or genuine branded stock.",
+        "Request datasheet or certificate evidence for critical plant equipment."
+      ],
+      risk: "MRO catalogs can mix OEM, equivalent, and generic replacement options."
+    }
+  };
+
+  return passports[source.type] || {
+    role: "Discovery support path",
+    verify: [
+      "Confirm supplier identity, exact part number, stock, datasheet, warranty, price, lead time, and delivery terms.",
+      "Check whether the source is official, authorized, marketplace, RFQ, surplus, or data-only.",
+      "Validate technical compatibility before treating alternates as acceptable."
+    ],
+    risk: "Source role is not fully classified yet, so buyer verification is required."
+  };
+}
+
 function openProductDetail(id) {
   const product = products.find((item) => item.id === id);
   if (!product) {
@@ -617,7 +839,7 @@ function productDetailTemplate(product) {
   const isCompared = state.compare.includes(product.id);
   const confidence = confidenceForProduct(product);
   const certs = product.certifications.length ? product.certifications.join(", ") : "Check with supplier";
-  const sourceActions = product.sources.map(detailSourceTemplate).join("");
+  const sourceActions = product.sources.map((source, index) => detailSourceTemplate(source, index, product.id)).join("");
   const specs = product.specs.map((spec) => `<li>${escapeHtml(spec)}</li>`).join("");
   const applications = product.applications.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   const alternates = product.alternatives.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
@@ -743,14 +965,22 @@ function productDetailTemplate(product) {
   `;
 }
 
-function detailSourceTemplate(source) {
+function detailSourceTemplate(source, index, productId) {
   const confidence = confidenceForSource(source);
+  const passport = sourceTrustPassport(source);
   return `
-    <a class="${escapeHtml(confidence.level)}" href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">
-      <span>${escapeHtml(source.type)}</span>
-      <strong>${escapeHtml(source.name)}</strong>
-      <small>${escapeHtml(source.action)} &middot; ${escapeHtml(source.region)} &middot; ${escapeHtml(confidence.label)}</small>
-    </a>
+    <article class="detail-source-card ${escapeHtml(confidence.level)}">
+      <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">
+        <span>${escapeHtml(source.type)}</span>
+        <strong>${escapeHtml(source.name)}</strong>
+        <small>${escapeHtml(source.action)} &middot; ${escapeHtml(source.region)} &middot; ${escapeHtml(confidence.label)}</small>
+      </a>
+      <div class="source-passport-mini">
+        <strong>${escapeHtml(passport.role)}</strong>
+        <span>${escapeHtml(passport.verify[0])}</span>
+      </div>
+      <button type="button" data-source-product="${escapeHtml(productId)}" data-source-index="${index}" data-copy-source-passport>Copy trust checklist</button>
+    </article>
   `;
 }
 
@@ -890,7 +1120,7 @@ function defaultFilters() {
 function createSessionSnapshot() {
   return {
     app: "InduScout",
-    version: "2.0",
+    version: "2.2",
     savedAt: new Date().toISOString(),
     filters: {
       query: state.query,
@@ -1763,6 +1993,73 @@ Please review this record and update source confidence, specifications, alternat
   } catch {
     window.prompt("Copy data update request", text);
   }
+}
+
+async function copySourcePassport(productId, sourceIndex, triggerButton) {
+  const product = products.find((item) => item.id === productId);
+  const source = product?.sources[sourceIndex];
+  if (!product || !source) {
+    return;
+  }
+
+  await copyPassportText(sourcePassportText(source, product), triggerButton, "Checklist copied", "Copy trust checklist");
+}
+
+async function copyDirectorySourcePassport(sourceName, triggerButton) {
+  const source = sourceDirectory.find((item) => item.name === sourceName);
+  if (!source) {
+    return;
+  }
+
+  await copyPassportText(sourcePassportText(source), triggerButton, "Checklist copied", "Copy checklist");
+}
+
+async function copyPassportText(text, triggerButton, copiedLabel, defaultLabel) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = copiedLabel;
+      setTimeout(() => {
+        triggerButton.textContent = defaultLabel;
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy supplier trust checklist", text);
+  }
+}
+
+function sourcePassportText(source, product) {
+  const passport = sourceTrustPassport(source);
+  const regions = Array.isArray(source.regions) ? source.regions.join(", ") : source.region || "Check with source";
+  const bestFor = source.bestFor || source.action || "Supplier/source discovery and buyer verification";
+  const productContext = product
+    ? `
+Product context:
+- Product: ${product.brand} ${product.sku} - ${product.name}
+- Category: ${product.category}
+- Expected lead time signal: ${product.lead}
+- MOQ signal: ${product.moq}`
+    : "";
+
+  return `InduScout supplier trust passport
+Prepared on ${formatCopyDate()}
+
+Source: ${source.name}
+Source type: ${source.type}
+Trust role: ${passport.role}
+Regions: ${regions}
+URL: ${source.url}
+Best for: ${bestFor}${productContext}
+
+Verification checklist:
+${passport.verify.map((item) => `- ${item}`).join("\n")}
+
+Risk notes:
+- ${passport.risk}
+- Confirm exact part number, compatibility, stock, price, lead time, payment terms, delivery terms, warranty path, certificate availability, and seller legitimacy before ordering.
+- Treat alternates as technical review items, not automatic substitutes.
+
+InduScout is a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.`;
 }
 
 function openShortlist() {
