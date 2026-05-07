@@ -16,11 +16,12 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v1.8 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
+This v1.9 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages.
 
 - 12 procurement categories, 60 product records, and 180 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
 - Search, category, region, source type, confidence, datasheet, and verified-signal filters.
+- "Can't find it?" product request workflow for missing items, with copyable request text and a structured GitHub request path.
 - Procurement fit scoring for balanced, speed, and cost priorities.
 - Product confidence labels for high, standard, and review-required records.
 - Source confidence hints for primary trust paths, discovery paths, and seller-term verification.
@@ -108,6 +109,7 @@ InduScout is a discovery and procurement workflow aid. Buyers must verify pricin
 ## Public Feedback Paths
 
 - Product data update: https://github.com/dhirajnyse/induscout/issues/new?template=product-data-update.yml
+- Product request: https://github.com/dhirajnyse/induscout/issues/new?template=product-request.yml
 - Supplier or source request: https://github.com/dhirajnyse/induscout/issues/new?template=supplier-source-request.yml
 - Feature request: https://github.com/dhirajnyse/induscout/issues/new?template=feature-request.yml
 

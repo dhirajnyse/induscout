@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=1.8">
+    <link rel="stylesheet" href="styles.css?v=1.9">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -200,6 +200,57 @@
                 <input id="importSessionFile" type="file" accept="application/json,.json" hidden>
               </div>
             </div>
+            <details class="product-request" id="productRequestPanel">
+              <summary>Can't find it? Create a product request</summary>
+              <div class="product-request-body">
+                <div class="request-grid">
+                  <label>Product or part number
+                    <input id="requestPart" type="text" placeholder="e.g. Pepperl+Fuchs NBB, Siemens 6ES7, unknown sensor">
+                  </label>
+                  <label>Brand or maker
+                    <input id="requestBrand" type="text" placeholder="Known brand, OEM, or unknown">
+                  </label>
+                  <label>Category
+                    <select id="requestCategory">
+                      <option>Not sure</option>
+                      <option>Sensors</option>
+                      <option>PLCs & Automation</option>
+                      <option>Drives & Motors</option>
+                      <option>Bearings & Power Transmission</option>
+                      <option>Pumps</option>
+                      <option>Valves & Flow Control</option>
+                      <option>Pneumatics</option>
+                      <option>Hydraulics</option>
+                      <option>Electrical & Control Panels</option>
+                      <option>Cables & Connectivity</option>
+                      <option>Fasteners & Hardware</option>
+                      <option>Tools & MRO</option>
+                    </select>
+                  </label>
+                  <label>Delivery country
+                    <input id="requestCountry" type="text" placeholder="e.g. UAE, India, USA">
+                  </label>
+                  <label>Urgency
+                    <select id="requestUrgency">
+                      <option>Standard sourcing</option>
+                      <option>Urgent breakdown</option>
+                      <option>Project tender</option>
+                      <option>Budgetary quote</option>
+                    </select>
+                  </label>
+                  <label>Quantity
+                    <input id="requestQuantity" type="text" placeholder="e.g. 1 pc, 10 pcs, 2 sets">
+                  </label>
+                </div>
+                <label class="note-field">Application or notes
+                  <textarea id="requestNotes" rows="4" placeholder="Add machine model, old part number, specs, photo notes, preferred supplier, certificate, or compatibility detail"></textarea>
+                </label>
+                <div class="request-actions">
+                  <button type="button" id="copyProductRequest">Copy product request</button>
+                  <a href="https://github.com/dhirajnyse/induscout/issues/new?template=product-request.yml" target="_blank" rel="noreferrer">Open GitHub request</a>
+                </div>
+              </div>
+            </details>
             <div class="results-head">
               <div>
                 <span id="resultCount">0 products</span>
@@ -489,8 +540,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=1.8"></script>
-    <script src="back-to-top.js?v=1.8"></script>
-    <script src="app.js?v=1.8"></script>
+    <script src="catalog.js?v=1.9"></script>
+    <script src="back-to-top.js?v=1.9"></script>
+    <script src="app.js?v=1.9"></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-# InduScout v1.8 Launch Checklist
+# InduScout v1.9 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -15,6 +15,7 @@ Use this checklist after each public GitHub Pages upload.
 - Confirm the hero counters show 12 categories, 60 product records, and 180 source links.
 - Open Finder and search for `Danfoss FC 51`.
 - Confirm the Finder shows the buyer verification reminder above search.
+- Search for a missing item, open `Can't find it? Create a product request`, copy the product request, and confirm it includes the search term and current filters.
 - Open the Sensors category SEO page and use the finder handoff link.
 - Open one product page, such as `/products/pepperl-fuchs-nbb/`, and use the product finder handoff link.
 - Confirm SEO category pages show sourcing guidance and RFQ preparation guidance.

@@ -36,6 +36,15 @@ const els = {
   importSession: document.querySelector("#importSession"),
   importSessionFile: document.querySelector("#importSessionFile"),
   sessionStatus: document.querySelector("#sessionStatus"),
+  productRequestPanel: document.querySelector("#productRequestPanel"),
+  requestPart: document.querySelector("#requestPart"),
+  requestBrand: document.querySelector("#requestBrand"),
+  requestCategory: document.querySelector("#requestCategory"),
+  requestCountry: document.querySelector("#requestCountry"),
+  requestUrgency: document.querySelector("#requestUrgency"),
+  requestQuantity: document.querySelector("#requestQuantity"),
+  requestNotes: document.querySelector("#requestNotes"),
+  copyProductRequest: document.querySelector("#copyProductRequest"),
   resultCount: document.querySelector("#resultCount"),
   resultSummary: document.querySelector("#resultSummary"),
   results: document.querySelector("#resultsGrid"),
@@ -198,9 +207,15 @@ function wireEvents() {
   });
 
   els.results.addEventListener("click", (event) => {
+    const requestButton = event.target.closest("[data-open-product-request]");
     const shortlistButton = event.target.closest("[data-add]");
     const compareButton = event.target.closest("[data-compare]");
     const detailButton = event.target.closest("[data-detail]");
+
+    if (requestButton) {
+      openProductRequestPanel();
+      return;
+    }
 
     if (shortlistButton) {
       toggleShortlist(shortlistButton.dataset.add);
@@ -300,6 +315,7 @@ function wireEvents() {
   els.exportSession.addEventListener("click", exportSessionFile);
   els.importSession.addEventListener("click", () => els.importSessionFile.click());
   els.importSessionFile.addEventListener("change", importSessionFile);
+  els.copyProductRequest.addEventListener("click", copyProductRequest);
 }
 
 function setQuery(value) {
@@ -325,7 +341,13 @@ function render() {
   els.resultSummary.textContent = summaryText(matches.length);
 
   if (!matches.length) {
-    els.results.innerHTML = '<div class="empty-state">No products match this search yet. Try a broader keyword, source type, or region.</div>';
+    els.results.innerHTML = `
+      <div class="empty-state request-empty">
+        <strong>No products match this search yet.</strong>
+        <p>Try a broader keyword, source type, or region. If the item is still missing, create a product request so the exact part, sources, alternates, and datasheet path can be reviewed.</p>
+        <button class="ghost-button" type="button" data-open-product-request>Open product request</button>
+      </div>
+    `;
     return;
   }
 
@@ -841,7 +863,7 @@ function defaultFilters() {
 function createSessionSnapshot() {
   return {
     app: "InduScout",
-    version: "1.7",
+    version: "1.9",
     savedAt: new Date().toISOString(),
     filters: {
       query: state.query,
@@ -947,6 +969,62 @@ function setSessionStatus(message) {
   setTimeout(() => {
     els.sessionStatus.textContent = "Save shortlist, filters, compare list, and notes locally.";
   }, 1800);
+}
+
+function openProductRequestPanel() {
+  if (state.query && !els.requestPart.value.trim()) {
+    els.requestPart.value = state.query;
+  }
+  if (state.category !== "all" && categories.includes(state.category)) {
+    els.requestCategory.value = state.category;
+  }
+  els.productRequestPanel.open = true;
+  els.productRequestPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+  setTimeout(() => {
+    els.requestPart.focus({ preventScroll: true });
+  }, 250);
+}
+
+async function copyProductRequest() {
+  const selectedCategory = requestFieldValue(els.requestCategory, "Not sure");
+  const requestText = `InduScout product request
+Prepared from InduScout finder on ${formatCopyDate()}
+
+Requested item or part number: ${requestFieldValue(els.requestPart, state.query || "TBC")}
+Brand or maker: ${requestFieldValue(els.requestBrand, "TBC")}
+Likely category: ${selectedCategory}
+Delivery country: ${requestFieldValue(els.requestCountry, "TBC")}
+Urgency: ${requestFieldValue(els.requestUrgency, "Standard sourcing")}
+Quantity: ${requestFieldValue(els.requestQuantity, "TBC")}
+
+Current finder context:
+- Search query: ${state.query || "None"}
+- Category filter: ${state.category === "all" ? "All categories" : state.category}
+- Region filter: ${state.region === "all" ? "Global" : state.region}
+- Source type filter: ${state.sourceType === "all" ? "All source types" : state.sourceType}
+- Confidence filter: ${state.confidence === "all" ? "All confidence levels" : state.confidence}
+
+Application or notes:
+${requestFieldValue(els.requestNotes, "No extra notes added")}
+
+Please help identify the exact part number, manufacturer page, datasheet, authorized distributors or supplier paths, alternates for technical review, lead time, MOQ, certifications, and buying/source links.
+
+InduScout is a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.`;
+
+  try {
+    await navigator.clipboard.writeText(requestText);
+    els.copyProductRequest.textContent = "Product request copied";
+    setTimeout(() => {
+      els.copyProductRequest.textContent = "Copy product request";
+    }, 1400);
+  } catch {
+    window.prompt("Copy product request", requestText);
+  }
+}
+
+function requestFieldValue(element, fallback) {
+  const value = String(element?.value || "").trim();
+  return value || fallback;
 }
 
 async function copyShortlist() {
