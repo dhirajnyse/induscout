@@ -1,6 +1,6 @@
 # InduScout
 
-InduScout is a GitHub Pages-ready beta for a global industrial product finder. It helps procurement teams search industrial parts, compare source options, review confidence signals, and prepare RFQ-ready sourcing briefs.
+InduScout is a GitHub Pages-ready beta for a global industrial product finder. It helps procurement teams search industrial parts, compare source options, review confidence signals, check technical fit, review alternates before substitution, prepare RFQ-ready sourcing briefs, rank supplier paths, draft internal buyer decision memos, create PO-ready award handover packs, prepare supplier due-diligence checks, and assemble audit-ready buyer files.
 
 Live site: https://dhirajnyse.github.io/induscout/
 
@@ -16,17 +16,27 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v2.4 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v2.4 adds a Quote Tracker so buyers can log supplier replies, compare commercial terms, copy follow-up emails, and export quote registers as CSV/XLSX.
+This v3.8 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v3.8 adds an Alternate & Obsolescence Desk that reviews lifecycle risk, known replacement candidates, source evidence, constraints, and engineering sign-off needs before substitution.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
 - Search, category, region, source type, confidence, datasheet, and verified-signal filters.
 - Project RFQ workspace for project name, buyer/company, contact, delivery country, target date, and project notes.
+- Buyer Workspace dashboard with readiness score, shortlist count, quote count, follow-up count, saved request count, next actions, copyable workspace brief, and workspace JSON export.
 - "Can't find it?" product request workflow for missing items, with saved request intake, copyable request text, research briefs, and a structured GitHub request path.
 - Procurement fit scoring for balanced, speed, and cost priorities.
 - Product confidence labels for high, standard, and review-required records.
 - Source confidence hints and supplier trust passports for primary trust paths, discovery paths, RFQ paths, surplus paths, and seller-term verification.
 - Copyable supplier trust checklists from product source cards and the source directory.
+- Supplier Source Intake Desk for new source leads, website/evidence links, categories, regions, review status, verification notes, copyable review packets, and CSV/XLSX export.
+- Evidence Review Board for source leads, missing-product requests, supplier replies, quote risks, and review-level catalog records, with copyable review report and JSON export.
+- Buyer Decision Memo with readiness score, recommended action, quote lead, shortlist summary, evidence risks, source paths, copy action, and downloadable print-ready HTML.
+- Award Handover pack with PO-readiness score, supplier lead, commercial readiness, blockers, PO fields, copyable handover note, supplier confirmation email, and downloadable HTML.
+- Supplier Compliance Gate with compliance score, due-diligence checklist, supplier evidence requests, copyable compliance pack, supplier due-diligence email, and downloadable HTML.
+- Buyer File / Audit Trail with file score, document checklist, session evidence timeline, copyable buyer file index, downloadable HTML, and buyer file JSON export.
+- Supplier Scorecard with ranked supplier paths, score drivers, strengths, risks, next buyer action, copyable scorecard, downloadable HTML, and JSON export.
+- Spec Match Desk with saved buyer requirement profile, technical fit scores, strengths, gaps, next buyer actions, copyable matrix, downloadable HTML, and JSON export.
+- Alternate & Obsolescence Desk with base-product selection, replacement criticality, installed-equipment context, constraint checks, alternate scoring, copyable engineering review note, downloadable HTML, and JSON export.
 - Catalog quality dashboard with verified coverage, datasheet coverage, confidence mix, category strength, source depth, and review queue.
 - Product detail drawer with specifications, applications, alternates, source actions, and RFQ fields.
 - Copyable procurement brief for internal buyer review, source validation, and shortlist decisions.
@@ -35,10 +45,16 @@ This v2.4 public beta is still static and lightweight, but it already demonstrat
 - Copyable product-level RFQ request with quantity, delivery country, target date, urgency, alternates preference, and buyer notes.
 - RFQ pack, XLSX, CSV, procurement brief, supplier email, and RFQ copy actions include project workspace context.
 - Quote Tracker section for supplier, status, price, quantity, lead time, MOQ, payment terms, delivery terms, validity, source URL, notes, CSV/XLSX export, and follow-up email copy.
+- Quote Decision Scoring for best current score, lowest price, fastest lead, review flags, validity risk, and commercial completeness.
+- Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
+- Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.
+- Security baseline with session import size checks, sanitized imported records, safe external-link handling, spreadsheet formula-injection protection, and safer downloaded filenames.
+- Privacy & Trust Center explaining local browser storage, user-controlled exports, public beta limits, and future backend requirements.
+- Copyable privacy brief for launch pages, buyer onboarding, GitHub documentation, or internal review.
 - Product detail RFQ drawer includes a Track quote action that opens the selected product in the quote form.
 - Copyable product data update/report request.
 - Browser-saved buyer notes for each product.
-- Save/load session desk for project profile, filters, shortlist, compare list, quote records, and notes, with JSON export/import for moving work between browsers or machines.
+- Save/load session desk for project profile, spec match requirements, alternate review setup, filters, shortlist, compare list, source intake, quote records, supplier replies, and notes, with JSON export/import for moving work between browsers or machines.
 - Saved missing-product requests are included in session JSON export/import.
 - Compare desk for up to four selected products.
 - Shortlist drawer with exportable RFQ-style summary.
@@ -85,6 +101,8 @@ This v2.4 public beta is still static and lightweight, but it already demonstrat
 |-- site.webmanifest
 |-- sitemap.xml
 |-- robots.txt
+|-- SECURITY.md
+|-- PRIVACY.md
 |-- .nojekyll
 |-- LICENSE
 `-- README.md
@@ -113,6 +131,17 @@ The generator is for local development only. The public website does not need th
 
 InduScout is a discovery and procurement workflow aid. Buyers must verify pricing, stock, compatibility, certifications, warranty path, seller terms, and source legitimacy with the seller or manufacturer before purchase.
 
+## Security And Privacy Note
+
+The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, and sessions are stored locally in the user's browser unless exported by the user.
+
+- Do not enter confidential tender data, passwords, access tokens, payment details, or sensitive personal data into the public beta.
+- Session JSON import is limited and sanitized before it is loaded into the app.
+- CSV and XLSX exports protect cells that could be interpreted as spreadsheet formulas.
+- Product and source links are restricted to safe web or email protocols before rendering.
+- Use `SECURITY.md` for responsible disclosure and the security roadmap.
+- Use `PRIVACY.md` for current public-beta data handling guidance.
+
 ## Public Feedback Paths
 
 - Product data update: https://github.com/dhirajnyse/induscout/issues/new?template=product-data-update.yml
@@ -123,7 +152,8 @@ InduScout is a discovery and procurement workflow aid. Buyers must verify pricin
 ## Roadmap
 
 - Expand catalog depth category by category.
-- Add supplier submission and verification review.
+- Strengthen technical fit workflows with richer product attributes and engineering review evidence fields.
+- Expand supplier intake into a governed submission and verification review workflow.
 - Add saved projects and team collaboration.
 - Add backend search, accounts, and structured supplier/product APIs.
 - Add richer product detail pages for SEO as the catalog expands category by category.

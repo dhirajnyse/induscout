@@ -1,4 +1,4 @@
-# InduScout v2.4 Launch Checklist
+# InduScout v3.8 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -17,9 +17,27 @@ Use this checklist after each public GitHub Pages upload.
 - Hard refresh once after upload and confirm Finder still renders products; v2.4 keeps the cache-safety guard for GitHub Pages mixed HTML/JavaScript loads.
 - Confirm the Finder shows the buyer verification reminder above search.
 - Fill the Project RFQ workspace, save it, copy the project brief, and confirm the shortlist drawer shows project context.
+- Open Workspace and confirm readiness score, shortlist count, quote count, follow-up count, request count, project facts, lane cards, and next actions render.
+- Copy the workspace brief and confirm it includes project context, shortlist, quote register, estimated value, and next buyer actions.
+- Export the workspace JSON and confirm it includes the session snapshot plus workspace readiness summary.
 - Search for a missing item, open `Can't find it? Create a product request`, save the request, copy the product request, copy the research brief, and confirm saved requests can be loaded or removed.
 - Open the Quality dashboard and confirm verified coverage, datasheet coverage, high-confidence count, category strength rows, and review queue render.
 - Open Sources, confirm supplier trust passport cards render, and copy one source checklist.
+- In Supplier Intake, save one source lead with website, region, evidence URL, status, and notes.
+- Confirm Supplier Intake summary counts update, the saved lead card appears, and Load, Copy packet, Remove, CSV export, and XLSX export work.
+- Confirm the Workspace dashboard reflects saved source leads in Growth Leads and Source Intake.
+- Open Review and confirm the Evidence Review Board shows source leads, missing-product requests, supplier reply actions, quote risk flags, and review-level catalog records.
+- Copy the review report and confirm it includes review counts, recommended action plan, and review queue details.
+- Export the review JSON and confirm it includes project context, counts, action plan, and review items.
+- Open Decision Memo and confirm readiness, recommendation, quote signal, open risks, memo preview, Copy decision memo, and Download memo HTML work.
+- Download the decision memo HTML, open it, and confirm the Save as PDF button appears with the project-ready memo content.
+- Open Award Pack and confirm PO readiness, supplier lead, commercial readiness, blockers, checklist rows, Copy handover note, Copy supplier confirmation, and Download PO pack HTML work.
+- Download the PO handover HTML, open it, and confirm it includes the handover note, supplier confirmation email, and Save as PDF button.
+- Open Compliance and confirm compliance score, supplier, required checks, missing inputs, checklist rows, Copy compliance pack, Copy supplier due-diligence email, and Download compliance HTML work.
+- Download the compliance HTML, open it, and confirm it includes the compliance pack, supplier due-diligence email, and Save as PDF button.
+- Open Buyer File and confirm file score, file items, open gaps, timeline, checklist rows, Copy buyer file index, Download buyer file HTML, and Export buyer file JSON work.
+- Download the buyer file HTML, open it, and confirm it includes the buyer file index, checklist, timeline, and Save as PDF button.
+- Export the buyer file JSON and confirm it includes the buyerFile score, checklist, timeline, and generatedText fields.
 - Open a product detail drawer, copy one source trust checklist, and confirm it includes source role, verification checklist, risk notes, and product context.
 - Open the Sensors category SEO page and use the finder handoff link.
 - Open one product page, such as `/products/pepperl-fuchs-nbb/`, and use the product finder handoff link.
@@ -31,8 +49,34 @@ Use this checklist after each public GitHub Pages upload.
 - Click `Track quote` from a product detail drawer and confirm the Quotes section opens with that product selected.
 - Save one quote with supplier, status, unit price, quantity, lead time, payment terms, delivery terms, and notes.
 - Confirm the Quote Tracker summary counts update, the saved quote card appears, and the Load, Copy follow-up, and Remove actions work.
+- Confirm Quote Decision Scoring shows best current score, lowest price, fastest lead, decision badges, and review flags.
+- Save a second quote with a different price or lead time and confirm the decision guidance changes.
 - Export the quote tracker as CSV and XLSX.
-- Save a session with one shortlist item, one compare item, filters, and notes; reload the page, load session, and confirm work is restored.
+- Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
+- Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
+- Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.
+- Convert a supplier reply to a quote and confirm the Quote Tracker receives or updates the quote record.
+- Export the supplier inbox as CSV and XLSX.
+- Open Scorecard and confirm supplier path count, top path, follow-ups, review risks, ranked supplier cards, strengths, risks, and next actions render.
+- Copy the supplier scorecard and confirm it includes project context, supplier ranking, strengths, risks, and buyer reminders.
+- Download the supplier scorecard HTML and confirm it opens with a Save as PDF button.
+- Export supplier scorecard JSON and confirm it includes supplierScorecard, topSupplier, suppliers, riskCount, followUps, and generatedText.
+- Open Spec Match, enter an application, must-have specs, required certifications, source evidence rule, and project criticality.
+- Save the requirement profile and confirm products are scored with strengths, gaps, source checks, and next buyer actions.
+- Copy the spec matrix, download the Spec Match HTML, and export the Spec Match JSON.
+- Export a session JSON, import it, and confirm the spec match requirement profile is restored.
+- Open Alternates, choose a base product, select replacement criticality, add installed equipment/location, and add a known constraint.
+- Confirm alternate candidates render with engineering fit score, positive signals, substitution checks, and conservative next actions.
+- Copy the alternate review note, download the Alternate Review HTML, and export the Alternate Review JSON.
+- Export a session JSON, import it, and confirm the alternate review setup is restored.
+- Export a CSV/XLSX after entering a note beginning with `=`, `+`, `-`, or `@`, then confirm the exported spreadsheet treats it as text.
+- Try importing a non-InduScout JSON file and confirm the app rejects it without breaking Finder.
+- Confirm `SECURITY.md` is present in the repository root after upload.
+- Confirm the Trust section shows the static beta security baseline and local-browser storage note.
+- Open Privacy and confirm the Privacy & Trust Center explains local storage, user-controlled exports, public beta limits, and future backend controls.
+- Copy the privacy brief and confirm it includes what stays local, how exports leave the browser, current no-backend status, and public beta guidance.
+- Confirm `PRIVACY.md` is present in the repository root after upload.
+- Save a session with one shortlist item, one compare item, one source lead, filters, and notes; reload the page, load session, and confirm work is restored.
 - Export a session JSON, import it, and confirm shortlist and filters are restored.
 - Add one product to shortlist and confirm `Export shortlist (1)` appears in Finder and the product button changes to `Remove shortlist`.
 - Click `Remove shortlist` and confirm the count returns to zero.
@@ -62,4 +106,5 @@ Use this checklist after each public GitHub Pages upload.
 - Expand catalog depth category by category.
 - Add richer regional availability notes.
 - Build supplier submission review rules.
+- Grow Supplier Intake into a governed review workflow before public supplier submissions.
 - Plan backend search only after static catalog workflow is stable.

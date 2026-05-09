@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=2.4">
+    <link rel="stylesheet" href="styles.css?v=3.8">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -55,12 +55,24 @@
       <nav class="nav-actions" aria-label="Primary">
         <a href="#categories">Categories</a>
         <a href="#finder">Finder</a>
+        <a href="#workspace">Workspace</a>
         <a href="#compare">Compare</a>
+        <a href="#spec-match">Spec Match</a>
+        <a href="#alternates">Alternates</a>
         <a href="#quotes">Quotes</a>
+        <a href="#inbox">Inbox</a>
+        <a href="#scorecard">Scorecard</a>
         <a href="categories/">SEO Catalog</a>
         <a href="#quality">Quality</a>
         <a href="#sources">Sources</a>
+        <a href="#source-intake">Supplier Intake</a>
+        <a href="#review">Review</a>
+        <a href="#decision">Decision Memo</a>
+        <a href="#award">Award Pack</a>
+        <a href="#compliance">Compliance</a>
+        <a href="#buyer-file">Buyer File</a>
         <a href="#trust">Trust</a>
+        <a href="#privacy">Privacy</a>
         <a href="#launch">Launch</a>
         <a href="#methodology">Method</a>
         <a href="#roadmap">Roadmap</a>
@@ -225,7 +237,7 @@
             <div class="session-tools" aria-label="Session tools">
               <div>
                 <strong>Session desk</strong>
-                <span id="sessionStatus">Save shortlist, filters, compare list, quote tracker, and notes locally.</span>
+                <span id="sessionStatus">Save shortlist, filters, compare list, source intake, quote tracker, supplier inbox, and notes locally.</span>
               </div>
               <div class="session-actions">
                 <button class="ghost-button compact" id="saveSession" type="button">Save session</button>
@@ -318,6 +330,40 @@
         </div>
       </section>
 
+      <section class="workspace-band" id="workspace" aria-labelledby="workspace-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Buyer Workspace</p>
+            <h2 id="workspace-title">See the whole sourcing desk at a glance</h2>
+          </div>
+          <p>Track project context, shortlist readiness, quote activity, supplier replies, saved requests, and next buyer actions from one local dashboard.</p>
+        </div>
+        <div class="workspace-console">
+          <div class="workspace-metrics" id="workspaceMetrics"></div>
+          <div class="workspace-layout">
+            <article class="workspace-panel">
+              <div class="workspace-panel-head">
+                <span>Project snapshot</span>
+                <strong id="workspaceProjectTitle">No project context yet</strong>
+              </div>
+              <dl class="workspace-facts" id="workspaceProjectFacts"></dl>
+              <div class="workspace-actions">
+                <button type="button" id="copyWorkspaceBrief">Copy workspace brief</button>
+                <button class="ghost-button compact" type="button" id="exportWorkspaceSnapshot">Export workspace JSON</button>
+              </div>
+            </article>
+            <article class="workspace-panel">
+              <div class="workspace-panel-head">
+                <span>Next actions</span>
+                <strong>Buyer-ready checklist</strong>
+              </div>
+              <div class="workspace-next-list" id="workspaceNextActions"></div>
+            </article>
+          </div>
+          <div class="workspace-lanes" id="workspaceLanes"></div>
+        </div>
+      </section>
+
       <section class="compare-band" id="compare" aria-labelledby="compare-title">
         <div class="section-heading">
           <div>
@@ -338,13 +384,137 @@
         </div>
       </section>
 
+      <section class="spec-band" id="spec-match" aria-labelledby="spec-match-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Spec Match Desk</p>
+            <h2 id="spec-match-title">Check technical fit before RFQ</h2>
+          </div>
+          <p>Enter buyer requirements, then score shortlisted, compared, or filtered products against must-have specs, applications, certifications, source evidence, and project criticality.</p>
+        </div>
+        <div class="spec-console">
+          <form class="spec-form" id="specForm">
+            <div class="spec-form-head">
+              <div>
+                <strong>Buyer requirement profile</strong>
+                <span>Save a simple requirement set for the current sourcing session.</span>
+              </div>
+              <div class="spec-actions">
+                <button type="button" id="saveSpecRequirements">Save requirements</button>
+                <button class="ghost-button compact" type="button" id="resetSpecRequirements">Reset</button>
+              </div>
+            </div>
+            <div class="spec-grid">
+              <label>Application or use case
+                <input id="specApplication" type="text" placeholder="e.g. conveyor sensing, pump panel, gearbox repair">
+              </label>
+              <label>Source evidence required
+                <select id="specSourceRequirement">
+                  <option value="any">Any useful source path</option>
+                  <option value="oem-distributor">OEM or distributor path</option>
+                  <option value="datasheet">Datasheet required</option>
+                  <option value="verified">Verified source signal required</option>
+                </select>
+              </label>
+              <label>Project criticality
+                <select id="specCriticality">
+                  <option>Standard sourcing</option>
+                  <option>Production critical</option>
+                  <option>Safety or process critical</option>
+                  <option>Obsolete replacement</option>
+                </select>
+              </label>
+              <label>Required certifications
+                <input id="specCertifications" type="text" placeholder="e.g. CE, UL, RoHS, ISO">
+              </label>
+            </div>
+            <label class="note-field">Must-have specifications
+              <textarea id="specMustHave" rows="4" placeholder="Add comma-separated requirements such as M12, PNP, IP67, 10-30 VDC, sealed, 24 VDC, stainless steel"></textarea>
+            </label>
+          </form>
+          <article class="spec-results">
+            <div class="spec-results-head">
+              <div>
+                <strong id="specMatchSummary">Spec matrix will appear here</strong>
+                <span>Uses compare list first, then shortlist, then current finder results.</span>
+              </div>
+              <div class="spec-actions">
+                <button type="button" id="copySpecMatrix">Copy spec matrix</button>
+                <button class="ghost-button compact" type="button" id="downloadSpecMatrix">Download matrix HTML</button>
+                <button class="ghost-button compact" type="button" id="exportSpecMatrixJson">Export matrix JSON</button>
+              </div>
+            </div>
+            <div class="spec-stats" id="specMatchStats"></div>
+            <div class="spec-card-grid" id="specMatchGrid"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="alternate-band" id="alternates" aria-labelledby="alternates-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Alternate & Obsolescence Desk</p>
+            <h2 id="alternates-title">Review replacement risk before substitution</h2>
+          </div>
+          <p>Select a product, review lifecycle and source signals, compare catalog alternates, and copy a conservative engineering-review note before approving a substitute.</p>
+        </div>
+        <div class="alternate-console">
+          <form class="alternate-form" id="alternateForm">
+            <div class="alternate-form-head">
+              <div>
+                <strong>Replacement review setup</strong>
+                <span>Use shortlist, compare, or any catalog record as the base product.</span>
+              </div>
+              <div class="alternate-actions">
+                <button type="button" id="saveAlternateDesk">Save review setup</button>
+                <button class="ghost-button compact" type="button" id="resetAlternateDesk">Reset</button>
+              </div>
+            </div>
+            <div class="alternate-grid">
+              <label>Base product
+                <select id="alternateProduct"></select>
+              </label>
+              <label>Replacement criticality
+                <select id="alternateCriticality">
+                  <option>Standard spare</option>
+                  <option>Production critical</option>
+                  <option>Safety or process critical</option>
+                  <option>Obsolete or no-stock replacement</option>
+                </select>
+              </label>
+              <label>Installed equipment or location
+                <input id="alternateEquipment" type="text" placeholder="e.g. Line 4 conveyor, pump panel, HVAC MCC">
+              </label>
+              <label>Known constraint
+                <input id="alternateConstraint" type="text" placeholder="e.g. same footprint, 24 VDC, IP67, panel space">
+              </label>
+            </div>
+          </form>
+          <article class="alternate-results">
+            <div class="alternate-results-head">
+              <div>
+                <strong id="alternateSummary">Alternate review will appear here</strong>
+                <span>Alternates are technical review candidates, not automatic substitutes.</span>
+              </div>
+              <div class="alternate-actions">
+                <button type="button" id="copyAlternateReview">Copy review note</button>
+                <button class="ghost-button compact" type="button" id="downloadAlternateReview">Download review HTML</button>
+                <button class="ghost-button compact" type="button" id="exportAlternateJson">Export review JSON</button>
+              </div>
+            </div>
+            <div class="alternate-stats" id="alternateStats"></div>
+            <div class="alternate-grid-results" id="alternateGrid"></div>
+          </article>
+        </div>
+      </section>
+
       <section class="quote-band" id="quotes" aria-labelledby="quotes-title">
         <div class="section-heading">
           <div>
             <p class="eyebrow">Quote Tracker</p>
             <h2 id="quotes-title">Turn supplier replies into a decision desk</h2>
           </div>
-          <p>Record received quotes, compare commercial terms, copy supplier follow-ups, and export a clean quote register for buyer review.</p>
+          <p>Record received quotes, compare commercial terms, review decision scores, copy supplier follow-ups, and export a clean quote register for buyer review.</p>
         </div>
         <div class="quote-desk">
           <div class="quote-summary" id="quoteSummary"></div>
@@ -434,6 +604,116 @@
         </div>
       </section>
 
+      <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Supplier Inbox</p>
+            <h2 id="inbox-title">Turn supplier messages into quote actions</h2>
+          </div>
+          <p>Log reply status, missing documents, alternates, revised prices, and buyer response text before updating the quote tracker.</p>
+        </div>
+        <div class="inbox-desk">
+          <div class="inbox-summary" id="inboxSummary"></div>
+          <form class="inbox-form" id="replyForm">
+            <input id="replyId" type="hidden">
+            <div class="inbox-form-head">
+              <div>
+                <strong>Add supplier reply</strong>
+                <span>Capture the commercial thread, copy the next response, or convert it into a quote record.</span>
+              </div>
+              <div class="inbox-actions">
+                <button type="button" id="saveReply">Save reply</button>
+                <button class="ghost-button compact" type="button" id="clearReply">Clear form</button>
+              </div>
+            </div>
+            <div class="inbox-grid">
+              <label>Related item
+                <select id="replyQuote"></select>
+              </label>
+              <label>Supplier
+                <input id="replySupplier" type="text" placeholder="e.g. RS, Mouser, local supplier">
+              </label>
+              <label>Status
+                <select id="replyStatus">
+                  <option>Received</option>
+                  <option>Clarification needed</option>
+                  <option>Missing certificate</option>
+                  <option>Price revised</option>
+                  <option>Alternate offered</option>
+                  <option>Awaiting buyer reply</option>
+                  <option>Closed</option>
+                </select>
+              </label>
+              <label>Next action
+                <select id="replyAction">
+                  <option>Request revised quote</option>
+                  <option>Ask for datasheet / certificate</option>
+                  <option>Confirm stock and lead time</option>
+                  <option>Review alternate</option>
+                  <option>Update quote tracker</option>
+                  <option>Close thread</option>
+                </select>
+              </label>
+              <label>Reply date
+                <input id="replyDate" type="date">
+              </label>
+              <label>Subject
+                <input id="replySubject" type="text" placeholder="Supplier email subject or portal thread">
+              </label>
+            </div>
+            <label class="note-field">Supplier message
+              <textarea id="replyMessage" rows="4" placeholder="Paste the useful part of the supplier reply: stock, price, lead time, certificate note, alternate, or missing detail"></textarea>
+            </label>
+            <label class="note-field">Buyer notes
+              <textarea id="replyNotes" rows="3" placeholder="Add buyer decision notes, risk, internal instruction, or follow-up context"></textarea>
+            </label>
+            <div class="inbox-export-actions">
+              <button class="ghost-button compact" type="button" id="copyBuyerReply">Copy buyer reply</button>
+              <button class="ghost-button compact" type="button" id="convertReplyQuote">Convert to quote</button>
+              <button class="ghost-button compact" type="button" id="exportReplyCsv">Export CSV</button>
+              <button class="ghost-button compact" type="button" id="exportReplyXlsx">Export XLSX</button>
+            </div>
+          </form>
+          <div class="inbox-register">
+            <div class="inbox-register-head">
+              <div>
+                <strong>Supplier reply register</strong>
+                <span id="replyRegisterStatus">Stored locally in this browser</span>
+              </div>
+              <button class="ghost-button compact" type="button" id="clearReplies">Clear replies</button>
+            </div>
+            <div class="reply-list" id="replyList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="scorecard-band" id="scorecard" aria-labelledby="scorecard-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Supplier Scorecard</p>
+            <h2 id="scorecard-title">Rank supplier paths before award</h2>
+          </div>
+          <p>Combine quote scores, reply status, source evidence, shortlist coverage, and follow-up risks into a buyer-ready supplier recommendation.</p>
+        </div>
+        <div class="scorecard-console">
+          <div class="scorecard-stats" id="supplierScoreStats"></div>
+          <article class="scorecard-card">
+            <div class="scorecard-card-head">
+              <div>
+                <span>Supplier ranking</span>
+                <strong id="supplierScoreTitle">Supplier scorecard will appear here</strong>
+              </div>
+              <div class="scorecard-actions">
+                <button type="button" id="copySupplierScorecard">Copy scorecard</button>
+                <button class="ghost-button compact" type="button" id="downloadSupplierScorecard">Download scorecard HTML</button>
+                <button class="ghost-button compact" type="button" id="exportSupplierScorecardJson">Export scorecard JSON</button>
+              </div>
+            </div>
+            <div class="scorecard-grid" id="supplierScoreGrid"></div>
+          </article>
+        </div>
+      </section>
+
       <section class="quality-band" id="quality" aria-labelledby="quality-title">
         <div class="section-heading">
           <div>
@@ -477,6 +757,243 @@
           <p>A practical source map for global procurement discovery. Each passport explains what the channel is best for, what buyers should verify, and where the risk sits.</p>
         </div>
         <div class="source-directory" id="sourceDirectory"></div>
+        <div class="source-intake" id="source-intake">
+          <div class="source-intake-head">
+            <div>
+              <p class="eyebrow">Supplier Source Intake</p>
+              <h3>Capture source leads before they enter the catalog</h3>
+              <p>Use this static intake desk for supplier listing requests, buyer-recommended sources, regional distributors, surplus channels, and evidence links that need review.</p>
+            </div>
+            <div class="source-intake-summary" id="sourceIntakeSummary"></div>
+          </div>
+          <form class="source-intake-form" id="sourceIntakeForm">
+            <input id="sourceLeadId" type="hidden">
+            <div class="source-intake-grid">
+              <label>Supplier or source name
+                <input id="sourceLeadName" type="text" placeholder="e.g. UAE automation supplier, OEM distributor, RFQ network">
+              </label>
+              <label>Website or profile URL
+                <input id="sourceLeadWebsite" type="text" placeholder="https://...">
+              </label>
+              <label>Source type
+                <select id="sourceLeadType">
+                  <option>Distributor</option>
+                  <option>OEM</option>
+                  <option>Marketplace</option>
+                  <option>RFQ network</option>
+                  <option>Surplus</option>
+                  <option>Data directory</option>
+                  <option>Local supplier</option>
+                </select>
+              </label>
+              <label>Primary category
+                <select id="sourceLeadCategory">
+                  <option>Multiple categories</option>
+                  <option>Sensors</option>
+                  <option>PLCs & Automation</option>
+                  <option>Drives & Motors</option>
+                  <option>Bearings & Power Transmission</option>
+                  <option>Pumps</option>
+                  <option>Valves & Flow Control</option>
+                  <option>Pneumatics</option>
+                  <option>Hydraulics</option>
+                  <option>Electrical & Control Panels</option>
+                  <option>Cables & Connectivity</option>
+                  <option>Fasteners & Hardware</option>
+                  <option>Tools & MRO</option>
+                </select>
+              </label>
+              <label>Regions served
+                <input id="sourceLeadRegion" type="text" placeholder="e.g. Global, GCC, India, EU, USA">
+              </label>
+              <label>Evidence or authorization URL
+                <input id="sourceLeadEvidence" type="text" placeholder="Certificate, line card, distributor page, or proof link">
+              </label>
+              <label>Contact or submitter
+                <input id="sourceLeadContact" type="text" placeholder="Optional email, company, or buyer contact">
+              </label>
+              <label>Review status
+                <select id="sourceLeadStatus">
+                  <option>New lead</option>
+                  <option>Needs verification</option>
+                  <option>Evidence supplied</option>
+                  <option>Authorized claim</option>
+                  <option>Buyer proven</option>
+                </select>
+              </label>
+            </div>
+            <label class="note-field">Verification notes
+              <textarea id="sourceLeadNotes" rows="4" placeholder="Add product lines, brands carried, certificate notes, buyer experience, risk concerns, or catalog-fit comments"></textarea>
+            </label>
+            <div class="source-intake-actions">
+              <button type="button" id="saveSourceLead">Save source lead</button>
+              <button class="ghost-button compact" type="button" id="copySourceLead">Copy review packet</button>
+              <button class="ghost-button compact" type="button" id="exportSourceLeadCsv">Export CSV</button>
+              <button class="ghost-button compact" type="button" id="exportSourceLeadXlsx">Export XLSX</button>
+              <button class="ghost-button compact" type="button" id="clearSourceLead">Clear form</button>
+              <a href="https://github.com/dhirajnyse/induscout/issues/new?template=supplier-source-request.yml" target="_blank" rel="noreferrer">Open GitHub source request</a>
+            </div>
+          </form>
+          <div class="source-intake-register">
+            <div class="source-intake-register-head">
+              <div>
+                <strong>Saved source lead register</strong>
+                <span id="sourceLeadRegisterStatus">Stored locally in this browser</span>
+              </div>
+              <button class="ghost-button compact" type="button" id="clearSourceLeads">Clear source leads</button>
+            </div>
+            <div class="source-lead-list" id="sourceLeadList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="review-band" id="review" aria-labelledby="review-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Evidence Review Board</p>
+            <h2 id="review-title">Turn evidence into catalog decisions</h2>
+          </div>
+          <p>Consolidate review-required catalog records, source leads, missing-product requests, supplier reply actions, and quote risk flags before publishing or buying.</p>
+        </div>
+        <div class="review-console">
+          <div class="review-stats" id="reviewStats"></div>
+          <div class="review-layout">
+            <article class="review-panel">
+              <div class="review-panel-head">
+                <span>Review queue</span>
+                <strong>Items needing buyer or catalog validation</strong>
+              </div>
+              <div class="review-list" id="reviewQueueList"></div>
+            </article>
+            <article class="review-panel">
+              <div class="review-panel-head">
+                <span>Action plan</span>
+                <strong>Recommended next validation steps</strong>
+              </div>
+              <div class="review-action-list" id="reviewActionPlan"></div>
+              <div class="review-actions">
+                <button type="button" id="copyReviewBoard">Copy review report</button>
+                <button class="ghost-button compact" type="button" id="exportReviewBoardJson">Export review JSON</button>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="decision-band" id="decision" aria-labelledby="decision-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Buyer Decision Memo</p>
+            <h2 id="decision-title">Prepare the internal approval note</h2>
+          </div>
+          <p>Turn project context, shortlist, quote scoring, evidence risks, and supplier checks into a concise memo for buyer approval or management review.</p>
+        </div>
+        <div class="decision-console">
+          <div class="decision-stats" id="decisionStats"></div>
+          <article class="decision-memo-card">
+            <div class="decision-memo-head">
+              <div>
+                <span>Memo preview</span>
+                <strong id="decisionMemoTitle">Decision memo will appear here</strong>
+              </div>
+              <div class="decision-actions">
+                <button type="button" id="copyDecisionMemo">Copy decision memo</button>
+                <button class="ghost-button compact" type="button" id="downloadDecisionMemo">Download memo HTML</button>
+              </div>
+            </div>
+            <div class="decision-memo-body" id="decisionMemoBody"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="award-band" id="award" aria-labelledby="award-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Award Handover</p>
+            <h2 id="award-title">Prepare the PO-ready handoff</h2>
+          </div>
+          <p>Convert the decision memo into a purchasing handover with supplier, commercial terms, validation blockers, PO fields, and a clean award note.</p>
+        </div>
+        <div class="award-console">
+          <div class="award-stats" id="awardStats"></div>
+          <article class="award-card">
+            <div class="award-card-head">
+              <div>
+                <span>PO preparation pack</span>
+                <strong id="awardHandoverTitle">Award handover will appear here</strong>
+              </div>
+              <div class="award-actions">
+                <button type="button" id="copyAwardHandover">Copy handover note</button>
+                <button class="ghost-button compact" type="button" id="copySupplierAwardEmail">Copy supplier confirmation</button>
+                <button class="ghost-button compact" type="button" id="downloadAwardHandover">Download PO pack HTML</button>
+              </div>
+            </div>
+            <div class="award-body">
+              <div class="award-checklist" id="awardChecklist"></div>
+              <div class="award-handover-body" id="awardHandoverBody"></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="compliance-band" id="compliance" aria-labelledby="compliance-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Supplier Compliance Gate</p>
+            <h2 id="compliance-title">Check the supplier before award</h2>
+          </div>
+          <p>Build a due-diligence pack for supplier identity, seller authorization, documents, commercial terms, payment safety, and final buyer approval.</p>
+        </div>
+        <div class="compliance-console">
+          <div class="compliance-stats" id="complianceStats"></div>
+          <article class="compliance-card">
+            <div class="compliance-card-head">
+              <div>
+                <span>Due-diligence packet</span>
+                <strong id="complianceTitle">Supplier compliance gate will appear here</strong>
+              </div>
+              <div class="compliance-actions">
+                <button type="button" id="copyCompliancePack">Copy compliance pack</button>
+                <button class="ghost-button compact" type="button" id="copySupplierDueDiligence">Copy supplier due-diligence email</button>
+                <button class="ghost-button compact" type="button" id="downloadCompliancePack">Download compliance HTML</button>
+              </div>
+            </div>
+            <div class="compliance-body">
+              <div class="compliance-checklist" id="complianceChecklist"></div>
+              <div class="compliance-summary" id="complianceBody"></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="buyer-file-band" id="buyer-file" aria-labelledby="buyer-file-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Buyer File</p>
+            <h2 id="buyer-file-title">Create the audit-ready sourcing record</h2>
+          </div>
+          <p>Assemble the current project context, shortlist, quotes, supplier replies, evidence checks, decision memo, award pack, and compliance gate into one buyer file index.</p>
+        </div>
+        <div class="buyer-file-console">
+          <div class="buyer-file-stats" id="buyerFileStats"></div>
+          <article class="buyer-file-card">
+            <div class="buyer-file-card-head">
+              <div>
+                <span>Audit packet</span>
+                <strong id="buyerFileTitle">Buyer file will appear here</strong>
+              </div>
+              <div class="buyer-file-actions">
+                <button type="button" id="copyBuyerFile">Copy buyer file index</button>
+                <button class="ghost-button compact" type="button" id="downloadBuyerFileHtml">Download buyer file HTML</button>
+                <button class="ghost-button compact" type="button" id="exportBuyerFileJson">Export buyer file JSON</button>
+              </div>
+            </div>
+            <div class="buyer-file-body">
+              <div class="buyer-file-checklist" id="buyerFileChecklist"></div>
+              <div class="buyer-file-timeline" id="buyerFileTimeline"></div>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section class="buyer-band" id="buyer-desk" aria-labelledby="buyer-title">
@@ -545,6 +1062,59 @@
             <li>InduScout reviews source evidence and updates the catalog record.</li>
             <li>Confidence status is revised after datasheet and source checks.</li>
           </ol>
+        </div>
+        <div class="security-panel">
+          <div>
+            <p class="eyebrow">Security Baseline</p>
+            <h3>Built as a low-risk static beta</h3>
+            <p>InduScout currently runs on GitHub Pages with no login system, backend database, payment flow, or embedded secrets. Buyer notes, sessions, quote records, and supplier replies stay in this browser.</p>
+          </div>
+          <ul>
+            <li>Imported session JSON is size-limited and sanitized before use.</li>
+            <li>Exports are protected against common spreadsheet formula injection patterns.</li>
+            <li>Source links are restricted to safe web and email protocols.</li>
+            <li>Public beta users should avoid entering confidential tender or personal data.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="privacy-band" id="privacy" aria-labelledby="privacy-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Privacy & Trust Center</p>
+            <h2 id="privacy-title">Clear data handling for public beta users</h2>
+          </div>
+          <p>InduScout should be useful without being careless. This center explains what stays local, what exports contain, and what buyers should keep out of the public beta.</p>
+        </div>
+        <div class="privacy-grid">
+          <article>
+            <span>Local by default</span>
+            <h3>Browser-only workbench</h3>
+            <p>Shortlists, compare selections, buyer notes, project context, quote records, supplier replies, and saved sessions are stored in this browser unless the user exports them.</p>
+          </article>
+          <article>
+            <span>User-controlled exports</span>
+            <h3>Files stay with the buyer</h3>
+            <p>RFQ packs, CSV, XLSX, and JSON session files are generated locally. Users decide when to download, share, email, or delete those files.</p>
+          </article>
+          <article>
+            <span>Public beta limits</span>
+            <h3>No confidential inputs</h3>
+            <p>Users should avoid tender secrets, passwords, API keys, payment data, regulated personal data, or private commercial documents until a governed backend exists.</p>
+          </article>
+          <article>
+            <span>Future controls</span>
+            <h3>Backend readiness path</h3>
+            <p>Before accounts or shared supplier submissions, InduScout will need access control, audit logs, encrypted storage, rate limits, deletion workflows, and privacy terms.</p>
+          </article>
+        </div>
+        <div class="privacy-actions">
+          <div>
+            <strong>Buyer-facing privacy brief</strong>
+            <span>Copy a plain-language note for launch pages, buyer onboarding, or GitHub documentation.</span>
+          </div>
+          <button type="button" id="copyPrivacyBrief">Copy privacy brief</button>
+          <a href="PRIVACY.md">View privacy note</a>
         </div>
       </section>
 
@@ -718,8 +1288,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=2.4"></script>
-    <script src="back-to-top.js?v=2.4"></script>
-    <script src="app.js?v=2.4"></script>
+    <script src="catalog.js?v=3.8"></script>
+    <script src="back-to-top.js?v=3.8"></script>
+    <script src="app.js?v=3.8"></script>
   </body>
 </html>

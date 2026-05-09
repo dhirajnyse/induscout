@@ -3,6 +3,10 @@ const products = catalog.products || [];
 const categoryTaxonomy = catalog.categoryTaxonomy || [];
 const sourceChannels = catalog.sourceChannels || [];
 const sourceDirectory = catalog.sourceDirectory || [];
+const SESSION_IMPORT_MAX_BYTES = 750000;
+const SPEC_SOURCE_REQUIREMENTS = ["any", "oem-distributor", "datasheet", "verified"];
+const SPEC_CRITICALITY_LEVELS = ["Standard sourcing", "Production critical", "Safety or process critical", "Obsolete replacement"];
+const ALTERNATE_CRITICALITY_LEVELS = ["Standard spare", "Production critical", "Safety or process critical", "Obsolete or no-stock replacement"];
 
 const state = {
   query: "",
@@ -17,8 +21,12 @@ const state = {
   compare: [],
   notes: loadNotes(),
   productRequests: loadProductRequests(),
+  sourceLeads: loadSourceLeads(),
   quotes: loadQuoteRecords(),
+  supplierReplies: loadSupplierReplies(),
   project: loadProjectProfile(),
+  specRequirements: loadSpecRequirements(),
+  alternateReview: loadAlternateReview(),
   activeProductId: null
 };
 
@@ -69,6 +77,26 @@ const els = {
   results: document.querySelector("#resultsGrid"),
   sourceGrid: document.querySelector("#sourceGrid"),
   sourceDirectory: document.querySelector("#sourceDirectory"),
+  sourceIntakeSummary: document.querySelector("#sourceIntakeSummary"),
+  sourceLeadForm: document.querySelector("#sourceIntakeForm"),
+  sourceLeadId: document.querySelector("#sourceLeadId"),
+  sourceLeadName: document.querySelector("#sourceLeadName"),
+  sourceLeadWebsite: document.querySelector("#sourceLeadWebsite"),
+  sourceLeadType: document.querySelector("#sourceLeadType"),
+  sourceLeadCategory: document.querySelector("#sourceLeadCategory"),
+  sourceLeadRegion: document.querySelector("#sourceLeadRegion"),
+  sourceLeadEvidence: document.querySelector("#sourceLeadEvidence"),
+  sourceLeadContact: document.querySelector("#sourceLeadContact"),
+  sourceLeadStatus: document.querySelector("#sourceLeadStatus"),
+  sourceLeadNotes: document.querySelector("#sourceLeadNotes"),
+  saveSourceLead: document.querySelector("#saveSourceLead"),
+  copySourceLead: document.querySelector("#copySourceLead"),
+  exportSourceLeadCsv: document.querySelector("#exportSourceLeadCsv"),
+  exportSourceLeadXlsx: document.querySelector("#exportSourceLeadXlsx"),
+  clearSourceLead: document.querySelector("#clearSourceLead"),
+  clearSourceLeads: document.querySelector("#clearSourceLeads"),
+  sourceLeadRegisterStatus: document.querySelector("#sourceLeadRegisterStatus"),
+  sourceLeadList: document.querySelector("#sourceLeadList"),
   categoryGrid: document.querySelector("#categoryGrid"),
   priorityButtons: [...document.querySelectorAll("[data-priority]")],
   reset: document.querySelector("#resetFilters"),
@@ -94,6 +122,33 @@ const els = {
   compareGrid: document.querySelector("#compareGrid"),
   clearCompare: document.querySelector("#clearCompare"),
   copyCompare: document.querySelector("#copyCompare"),
+  specForm: document.querySelector("#specForm"),
+  specApplication: document.querySelector("#specApplication"),
+  specMustHave: document.querySelector("#specMustHave"),
+  specCertifications: document.querySelector("#specCertifications"),
+  specSourceRequirement: document.querySelector("#specSourceRequirement"),
+  specCriticality: document.querySelector("#specCriticality"),
+  saveSpecRequirements: document.querySelector("#saveSpecRequirements"),
+  resetSpecRequirements: document.querySelector("#resetSpecRequirements"),
+  copySpecMatrix: document.querySelector("#copySpecMatrix"),
+  downloadSpecMatrix: document.querySelector("#downloadSpecMatrix"),
+  exportSpecMatrixJson: document.querySelector("#exportSpecMatrixJson"),
+  specMatchStats: document.querySelector("#specMatchStats"),
+  specMatchSummary: document.querySelector("#specMatchSummary"),
+  specMatchGrid: document.querySelector("#specMatchGrid"),
+  alternateForm: document.querySelector("#alternateForm"),
+  alternateProduct: document.querySelector("#alternateProduct"),
+  alternateCriticality: document.querySelector("#alternateCriticality"),
+  alternateEquipment: document.querySelector("#alternateEquipment"),
+  alternateConstraint: document.querySelector("#alternateConstraint"),
+  saveAlternateDesk: document.querySelector("#saveAlternateDesk"),
+  resetAlternateDesk: document.querySelector("#resetAlternateDesk"),
+  copyAlternateReview: document.querySelector("#copyAlternateReview"),
+  downloadAlternateReview: document.querySelector("#downloadAlternateReview"),
+  exportAlternateJson: document.querySelector("#exportAlternateJson"),
+  alternateStats: document.querySelector("#alternateStats"),
+  alternateSummary: document.querySelector("#alternateSummary"),
+  alternateGrid: document.querySelector("#alternateGrid"),
   quoteSummary: document.querySelector("#quoteSummary"),
   quoteForm: document.querySelector("#quoteForm"),
   quoteId: document.querySelector("#quoteId"),
@@ -119,6 +174,71 @@ const els = {
   clearQuotes: document.querySelector("#clearQuotes"),
   quoteRegisterStatus: document.querySelector("#quoteRegisterStatus"),
   quoteList: document.querySelector("#quoteList"),
+  inboxSummary: document.querySelector("#inboxSummary"),
+  replyForm: document.querySelector("#replyForm"),
+  replyId: document.querySelector("#replyId"),
+  replyQuote: document.querySelector("#replyQuote"),
+  replySupplier: document.querySelector("#replySupplier"),
+  replyStatus: document.querySelector("#replyStatus"),
+  replyAction: document.querySelector("#replyAction"),
+  replyDate: document.querySelector("#replyDate"),
+  replySubject: document.querySelector("#replySubject"),
+  replyMessage: document.querySelector("#replyMessage"),
+  replyNotes: document.querySelector("#replyNotes"),
+  saveReply: document.querySelector("#saveReply"),
+  clearReply: document.querySelector("#clearReply"),
+  copyBuyerReply: document.querySelector("#copyBuyerReply"),
+  convertReplyQuote: document.querySelector("#convertReplyQuote"),
+  exportReplyCsv: document.querySelector("#exportReplyCsv"),
+  exportReplyXlsx: document.querySelector("#exportReplyXlsx"),
+  clearReplies: document.querySelector("#clearReplies"),
+  replyRegisterStatus: document.querySelector("#replyRegisterStatus"),
+  replyList: document.querySelector("#replyList"),
+  supplierScoreStats: document.querySelector("#supplierScoreStats"),
+  supplierScoreTitle: document.querySelector("#supplierScoreTitle"),
+  supplierScoreGrid: document.querySelector("#supplierScoreGrid"),
+  copySupplierScorecard: document.querySelector("#copySupplierScorecard"),
+  downloadSupplierScorecard: document.querySelector("#downloadSupplierScorecard"),
+  exportSupplierScorecardJson: document.querySelector("#exportSupplierScorecardJson"),
+  copyPrivacyBrief: document.querySelector("#copyPrivacyBrief"),
+  workspaceMetrics: document.querySelector("#workspaceMetrics"),
+  workspaceProjectTitle: document.querySelector("#workspaceProjectTitle"),
+  workspaceProjectFacts: document.querySelector("#workspaceProjectFacts"),
+  workspaceNextActions: document.querySelector("#workspaceNextActions"),
+  workspaceLanes: document.querySelector("#workspaceLanes"),
+  copyWorkspaceBrief: document.querySelector("#copyWorkspaceBrief"),
+  exportWorkspaceSnapshot: document.querySelector("#exportWorkspaceSnapshot"),
+  reviewStats: document.querySelector("#reviewStats"),
+  reviewQueueList: document.querySelector("#reviewQueueList"),
+  reviewActionPlan: document.querySelector("#reviewActionPlan"),
+  copyReviewBoard: document.querySelector("#copyReviewBoard"),
+  exportReviewBoardJson: document.querySelector("#exportReviewBoardJson"),
+  decisionStats: document.querySelector("#decisionStats"),
+  decisionMemoTitle: document.querySelector("#decisionMemoTitle"),
+  decisionMemoBody: document.querySelector("#decisionMemoBody"),
+  copyDecisionMemo: document.querySelector("#copyDecisionMemo"),
+  downloadDecisionMemo: document.querySelector("#downloadDecisionMemo"),
+  awardStats: document.querySelector("#awardStats"),
+  awardHandoverTitle: document.querySelector("#awardHandoverTitle"),
+  awardChecklist: document.querySelector("#awardChecklist"),
+  awardHandoverBody: document.querySelector("#awardHandoverBody"),
+  copyAwardHandover: document.querySelector("#copyAwardHandover"),
+  copySupplierAwardEmail: document.querySelector("#copySupplierAwardEmail"),
+  downloadAwardHandover: document.querySelector("#downloadAwardHandover"),
+  complianceStats: document.querySelector("#complianceStats"),
+  complianceTitle: document.querySelector("#complianceTitle"),
+  complianceChecklist: document.querySelector("#complianceChecklist"),
+  complianceBody: document.querySelector("#complianceBody"),
+  copyCompliancePack: document.querySelector("#copyCompliancePack"),
+  copySupplierDueDiligence: document.querySelector("#copySupplierDueDiligence"),
+  downloadCompliancePack: document.querySelector("#downloadCompliancePack"),
+  buyerFileStats: document.querySelector("#buyerFileStats"),
+  buyerFileTitle: document.querySelector("#buyerFileTitle"),
+  buyerFileChecklist: document.querySelector("#buyerFileChecklist"),
+  buyerFileTimeline: document.querySelector("#buyerFileTimeline"),
+  copyBuyerFile: document.querySelector("#copyBuyerFile"),
+  downloadBuyerFileHtml: document.querySelector("#downloadBuyerFileHtml"),
+  exportBuyerFileJson: document.querySelector("#exportBuyerFileJson"),
   qualityStats: document.querySelector("#qualityStats"),
   qualityCategoryGrid: document.querySelector("#qualityCategoryGrid"),
   qualityReviewList: document.querySelector("#qualityReviewList"),
@@ -137,17 +257,31 @@ function init() {
   renderMetrics();
   populateFilters();
   populateQuoteProducts();
+  populateAlternateProducts();
   hydrateFromUrl();
   hydrateProjectFields();
+  hydrateSpecRequirementFields();
+  hydrateAlternateReviewFields();
   renderCategories();
   renderSources();
   renderSourceDirectory();
+  renderSourceIntake();
+  renderEvidenceReviewBoard();
+  renderDecisionMemo();
+  renderAwardHandover();
+  renderComplianceGate();
+  renderBuyerFile();
   renderQualityDashboard();
   wireEvents();
   renderProjectStatus();
   renderProductRequests();
   renderCompare();
+  renderSpecMatchDesk();
+  renderAlternateDesk();
   renderQuoteTracker();
+  populateReplyItems();
+  renderSupplierInbox();
+  renderSupplierScorecard();
   render();
 }
 
@@ -196,6 +330,65 @@ function populateQuoteProducts() {
     option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
     els.quoteProduct.append(option);
   });
+}
+
+function populateAlternateProducts() {
+  if (!els.alternateProduct) {
+    return;
+  }
+
+  const currentValue = els.alternateProduct.value || state.alternateReview.productId;
+  els.alternateProduct.innerHTML = "";
+  products.forEach((product) => {
+    const option = document.createElement("option");
+    option.value = product.id;
+    option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
+    els.alternateProduct.append(option);
+  });
+
+  const preferred = currentValue && products.some((product) => product.id === currentValue)
+    ? currentValue
+    : state.shortlist[0] || state.compare[0] || products[0]?.id || "";
+  if (preferred) {
+    els.alternateProduct.value = preferred;
+    state.alternateReview.productId = preferred;
+  }
+}
+
+function populateReplyItems() {
+  if (!els.replyQuote) {
+    return;
+  }
+
+  const currentValue = els.replyQuote.value;
+  els.replyQuote.innerHTML = "";
+
+  const quoteGroup = document.createElement("optgroup");
+  quoteGroup.label = "Saved quotes";
+  state.quotes.forEach((quote) => {
+    const option = document.createElement("option");
+    option.value = `quote:${quote.id}`;
+    option.textContent = `${quote.supplier} - ${quote.brand} ${quote.sku}`;
+    quoteGroup.append(option);
+  });
+
+  const productGroup = document.createElement("optgroup");
+  productGroup.label = "Catalog products";
+  products.forEach((product) => {
+    const option = document.createElement("option");
+    option.value = `product:${product.id}`;
+    option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
+    productGroup.append(option);
+  });
+
+  if (quoteGroup.children.length) {
+    els.replyQuote.append(quoteGroup);
+  }
+  els.replyQuote.append(productGroup);
+
+  if ([...els.replyQuote.querySelectorAll("option")].some((option) => option.value === currentValue)) {
+    els.replyQuote.value = currentValue;
+  }
 }
 
 function renderMetrics() {
@@ -326,6 +519,44 @@ function wireEvents() {
       toggleCompare(button.dataset.removeCompare);
     }
   });
+  specRequirementInputs().forEach((input) => {
+    input.addEventListener("input", updateSpecRequirementsFromFields);
+    input.addEventListener("change", updateSpecRequirementsFromFields);
+  });
+  if (els.saveSpecRequirements) {
+    els.saveSpecRequirements.addEventListener("click", saveSpecRequirementsFromFields);
+  }
+  if (els.resetSpecRequirements) {
+    els.resetSpecRequirements.addEventListener("click", resetSpecRequirements);
+  }
+  if (els.copySpecMatrix) {
+    els.copySpecMatrix.addEventListener("click", copySpecMatrix);
+  }
+  if (els.downloadSpecMatrix) {
+    els.downloadSpecMatrix.addEventListener("click", downloadSpecMatrixHtml);
+  }
+  if (els.exportSpecMatrixJson) {
+    els.exportSpecMatrixJson.addEventListener("click", exportSpecMatrixJson);
+  }
+  alternateReviewInputs().forEach((input) => {
+    input.addEventListener("input", updateAlternateReviewFromFields);
+    input.addEventListener("change", updateAlternateReviewFromFields);
+  });
+  if (els.saveAlternateDesk) {
+    els.saveAlternateDesk.addEventListener("click", saveAlternateReviewFromFields);
+  }
+  if (els.resetAlternateDesk) {
+    els.resetAlternateDesk.addEventListener("click", resetAlternateReview);
+  }
+  if (els.copyAlternateReview) {
+    els.copyAlternateReview.addEventListener("click", copyAlternateReview);
+  }
+  if (els.downloadAlternateReview) {
+    els.downloadAlternateReview.addEventListener("click", downloadAlternateReviewHtml);
+  }
+  if (els.exportAlternateJson) {
+    els.exportAlternateJson.addEventListener("click", exportAlternateReviewJson);
+  }
   if (els.saveQuote) {
     els.saveQuote.addEventListener("click", saveQuoteFromForm);
   }
@@ -366,6 +597,70 @@ function wireEvents() {
 
       if (removeButton) {
         removeQuoteRecord(removeButton.dataset.removeQuote);
+      }
+    });
+  }
+  if (els.replyQuote) {
+    els.replyQuote.addEventListener("change", prefillReplyFromContext);
+  }
+  if (els.replyStatus) {
+    els.replyStatus.addEventListener("change", () => {
+      if (els.replyAction) {
+        els.replyAction.value = defaultReplyAction(els.replyStatus.value);
+      }
+    });
+  }
+  if (els.saveReply) {
+    els.saveReply.addEventListener("click", saveSupplierReply);
+  }
+  if (els.clearReply) {
+    els.clearReply.addEventListener("click", clearSupplierReplyForm);
+  }
+  if (els.copyBuyerReply) {
+    els.copyBuyerReply.addEventListener("click", copyBuyerReplyFromForm);
+  }
+  if (els.convertReplyQuote) {
+    els.convertReplyQuote.addEventListener("click", () => convertReplyToQuote(replyFormSnapshot(), els.convertReplyQuote));
+  }
+  if (els.exportReplyCsv) {
+    els.exportReplyCsv.addEventListener("click", exportSupplierReplyCsv);
+  }
+  if (els.exportReplyXlsx) {
+    els.exportReplyXlsx.addEventListener("click", exportSupplierReplyXlsx);
+  }
+  if (els.clearReplies) {
+    els.clearReplies.addEventListener("click", clearSupplierReplies);
+  }
+  if (els.copySupplierScorecard) {
+    els.copySupplierScorecard.addEventListener("click", copySupplierScorecard);
+  }
+  if (els.downloadSupplierScorecard) {
+    els.downloadSupplierScorecard.addEventListener("click", downloadSupplierScorecardHtml);
+  }
+  if (els.exportSupplierScorecardJson) {
+    els.exportSupplierScorecardJson.addEventListener("click", exportSupplierScorecardJson);
+  }
+  if (els.replyList) {
+    els.replyList.addEventListener("click", (event) => {
+      const loadButton = event.target.closest("[data-load-reply]");
+      const copyButton = event.target.closest("[data-copy-buyer-reply]");
+      const convertButton = event.target.closest("[data-convert-reply]");
+      const removeButton = event.target.closest("[data-remove-reply]");
+
+      if (loadButton) {
+        loadSupplierReply(loadButton.dataset.loadReply);
+      }
+
+      if (copyButton) {
+        copyBuyerReply(copyButton.dataset.copyBuyerReply, copyButton);
+      }
+
+      if (convertButton) {
+        convertReplyToQuote(convertButton.dataset.convertReply, convertButton);
+      }
+
+      if (removeButton) {
+        removeSupplierReply(removeButton.dataset.removeReply);
       }
     });
   }
@@ -445,6 +740,54 @@ function wireEvents() {
   if (els.copyProjectBrief) {
     els.copyProjectBrief.addEventListener("click", copyProjectBrief);
   }
+  if (els.copyPrivacyBrief) {
+    els.copyPrivacyBrief.addEventListener("click", copyPrivacyBrief);
+  }
+  if (els.copyWorkspaceBrief) {
+    els.copyWorkspaceBrief.addEventListener("click", copyWorkspaceBrief);
+  }
+  if (els.exportWorkspaceSnapshot) {
+    els.exportWorkspaceSnapshot.addEventListener("click", exportWorkspaceSnapshot);
+  }
+  if (els.copyReviewBoard) {
+    els.copyReviewBoard.addEventListener("click", copyReviewBoardReport);
+  }
+  if (els.exportReviewBoardJson) {
+    els.exportReviewBoardJson.addEventListener("click", exportReviewBoardJson);
+  }
+  if (els.copyDecisionMemo) {
+    els.copyDecisionMemo.addEventListener("click", copyDecisionMemo);
+  }
+  if (els.downloadDecisionMemo) {
+    els.downloadDecisionMemo.addEventListener("click", downloadDecisionMemoHtml);
+  }
+  if (els.copyAwardHandover) {
+    els.copyAwardHandover.addEventListener("click", copyAwardHandover);
+  }
+  if (els.copySupplierAwardEmail) {
+    els.copySupplierAwardEmail.addEventListener("click", copySupplierAwardEmail);
+  }
+  if (els.downloadAwardHandover) {
+    els.downloadAwardHandover.addEventListener("click", downloadAwardHandoverHtml);
+  }
+  if (els.copyCompliancePack) {
+    els.copyCompliancePack.addEventListener("click", copyCompliancePack);
+  }
+  if (els.copySupplierDueDiligence) {
+    els.copySupplierDueDiligence.addEventListener("click", copySupplierDueDiligenceEmail);
+  }
+  if (els.downloadCompliancePack) {
+    els.downloadCompliancePack.addEventListener("click", downloadCompliancePackHtml);
+  }
+  if (els.copyBuyerFile) {
+    els.copyBuyerFile.addEventListener("click", copyBuyerFileIndex);
+  }
+  if (els.downloadBuyerFileHtml) {
+    els.downloadBuyerFileHtml.addEventListener("click", downloadBuyerFileHtml);
+  }
+  if (els.exportBuyerFileJson) {
+    els.exportBuyerFileJson.addEventListener("click", exportBuyerFileJson);
+  }
   if (els.clearProject) {
     els.clearProject.addEventListener("click", clearProjectProfile);
   }
@@ -475,6 +818,43 @@ function wireEvents() {
       copyDirectorySourcePassport(button.dataset.copyDirectoryPassport, button);
     }
   });
+  if (els.saveSourceLead) {
+    els.saveSourceLead.addEventListener("click", saveSourceLead);
+  }
+  if (els.copySourceLead) {
+    els.copySourceLead.addEventListener("click", copyCurrentSourceLead);
+  }
+  if (els.exportSourceLeadCsv) {
+    els.exportSourceLeadCsv.addEventListener("click", exportSourceLeadCsv);
+  }
+  if (els.exportSourceLeadXlsx) {
+    els.exportSourceLeadXlsx.addEventListener("click", exportSourceLeadXlsx);
+  }
+  if (els.clearSourceLead) {
+    els.clearSourceLead.addEventListener("click", clearSourceLeadForm);
+  }
+  if (els.clearSourceLeads) {
+    els.clearSourceLeads.addEventListener("click", clearSourceLeads);
+  }
+  if (els.sourceLeadList) {
+    els.sourceLeadList.addEventListener("click", (event) => {
+      const loadButton = event.target.closest("[data-load-source-lead]");
+      const copyButton = event.target.closest("[data-copy-source-lead]");
+      const removeButton = event.target.closest("[data-remove-source-lead]");
+
+      if (loadButton) {
+        loadSourceLead(loadButton.dataset.loadSourceLead);
+      }
+
+      if (copyButton) {
+        copySavedSourceLead(copyButton.dataset.copySourceLead, copyButton);
+      }
+
+      if (removeButton) {
+        removeSourceLead(removeButton.dataset.removeSourceLead);
+      }
+    });
+  }
 }
 
 function setQuery(value) {
@@ -495,6 +875,15 @@ function render() {
     .filter(matchesFilters)
     .sort((a, b) => b[state.priority] - a[state.priority]);
 
+  renderBuyerWorkspace(matches);
+  renderEvidenceReviewBoard();
+  renderDecisionMemo();
+  renderAwardHandover();
+  renderComplianceGate();
+  renderBuyerFile();
+  renderSupplierScorecard();
+  renderSpecMatchDesk(matches);
+  renderAlternateDesk(matches);
   updateShortlistControls();
   els.resultCount.textContent = `${matches.length} ${matches.length === 1 ? "product" : "products"}`;
   els.resultSummary.textContent = summaryText(matches.length);
@@ -556,6 +945,1928 @@ function summaryText(count) {
   return "Filtered procurement matches";
 }
 
+function renderBuyerWorkspace(matches = null) {
+  if (!els.workspaceMetrics || !els.workspaceProjectFacts || !els.workspaceNextActions || !els.workspaceLanes) {
+    return;
+  }
+
+  const currentMatches = matches || products.filter(matchesFilters);
+  const shortlistedProducts = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  const followUpQuotes = state.quotes.filter((quote) => quote.status === "Follow-up needed").length;
+  const replyActions = state.supplierReplies.filter(replyNeedsAction).length;
+  const decision = quoteDecisionInsights();
+  const readyScore = workspaceReadinessScore();
+  const valueSummary = workspaceValueSummary();
+
+  els.workspaceMetrics.innerHTML = [
+    workspaceMetricTemplate("Readiness", `${readyScore}%`, "Local desk completion"),
+    workspaceMetricTemplate("Shortlist", shortlistedProducts.length, "Products selected for RFQ"),
+    workspaceMetricTemplate("Quotes", state.quotes.length, `${state.quotes.filter((quote) => ["Received", "Best option"].includes(quote.status)).length} received or preferred`),
+    workspaceMetricTemplate("Follow-ups", followUpQuotes + replyActions, "Supplier actions to chase"),
+    workspaceMetricTemplate("Growth Leads", state.productRequests.length + state.sourceLeads.length, "Missing items and sources")
+  ].join("");
+
+  els.workspaceProjectTitle.textContent = projectHasValue() ? projectValue("name", "Project RFQ workspace") : "No project context yet";
+  els.workspaceProjectFacts.innerHTML = `
+    <div><dt>Buyer</dt><dd>${escapeHtml(projectValue("buyer", "TBC"))}</dd></div>
+    <div><dt>Delivery</dt><dd>${escapeHtml(projectValue("country", "TBC"))}</dd></div>
+    <div><dt>Target</dt><dd>${escapeHtml(projectValue("targetDate", "TBC"))}</dd></div>
+    <div><dt>Search result</dt><dd>${currentMatches.length} ${currentMatches.length === 1 ? "match" : "matches"}</dd></div>
+    <div><dt>Compare</dt><dd>${state.compare.length} / 4 selected</dd></div>
+    <div><dt>Value</dt><dd>${escapeHtml(valueSummary)}</dd></div>
+  `;
+
+  els.workspaceNextActions.innerHTML = workspaceNextActionItems(currentMatches)
+    .map(
+      (item) => `
+        <div class="workspace-action-item">
+          <span>${escapeHtml(item.stage)}</span>
+          <strong>${escapeHtml(item.title)}</strong>
+          <p>${escapeHtml(item.detail)}</p>
+        </div>
+      `
+    )
+    .join("");
+
+  els.workspaceLanes.innerHTML = [
+    workspaceLaneTemplate("Project", projectHasValue() ? "Context saved" : "Context needed", projectHasValue() ? projectValue("buyer", "Buyer ready") : "Add buyer, delivery country, target date, and project notes.", "#finder"),
+    workspaceLaneTemplate("RFQ Pack", shortlistedProducts.length ? `${shortlistedProducts.length} item shortlist` : "Shortlist empty", shortlistedProducts.length ? "Ready to export RFQ pack, CSV, XLSX, or supplier-ready text." : "Add catalog matches before creating supplier outreach.", "#finder"),
+    workspaceLaneTemplate("Quote Decision", decision.recommended ? `${decision.recommended.quote.supplier} leads` : "Awaiting quotes", decision.recommended ? `Current score ${decision.recommended.score}; review price, lead time, validity, and terms.` : "Record supplier prices and terms in the quote tracker.", "#quotes"),
+    workspaceLaneTemplate("Supplier Inbox", state.supplierReplies.length ? `${state.supplierReplies.length} replies logged` : "No replies yet", replyActions ? `${replyActions} supplier ${replyActions === 1 ? "thread needs" : "threads need"} buyer action.` : "Capture replies, missing certificates, alternates, and buyer response notes.", "#inbox"),
+    workspaceLaneTemplate("Catalog Gap", state.productRequests.length ? `${state.productRequests.length} saved requests` : "No gaps saved", state.productRequests.length ? "Use requests to expand the catalog and source missing items." : "Unknown parts can be turned into research requests from Finder.", "#finder"),
+    workspaceLaneTemplate("Source Intake", state.sourceLeads.length ? `${state.sourceLeads.length} source leads` : "No source leads", state.sourceLeads.length ? "Review supplier evidence before adding source paths to the catalog." : "Capture new suppliers, distributor leads, and evidence links in Sources.", "#source-intake")
+  ].join("");
+}
+
+function workspaceMetricTemplate(label, value, detail) {
+  return `
+    <article class="workspace-metric">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function workspaceLaneTemplate(stage, title, detail, href) {
+  return `
+    <article class="workspace-lane">
+      <span>${escapeHtml(stage)}</span>
+      <strong>${escapeHtml(title)}</strong>
+      <p>${escapeHtml(detail)}</p>
+      <a href="${escapeHtml(href)}">Open</a>
+    </article>
+  `;
+}
+
+function workspaceReadinessScore() {
+  const checks = [
+    projectHasValue(),
+    state.shortlist.length > 0,
+    state.compare.length > 0,
+    state.quotes.length > 0,
+    state.supplierReplies.length > 0 || state.productRequests.length > 0 || state.sourceLeads.length > 0 || Object.values(state.notes).some((note) => String(note || "").trim())
+  ];
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+}
+
+function workspaceValueSummary() {
+  const totals = quoteTotalsByCurrency();
+  const entries = Object.entries(totals);
+  if (!entries.length) {
+    return "Price TBC";
+  }
+  return entries.map(([currency, value]) => `${currency} ${formatAmount(value)}`).join(" | ");
+}
+
+function workspaceNextActionItems(matches) {
+  const items = [];
+  const decision = quoteDecisionInsights();
+  const followUpQuotes = state.quotes.filter((quote) => quote.status === "Follow-up needed").length;
+  const replyActions = state.supplierReplies.filter(replyNeedsAction).length;
+
+  if (!projectHasValue()) {
+    items.push({
+      stage: "Setup",
+      title: "Add project context",
+      detail: "Fill project name, buyer, delivery country, target date, and notes so exports are buyer-ready."
+    });
+  }
+  if (!state.shortlist.length) {
+    items.push({
+      stage: "Shortlist",
+      title: "Select products for RFQ",
+      detail: matches.length ? "Add the best catalog matches to shortlist before creating the RFQ pack." : "Broaden the search or create a missing-product request."
+    });
+  }
+  if (state.shortlist.length && state.compare.length < Math.min(2, state.shortlist.length)) {
+    items.push({
+      stage: "Compare",
+      title: "Compare technical options",
+      detail: "Use Compare on shortlisted items to review lead time, MOQ, datasheet, certifications, and alternates."
+    });
+  }
+  if (state.shortlist.length && !state.quotes.length) {
+    items.push({
+      stage: "Supplier outreach",
+      title: "Send RFQs and track replies",
+      detail: "Use product detail to copy supplier emails, then record replies in Quotes or Inbox."
+    });
+  }
+  if (followUpQuotes || replyActions) {
+    items.push({
+      stage: "Follow-up",
+      title: "Close supplier action items",
+      detail: `${followUpQuotes + replyActions} ${followUpQuotes + replyActions === 1 ? "item needs" : "items need"} response, missing document review, or quote update.`
+    });
+  }
+  if (decision.recommended) {
+    items.push({
+      stage: "Decision",
+      title: "Review the current quote lead",
+      detail: `${decision.recommended.quote.supplier} is leading at score ${decision.recommended.score}. Confirm exact part, warranty, origin, and delivery terms.`
+    });
+  }
+  if (!state.productRequests.length && !matches.length) {
+    items.push({
+      stage: "Catalog gap",
+      title: "Save a product request",
+      detail: "Capture unknown part, brand, quantity, application, and target country for catalog expansion."
+    });
+  }
+  if (!state.sourceLeads.length) {
+    items.push({
+      stage: "Source growth",
+      title: "Add supplier source leads",
+      detail: "Capture distributors, OEM paths, RFQ networks, surplus channels, or regional suppliers with evidence before catalog inclusion."
+    });
+  }
+  if (!items.length) {
+    items.push({
+      stage: "Ready",
+      title: "Workspace is ready for buyer review",
+      detail: "Export the workspace JSON, RFQ pack, quote summary, or supplier follow-up text for internal review."
+    });
+  }
+
+  return items.slice(0, 5);
+}
+
+async function copyWorkspaceBrief() {
+  const text = workspaceBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyWorkspaceBrief) {
+      els.copyWorkspaceBrief.textContent = "Workspace brief copied";
+      setTimeout(() => {
+        els.copyWorkspaceBrief.textContent = "Copy workspace brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy workspace brief", text);
+  }
+}
+
+function exportWorkspaceSnapshot() {
+  const snapshot = {
+    ...createSessionSnapshot(),
+    workspace: {
+      readinessScore: workspaceReadinessScore(),
+      shortlistCount: state.shortlist.length,
+      compareCount: state.compare.length,
+      quoteCount: state.quotes.length,
+      supplierReplyCount: state.supplierReplies.length,
+      productRequestCount: state.productRequests.length,
+      sourceLeadCount: state.sourceLeads.length,
+      estimatedValue: workspaceValueSummary(),
+      nextActions: workspaceNextActionItems(products.filter(matchesFilters))
+    }
+  };
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  downloadFile(
+    projectSlug
+      ? `InduScout-Workspace-${projectSlug}-${new Date().toISOString().slice(0, 10)}.json`
+      : `InduScout-Workspace-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify(snapshot, null, 2),
+    "application/json;charset=utf-8"
+  );
+  if (els.exportWorkspaceSnapshot) {
+    els.exportWorkspaceSnapshot.textContent = "Workspace exported";
+    setTimeout(() => {
+      els.exportWorkspaceSnapshot.textContent = "Export workspace JSON";
+    }, 1400);
+  }
+}
+
+function workspaceBriefText() {
+  const shortlistedProducts = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  const decision = quoteDecisionInsights();
+  const nextActions = workspaceNextActionItems(products.filter(matchesFilters));
+  const shortlistText = shortlistedProducts.length
+    ? shortlistedProducts.map((product, index) => `${index + 1}. ${product.brand} ${product.sku} - ${product.name}`).join("\n")
+    : "No shortlisted products yet.";
+  const quoteText = state.quotes.length
+    ? state.quotes
+        .map((quote, index) => `${index + 1}. ${quote.supplier} - ${quote.brand} ${quote.sku} - ${quote.status} - ${quote.currency} ${quote.unitPrice || "TBC"} - ${quote.leadTime || "Lead TBC"}`)
+        .join("\n")
+    : "No quote records yet.";
+  const sourceLeadText = state.sourceLeads.length
+    ? state.sourceLeads
+        .map((lead, index) => `${index + 1}. ${lead.name} - ${lead.type} - ${lead.category} - ${lead.region || "Region TBC"} - ${lead.status}`)
+        .join("\n")
+    : "No source leads saved yet.";
+
+  return `InduScout buyer workspace brief
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Buyer contact: ${projectValue("contact", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
+
+Workspace readiness: ${workspaceReadinessScore()}%
+Shortlist items: ${state.shortlist.length}
+Compare items: ${state.compare.length}
+Saved quote records: ${state.quotes.length}
+Supplier inbox replies: ${state.supplierReplies.length}
+Saved missing-product requests: ${state.productRequests.length}
+Saved source leads: ${state.sourceLeads.length}
+Estimated quoted value: ${workspaceValueSummary()}
+
+Current decision signal:
+${decision.recommended ? `${decision.recommended.quote.supplier} leads with score ${decision.recommended.score}.` : "No quote decision lead yet."}
+
+Shortlisted products:
+${shortlistText}
+
+Quote register:
+${quoteText}
+
+Supplier/source intake:
+${sourceLeadText}
+
+Next buyer actions:
+${nextActions.map((item, index) => `${index + 1}. ${item.title} - ${item.detail}`).join("\n")}
+
+Project notes:
+${projectValue("notes", "No project notes added.")}
+
+InduScout is a discovery and RFQ preparation aid. Final purchase decisions should be confirmed with the OEM, authorized distributor, or supplier.`;
+}
+
+function renderEvidenceReviewBoard() {
+  if (!els.reviewStats || !els.reviewQueueList || !els.reviewActionPlan) {
+    return;
+  }
+
+  const items = evidenceReviewItems();
+  const highCount = items.filter((item) => item.priority === "High").length;
+  const sourceLeadCount = items.filter((item) => item.type === "Source lead").length;
+  const catalogCount = items.filter((item) => item.type === "Catalog review").length;
+  const commercialCount = items.filter((item) => ["Supplier reply", "Quote risk"].includes(item.type)).length;
+
+  els.reviewStats.innerHTML = [
+    reviewStatTemplate("Total review items", items.length, "Evidence and validation queue"),
+    reviewStatTemplate("High priority", highCount, "Needs buyer or catalog attention"),
+    reviewStatTemplate("Source leads", sourceLeadCount, "Supplier paths awaiting review"),
+    reviewStatTemplate("Commercial risks", commercialCount, "Quote or reply flags")
+  ].join("");
+
+  if (!items.length) {
+    els.reviewQueueList.innerHTML = `
+      <div class="empty-state review-empty">
+        No review items yet. Source leads, missing-product requests, supplier replies, quote flags, and review-level catalog records will appear here.
+      </div>
+    `;
+  } else {
+    els.reviewQueueList.innerHTML = items.slice(0, 12).map(reviewItemTemplate).join("");
+  }
+
+  const actions = evidenceActionPlan(items, { catalogCount, sourceLeadCount, commercialCount });
+  els.reviewActionPlan.innerHTML = actions
+    .map(
+      (item) => `
+        <div class="review-action-item">
+          <span>${escapeHtml(item.stage)}</span>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p>${escapeHtml(item.detail)}</p>
+        </div>
+      `
+    )
+    .join("");
+
+  renderDecisionMemo();
+  renderAwardHandover();
+}
+
+function reviewStatTemplate(label, value, detail) {
+  return `
+    <article class="review-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function reviewItemTemplate(item) {
+  const priorityClass = item.priority.toLowerCase();
+  return `
+    <article class="review-item">
+      <div>
+        <span>${escapeHtml(item.type)}</span>
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml(item.detail)}</p>
+      </div>
+      <strong class="review-priority ${escapeHtml(priorityClass)}">${escapeHtml(item.priority)}</strong>
+      <a href="${escapeHtml(item.href)}">${escapeHtml(item.action)}</a>
+    </article>
+  `;
+}
+
+function evidenceReviewItems() {
+  const reviewProducts = products
+    .filter((product) => confidenceForProduct(product).level === "review")
+    .map((product) => ({
+      type: "Catalog review",
+      title: `${product.brand} ${product.sku}`,
+      detail: `${product.name} needs stronger source, datasheet, alternate, or compatibility evidence before confidence can be raised.`,
+      priority: "Medium",
+      action: "Open in finder",
+      href: `index.html?q=${encodeURIComponent(`${product.brand} ${product.sku}`)}#finder`,
+      sort: 40
+    }));
+
+  const sourceLeadItems = state.sourceLeads.map((lead) => {
+    const hasEvidence = Boolean(lead.website || lead.evidenceUrl);
+    const priority = lead.status === "Authorized claim" ? "High" : hasEvidence ? "Medium" : "High";
+    return {
+      type: "Source lead",
+      title: lead.name,
+      detail: `${lead.type} for ${lead.category}. ${lead.region || "Region TBC"}. ${hasEvidence ? "Evidence link supplied." : "Evidence link missing."}`,
+      priority,
+      action: "Open supplier intake",
+      href: "#source-intake",
+      sort: priority === "High" ? 10 : 30
+    };
+  });
+
+  const requestItems = state.productRequests.map((request) => ({
+    type: "Missing product",
+    title: request.part,
+    detail: `${request.brand} | ${request.category} | ${request.country}. Needs exact part, source path, datasheet, alternates, lead time, and buying links.`,
+    priority: request.urgency === "Urgent breakdown" ? "High" : "Medium",
+    action: "Open product request",
+    href: "#finder",
+    sort: request.urgency === "Urgent breakdown" ? 12 : 35
+  }));
+
+  const supplierReplyItems = state.supplierReplies.filter(replyNeedsAction).map((reply) => ({
+    type: "Supplier reply",
+    title: `${reply.supplier} - ${reply.brand} ${reply.sku}`,
+    detail: `${reply.status}. ${reply.nextAction}. Buyer should confirm certificates, alternates, price revision, or missing evidence.`,
+    priority: ["Missing certificate", "Alternate offered"].includes(reply.status) ? "High" : "Medium",
+    action: "Open inbox",
+    href: "#inbox",
+    sort: ["Missing certificate", "Alternate offered"].includes(reply.status) ? 14 : 32
+  }));
+
+  const quoteRiskItems = quoteDecisionInsights().scoredQuotes
+    .filter((item) => item.flags.length)
+    .map((item) => ({
+      type: "Quote risk",
+      title: `${item.quote.supplier} - ${item.quote.brand} ${item.quote.sku}`,
+      detail: item.flags.slice(0, 3).join(", "),
+      priority: item.flags.some((flag) => /expired|rejected|missing/i.test(flag)) ? "High" : "Medium",
+      action: "Open quotes",
+      href: "#quotes",
+      sort: item.flags.some((flag) => /expired|rejected|missing/i.test(flag)) ? 16 : 34
+    }));
+
+  return [...sourceLeadItems, ...requestItems, ...supplierReplyItems, ...quoteRiskItems, ...reviewProducts]
+    .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title))
+    .slice(0, 40);
+}
+
+function evidenceActionPlan(items, counts) {
+  const actions = [];
+  if (counts.sourceLeadCount) {
+    actions.push({
+      stage: "Source verification",
+      title: "Review supplier/source evidence",
+      detail: "Prioritize authorization claims and leads without evidence links before adding any new public source path."
+    });
+  }
+  if (state.productRequests.length) {
+    actions.push({
+      stage: "Catalog expansion",
+      title: "Convert missing-product requests into research tasks",
+      detail: "Check exact part numbers, OEM pages, datasheets, distributors, alternates, and regional buying paths."
+    });
+  }
+  if (counts.commercialCount) {
+    actions.push({
+      stage: "Commercial validation",
+      title: "Close supplier reply and quote risks",
+      detail: "Confirm certificates, alternates, validity, payment terms, delivery terms, warranty path, and seller legitimacy."
+    });
+  }
+  if (counts.catalogCount) {
+    actions.push({
+      stage: "Catalog quality",
+      title: "Strengthen review-level catalog records",
+      detail: "Raise confidence only after source path, datasheet, lifecycle, certifications, and alternate notes are stronger."
+    });
+  }
+  if (!actions.length) {
+    actions.push({
+      stage: "Ready",
+      title: "Evidence queue is clear",
+      detail: "New source leads, product gaps, supplier reply actions, and quote flags will appear here automatically."
+    });
+  }
+  return actions.slice(0, 5);
+}
+
+async function copyReviewBoardReport() {
+  const text = reviewBoardReportText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyReviewBoard) {
+      els.copyReviewBoard.textContent = "Review report copied";
+      setTimeout(() => {
+        els.copyReviewBoard.textContent = "Copy review report";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy review report", text);
+  }
+}
+
+function exportReviewBoardJson() {
+  const items = evidenceReviewItems();
+  const payload = {
+    app: "InduScout",
+    version: "3.7",
+    exportedAt: new Date().toISOString(),
+    project: state.project,
+    counts: {
+      total: items.length,
+      highPriority: items.filter((item) => item.priority === "High").length,
+      sourceLeads: items.filter((item) => item.type === "Source lead").length,
+      productRequests: state.productRequests.length,
+      supplierActions: state.supplierReplies.filter(replyNeedsAction).length,
+      quoteRisks: quoteDecisionInsights().scoredQuotes.filter((item) => item.flags.length).length
+    },
+    actions: evidenceActionPlan(items, {
+      catalogCount: items.filter((item) => item.type === "Catalog review").length,
+      sourceLeadCount: items.filter((item) => item.type === "Source lead").length,
+      commercialCount: items.filter((item) => ["Supplier reply", "Quote risk"].includes(item.type)).length
+    }),
+    items
+  };
+  downloadFile(`InduScout-Evidence-Review-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
+}
+
+function reviewBoardReportText() {
+  const items = evidenceReviewItems();
+  const actions = evidenceActionPlan(items, {
+    catalogCount: items.filter((item) => item.type === "Catalog review").length,
+    sourceLeadCount: items.filter((item) => item.type === "Source lead").length,
+    commercialCount: items.filter((item) => ["Supplier reply", "Quote risk"].includes(item.type)).length
+  });
+
+  return `InduScout evidence review board
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+
+Review summary:
+- Total review items: ${items.length}
+- High priority: ${items.filter((item) => item.priority === "High").length}
+- Source leads: ${items.filter((item) => item.type === "Source lead").length}
+- Missing-product requests: ${state.productRequests.length}
+- Supplier reply actions: ${state.supplierReplies.filter(replyNeedsAction).length}
+- Quote risks: ${quoteDecisionInsights().scoredQuotes.filter((item) => item.flags.length).length}
+
+Recommended action plan:
+${actions.map((item, index) => `${index + 1}. ${item.title} - ${item.detail}`).join("\n")}
+
+Review queue:
+${items.slice(0, 20).map((item, index) => `${index + 1}. [${item.priority}] ${item.type} - ${item.title}: ${item.detail}`).join("\n") || "No review items currently open."}
+
+InduScout is a discovery and RFQ preparation aid. Evidence should be reviewed before catalog confidence is raised or purchasing decisions are made.`;
+}
+
+function renderDecisionMemo() {
+  if (!els.decisionStats || !els.decisionMemoTitle || !els.decisionMemoBody) {
+    return;
+  }
+
+  const memo = decisionMemoData();
+  els.decisionStats.innerHTML = [
+    decisionStatTemplate("Readiness", `${memo.readiness.score}%`, memo.readiness.label),
+    decisionStatTemplate("Recommendation", memo.quoteLead ? "Supplier lead" : "Draft only", memo.recommendationShort),
+    decisionStatTemplate("Quote signal", memo.quoteLead ? memo.quoteLead.supplier : "TBC", memo.quoteSignal),
+    decisionStatTemplate("Open risks", memo.highRisks.length, memo.highRisks.length ? "High priority validation items" : "No high priority risks open")
+  ].join("");
+
+  els.decisionMemoTitle.textContent = memo.projectTitle;
+  els.decisionMemoBody.innerHTML = decisionMemoPreviewHtml(memo);
+}
+
+function decisionMemoData() {
+  const shortlisted = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  const compared = state.compare.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  const decision = quoteDecisionInsights();
+  const reviewItems = evidenceReviewItems();
+  const highRisks = reviewItems.filter((item) => item.priority === "High");
+  const quoteLead = decision.recommended?.quote || null;
+  const recommendedProduct = quoteLead
+    ? products.find((product) => product.id === quoteLead.productId) || products.find((product) => product.sku === quoteLead.sku)
+    : shortlisted[0] || compared[0] || null;
+  const quoteScore = decision.recommended?.score || 0;
+  const pricedQuotes = decision.scoredQuotes.filter((item) => item.priceTotal).length;
+  const leadQuotes = decision.scoredQuotes.filter((item) => item.days).length;
+  const receivedQuotes = state.quotes.filter((quote) => ["Received", "Best option"].includes(quote.status)).length;
+  const readiness = decisionMemoReadiness({ shortlisted, quoteLead, highRisks, pricedQuotes, leadQuotes, receivedQuotes });
+  const projectTitle = projectHasValue()
+    ? `${projectValue("name", "Project")} decision memo`
+    : "Draft buyer decision memo";
+  const recommendedLine = quoteLead
+    ? `Proceed to final supplier validation with ${quoteLead.supplier} for ${quoteLead.brand} ${quoteLead.sku}, subject to buyer checklist closure.`
+    : shortlisted.length
+      ? "Use the current shortlist to request comparable supplier quotes before approval."
+      : "Add shortlist items and supplier quotes before issuing an approval recommendation.";
+  const recommendationShort = quoteLead
+    ? `${quoteLead.supplier} leads at score ${quoteScore}`
+    : shortlisted.length
+      ? "Quote comparison needed"
+      : "Shortlist needed";
+  const quoteSignal = quoteLead
+    ? `${quoteTotalLabel(quoteLead)} | ${quoteLead.leadTime || "Lead TBC"}`
+    : `${state.quotes.length} saved ${state.quotes.length === 1 ? "quote" : "quotes"}`;
+
+  return {
+    shortlisted,
+    compared,
+    decision,
+    reviewItems,
+    highRisks,
+    quoteLead,
+    quoteScore,
+    pricedQuotes,
+    leadQuotes,
+    receivedQuotes,
+    recommendedProduct,
+    readiness,
+    projectTitle,
+    recommendedLine,
+    recommendationShort,
+    quoteSignal
+  };
+}
+
+function decisionMemoReadiness({ shortlisted, quoteLead, highRisks, pricedQuotes, leadQuotes, receivedQuotes }) {
+  const checks = [
+    { ok: projectHasValue(), weight: 20 },
+    { ok: shortlisted.length > 0, weight: 20 },
+    { ok: receivedQuotes > 0 || pricedQuotes > 0, weight: 20 },
+    { ok: Boolean(quoteLead) && leadQuotes > 0, weight: 20 },
+    { ok: highRisks.length === 0, weight: 20 }
+  ];
+  const score = checks.reduce((total, item) => total + (item.ok ? item.weight : 0), 0);
+  const label = score >= 80 ? "Ready for approval draft" : score >= 60 ? "Review before approval" : "Needs sourcing inputs";
+  const detail = score >= 80
+    ? "Memo can be used for internal review after buyer validation."
+    : score >= 60
+      ? "Close open commercial or evidence gaps before purchase approval."
+      : "Add project context, shortlist, quotes, and validation evidence.";
+  return { score, label, detail };
+}
+
+function decisionStatTemplate(label, value, detail) {
+  return `
+    <article class="decision-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function decisionMemoPreviewHtml(memo) {
+  const productLine = memo.recommendedProduct
+    ? `${memo.recommendedProduct.brand} ${memo.recommendedProduct.sku} - ${memo.recommendedProduct.name}`
+    : "Product TBC";
+  const topQuotes = memo.decision.scoredQuotes.slice(0, 4);
+  const topRisks = memo.reviewItems.slice(0, 5);
+  const sourcePaths = memo.recommendedProduct?.sources.slice(0, 4) || [];
+
+  return `
+    <section class="decision-memo-section wide">
+      <span>Recommended action</span>
+      <p>${escapeHtml(memo.recommendedLine)}</p>
+      <small>${escapeHtml(memo.readiness.detail)}</small>
+    </section>
+    <section class="decision-memo-section">
+      <span>Project context</span>
+      <dl class="decision-facts">
+        <div><dt>Project</dt><dd>${escapeHtml(projectValue("name", "TBC"))}</dd></div>
+        <div><dt>Buyer</dt><dd>${escapeHtml(projectValue("buyer", "TBC"))}</dd></div>
+        <div><dt>Delivery</dt><dd>${escapeHtml(projectValue("country", "TBC"))}</dd></div>
+        <div><dt>Target date</dt><dd>${escapeHtml(projectValue("targetDate", "TBC"))}</dd></div>
+      </dl>
+    </section>
+    <section class="decision-memo-section">
+      <span>Lead item</span>
+      <p>${escapeHtml(productLine)}</p>
+      <small>${escapeHtml(memo.quoteLead ? `${memo.quoteLead.supplier} | ${memo.quoteSignal}` : "Awaiting supplier quote lead.")}</small>
+    </section>
+    <section class="decision-memo-section">
+      <span>Shortlist</span>
+      <p>${escapeHtml(memo.shortlisted.length ? memo.shortlisted.slice(0, 5).map((product) => `${product.brand} ${product.sku}`).join(", ") : "No shortlist items selected yet.")}</p>
+      <small>${memo.shortlisted.length} ${memo.shortlisted.length === 1 ? "item" : "items"} selected</small>
+    </section>
+    <section class="decision-memo-section">
+      <span>Quote comparison</span>
+      <p>${escapeHtml(topQuotes.length ? topQuotes.map((item) => `${item.quote.supplier}: ${item.score}`).join(", ") : "No scored supplier quote yet.")}</p>
+      <small>${memo.pricedQuotes} priced, ${memo.leadQuotes} with lead-time signal</small>
+    </section>
+    <section class="decision-memo-section wide">
+      <span>Validation focus</span>
+      <ul>
+        ${(topRisks.length ? topRisks : [{ priority: "Ready", type: "Evidence", title: "No open review item", detail: "Continue buyer validation before purchase." }])
+          .map((item) => `<li><strong>${escapeHtml(item.priority)}:</strong> ${escapeHtml(item.type)} - ${escapeHtml(item.title)}. ${escapeHtml(item.detail)}</li>`)
+          .join("")}
+      </ul>
+    </section>
+    <section class="decision-memo-section wide">
+      <span>Source paths to confirm</span>
+      <ul>
+        ${(sourcePaths.length ? sourcePaths : [{ type: "Supplier", name: "TBC", action: "Request official source path" }])
+          .map((source) => `<li>${escapeHtml(source.type)} - ${escapeHtml(source.name)}: ${escapeHtml(source.action || "Verify source before order")}</li>`)
+          .join("")}
+      </ul>
+    </section>
+  `;
+}
+
+function decisionMemoText() {
+  const memo = decisionMemoData();
+  const shortlistLines = memo.shortlisted.length
+    ? memo.shortlisted.map((product, index) => `${index + 1}. ${product.brand} ${product.sku} - ${product.name} | ${product.category} | fit ${product[state.priority]}`).join("\n")
+    : "No shortlist items selected yet.";
+  const quoteLines = memo.decision.scoredQuotes.length
+    ? memo.decision.scoredQuotes.slice(0, 8).map((item, index) => {
+      const quote = item.quote;
+      const flags = item.flags.length ? item.flags.join(", ") : "No major quote flags";
+      return `${index + 1}. ${quote.supplier} - ${quote.brand} ${quote.sku} | score ${item.score} | ${quoteTotalLabel(quote)} | lead ${quote.leadTime || "TBC"} | status ${quote.status} | ${flags}`;
+    }).join("\n")
+    : "No supplier quotes recorded yet.";
+  const riskLines = memo.reviewItems.length
+    ? memo.reviewItems.slice(0, 10).map((item, index) => `${index + 1}. [${item.priority}] ${item.type} - ${item.title}: ${item.detail}`).join("\n")
+    : "No open evidence review items currently visible.";
+  const leadProduct = memo.recommendedProduct
+    ? `${memo.recommendedProduct.brand} ${memo.recommendedProduct.sku} - ${memo.recommendedProduct.name}`
+    : "TBC";
+  const leadSupplier = memo.quoteLead
+    ? `${memo.quoteLead.supplier} | ${quoteTotalLabel(memo.quoteLead)} | ${memo.quoteLead.leadTime || "Lead TBC"} | score ${memo.quoteScore}`
+    : "TBC";
+
+  return `InduScout buyer decision memo
+Prepared on ${formatCopyDate()}
+
+Project:
+- Project name: ${projectValue("name", "TBC")}
+- Buyer/company: ${projectValue("buyer", "TBC")}
+- Buyer contact: ${projectValue("contact", "TBC")}
+- Delivery country: ${projectValue("country", "TBC")}
+- Target date: ${projectValue("targetDate", "TBC")}
+- Estimated quoted value: ${workspaceValueSummary()}
+
+Decision readiness:
+- Score: ${memo.readiness.score}%
+- Status: ${memo.readiness.label}
+- Note: ${memo.readiness.detail}
+
+Recommended action:
+${memo.recommendedLine}
+
+Lead product:
+${leadProduct}
+
+Lead supplier / quote:
+${leadSupplier}
+
+Shortlist:
+${shortlistLines}
+
+Quote comparison:
+${quoteLines}
+
+Evidence and risk review:
+${riskLines}
+
+Project notes:
+${projectValue("notes", "No project notes added.")}
+
+Approval checklist before order:
+- Confirm exact part number, suffix, voltage, size, material, and configuration.
+- Confirm compatibility with installed equipment or project specification.
+- Request latest datasheet, certificates, warranty path, and country of origin.
+- Confirm stock, price, lead time, payment terms, delivery terms, and seller legitimacy.
+- Treat alternates as technical review items, not automatic substitutes.
+- Keep source evidence and supplier communication with the buyer file.
+
+InduScout is a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.`;
+}
+
+async function copyDecisionMemo() {
+  updateProjectFromFields();
+  const text = decisionMemoText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyDecisionMemo) {
+      els.copyDecisionMemo.textContent = "Decision memo copied";
+      setTimeout(() => {
+        els.copyDecisionMemo.textContent = "Copy decision memo";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy decision memo", text);
+  }
+  renderDecisionMemo();
+}
+
+function downloadDecisionMemoHtml() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Decision-Memo${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, decisionMemoExportHtml(), "text/html;charset=utf-8");
+  renderDecisionMemo();
+}
+
+function decisionMemoExportHtml() {
+  const memo = decisionMemoData();
+  const text = decisionMemoText();
+  const title = memo.projectTitle;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout buyer decision memo</div>
+      <h1>${escapeHtml(title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this memo as an internal approval draft after buyer validation.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>Readiness</span><strong>${escapeHtml(`${memo.readiness.score}%`)}</strong></div>
+      <div class="stat"><span>Shortlist</span><strong>${escapeHtml(memo.shortlisted.length)}</strong></div>
+      <div class="stat"><span>Quotes</span><strong>${escapeHtml(state.quotes.length)}</strong></div>
+      <div class="stat"><span>High risks</span><strong>${escapeHtml(memo.highRisks.length)}</strong></div>
+    </div>
+    <section>
+      <pre>${escapeHtml(text)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function renderAwardHandover() {
+  if (!els.awardStats || !els.awardHandoverTitle || !els.awardChecklist || !els.awardHandoverBody) {
+    return;
+  }
+
+  const award = awardHandoverData();
+  els.awardStats.innerHTML = [
+    awardStatTemplate("PO readiness", `${award.readiness}%`, award.readinessLabel),
+    awardStatTemplate("Supplier", award.quote ? award.quote.supplier : "TBC", award.quote ? "Current quote lead" : "Needs quote lead"),
+    awardStatTemplate("Commercial", award.commercialReady ? "Ready" : "Review", award.commercialDetail),
+    awardStatTemplate("Blockers", award.blockers.length, award.blockers.length ? "Items to close before PO" : "No major blockers open")
+  ].join("");
+
+  els.awardHandoverTitle.textContent = award.title;
+  els.awardChecklist.innerHTML = award.checks.map(awardCheckTemplate).join("");
+  els.awardHandoverBody.innerHTML = awardHandoverPreviewHtml(award);
+  renderComplianceGate();
+}
+
+function awardHandoverData() {
+  const memo = decisionMemoData();
+  const quote = memo.quoteLead;
+  const product = memo.recommendedProduct;
+  const primarySource = quote?.sourceUrl
+    ? { type: "Quote source", name: quote.supplier, url: quote.sourceUrl, action: "Confirm final quotation and seller terms" }
+    : product?.sources[0] || null;
+  const hasPrice = Boolean(quote && quoteEstimatedTotal(quote));
+  const hasLead = Boolean(quote?.leadTime);
+  const hasPayment = quote ? hasMeaningfulTerm(quote.paymentTerms) : false;
+  const hasDelivery = quote ? hasMeaningfulTerm(quote.deliveryTerms) : false;
+  const commercialReady = Boolean(quote && hasPrice && hasLead && hasPayment && hasDelivery);
+  const documentReady = Boolean(product?.datasheet && product?.certifications?.length);
+  const riskReady = memo.highRisks.length === 0;
+  const checks = [
+    {
+      label: "Product identity",
+      status: product ? "Review" : "Missing",
+      detail: product ? `${product.brand} ${product.sku}; confirm suffix, configuration, and compatibility.` : "Select a product from shortlist or quote lead."
+    },
+    {
+      label: "Supplier selection",
+      status: quote ? "Ready" : "Missing",
+      detail: quote ? `${quote.supplier} is current quote lead at score ${memo.quoteScore}.` : "Record at least one supplier quote before award."
+    },
+    {
+      label: "Commercial terms",
+      status: commercialReady ? "Ready" : quote ? "Review" : "Missing",
+      detail: quote ? `${quoteTotalLabel(quote)}; lead ${quote.leadTime || "TBC"}; payment ${quote.paymentTerms || "TBC"}; delivery ${quote.deliveryTerms || "TBC"}.` : "Price, quantity, lead time, payment, and delivery terms are needed."
+    },
+    {
+      label: "Documents",
+      status: documentReady ? "Review" : "Missing",
+      detail: product ? `Request latest datasheet and certificates: ${product.certifications.join(", ") || "certificates TBC"}.` : "Datasheet and certificate path needed."
+    },
+    {
+      label: "Evidence risks",
+      status: riskReady ? "Ready" : "Review",
+      detail: riskReady ? "No high priority review items currently open." : `${memo.highRisks.length} high priority evidence or commercial item needs closure.`
+    }
+  ];
+  const blockers = [
+    ...checks.filter((item) => item.status === "Missing" || (item.status === "Review" && item.label === "Evidence risks")),
+    ...memo.highRisks.slice(0, 5).map((item) => ({
+      label: item.type,
+      status: "Review",
+      detail: `${item.title}: ${item.detail}`
+    }))
+  ];
+  const readinessPoints = checks.reduce((total, item) => total + (item.status === "Ready" ? 20 : item.status === "Review" ? 10 : 0), 0);
+  const readiness = Math.min(100, readinessPoints);
+  const readinessLabel = readiness >= 80 ? "Ready for PO prep" : readiness >= 60 ? "Buyer review needed" : "Not award-ready";
+  const title = projectHasValue()
+    ? `${projectValue("name", "Project")} award handover`
+    : "Draft award handover pack";
+  const recommendation = quote
+    ? `Prepare PO handoff for ${quote.supplier} only after final seller, stock, document, and term confirmation.`
+    : "Record supplier quote data and select a quote lead before preparing PO handoff.";
+  const commercialDetail = commercialReady
+    ? `${quoteTotalLabel(quote)} with lead and terms captured`
+    : quote
+      ? "Quote exists, but price, lead, payment, or delivery terms need review"
+      : "No supplier quote lead yet";
+
+  return {
+    memo,
+    quote,
+    product,
+    primarySource,
+    checks,
+    blockers,
+    readiness,
+    readinessLabel,
+    title,
+    recommendation,
+    commercialReady,
+    commercialDetail
+  };
+}
+
+function awardStatTemplate(label, value, detail) {
+  return `
+    <article class="award-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function awardCheckTemplate(item) {
+  const statusClass = item.status.toLowerCase();
+  return `
+    <article class="award-check ${escapeHtml(statusClass)}">
+      <div>
+        <span>${escapeHtml(item.label)}</span>
+        <strong>${escapeHtml(item.status)}</strong>
+      </div>
+      <p>${escapeHtml(item.detail)}</p>
+    </article>
+  `;
+}
+
+function awardHandoverPreviewHtml(award) {
+  const productLabel = award.product ? `${award.product.brand} ${award.product.sku} - ${award.product.name}` : "Product TBC";
+  const quoteLabel = award.quote
+    ? `${award.quote.supplier} | ${quoteTotalLabel(award.quote)} | ${award.quote.leadTime || "Lead TBC"}`
+    : "Supplier quote lead TBC";
+  const sourceLabel = award.primarySource
+    ? `${award.primarySource.type} - ${award.primarySource.name}`
+    : "Source path TBC";
+  const blockerItems = award.blockers.length ? award.blockers.slice(0, 6) : [{ label: "Ready", status: "Ready", detail: "Proceed only after final buyer and supplier confirmation." }];
+
+  return `
+    <section class="award-panel wide">
+      <span>Recommended handover action</span>
+      <p>${escapeHtml(award.recommendation)}</p>
+    </section>
+    <section class="award-panel">
+      <span>PO candidate</span>
+      <p>${escapeHtml(productLabel)}</p>
+      <small>${escapeHtml(quoteLabel)}</small>
+    </section>
+    <section class="award-panel">
+      <span>Primary source path</span>
+      <p>${escapeHtml(sourceLabel)}</p>
+      <small>${escapeHtml(award.primarySource?.action || "Verify source and seller legitimacy before PO.")}</small>
+    </section>
+    <section class="award-panel wide">
+      <span>Close before purchase order</span>
+      <ul>
+        ${blockerItems.map((item) => `<li><strong>${escapeHtml(item.status)}:</strong> ${escapeHtml(item.label)} - ${escapeHtml(item.detail)}</li>`).join("")}
+      </ul>
+    </section>
+    <section class="award-panel wide">
+      <span>PO fields to confirm</span>
+      <ul>
+        <li>Legal supplier name, billing address, tax or registration details, and payment beneficiary.</li>
+        <li>Exact part number, quantity, unit price, currency, delivery country, delivery term, and promised lead time.</li>
+        <li>Warranty path, return terms, certificates, country of origin, and latest datasheet revision.</li>
+        <li>Buyer approver, budget code, project reference, and internal receiving location.</li>
+      </ul>
+    </section>
+  `;
+}
+
+function awardHandoverText() {
+  const award = awardHandoverData();
+  const quote = award.quote;
+  const product = award.product;
+  const productLine = product ? `${product.brand} ${product.sku} - ${product.name}` : "TBC";
+  const quoteLine = quote
+    ? `${quote.supplier} | ${quoteTotalLabel(quote)} | lead ${quote.leadTime || "TBC"} | payment ${quote.paymentTerms || "TBC"} | delivery ${quote.deliveryTerms || "TBC"}`
+    : "TBC";
+  const checkLines = award.checks.map((item, index) => `${index + 1}. [${item.status}] ${item.label}: ${item.detail}`).join("\n");
+  const blockerLines = award.blockers.length
+    ? award.blockers.slice(0, 8).map((item, index) => `${index + 1}. [${item.status}] ${item.label}: ${item.detail}`).join("\n")
+    : "No major blockers currently open. Final buyer and supplier confirmation still required.";
+
+  return `InduScout award handover / PO preparation pack
+Prepared on ${formatCopyDate()}
+
+Project:
+- Project name: ${projectValue("name", "TBC")}
+- Buyer/company: ${projectValue("buyer", "TBC")}
+- Buyer contact: ${projectValue("contact", "TBC")}
+- Delivery country: ${projectValue("country", "TBC")}
+- Target date: ${projectValue("targetDate", "TBC")}
+
+Award readiness:
+- Score: ${award.readiness}%
+- Status: ${award.readinessLabel}
+
+Recommended action:
+${award.recommendation}
+
+PO candidate:
+${productLine}
+
+Supplier / commercial lead:
+${quoteLine}
+
+Primary source path:
+${award.primarySource ? `${award.primarySource.type} - ${award.primarySource.name}: ${award.primarySource.url || "URL TBC"}` : "TBC"}
+
+Readiness checklist:
+${checkLines}
+
+Blockers to close before PO:
+${blockerLines}
+
+PO fields to confirm:
+- Legal supplier name, billing address, tax or registration details, and payment beneficiary.
+- Exact part number, quantity, unit price, currency, delivery country, delivery term, and promised lead time.
+- Warranty path, return terms, certificates, country of origin, and latest datasheet revision.
+- Buyer approver, budget code, project reference, and internal receiving location.
+
+Buyer notes:
+${projectValue("notes", "No project notes added.")}
+
+InduScout is a discovery and RFQ preparation aid. Final purchase order validation remains with the buyer, supplier, and internal approval process.`;
+}
+
+function supplierAwardEmailText() {
+  const award = awardHandoverData();
+  const quote = award.quote;
+  const product = award.product;
+  const subject = `Final confirmation before PO - ${product ? `${product.brand} ${product.sku}` : "InduScout RFQ item"} - ${projectValue("name", "Project")}`;
+
+  return `Subject: ${subject}
+
+Dear ${quote?.supplier || "Supplier"},
+
+We are preparing final internal review for the following item:
+
+Product: ${product ? `${product.brand} ${product.sku} - ${product.name}` : "TBC"}
+Project: ${projectValue("name", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
+
+Before PO release, please confirm:
+- Exact part number, suffix, configuration, and compatibility notes.
+- Quantity, unit price, currency, quoted total, lead time, and stock status.
+- Payment terms, delivery terms, warranty path, return terms, and validity date.
+- Latest datasheet, certificates, country of origin, and authorized seller status where applicable.
+- Legal supplier name, billing address, tax or registration details, and payment beneficiary.
+
+Buyer notes:
+${projectValue("notes", "No special buyer notes added.")}
+
+Please reply with confirmation or any exceptions before we proceed with internal approval.
+
+Regards,
+${projectValue("buyer", "Buyer")}`;
+}
+
+async function copyAwardHandover() {
+  updateProjectFromFields();
+  const text = awardHandoverText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyAwardHandover) {
+      els.copyAwardHandover.textContent = "Handover copied";
+      setTimeout(() => {
+        els.copyAwardHandover.textContent = "Copy handover note";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy award handover", text);
+  }
+  renderAwardHandover();
+}
+
+async function copySupplierAwardEmail() {
+  updateProjectFromFields();
+  const text = supplierAwardEmailText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copySupplierAwardEmail) {
+      els.copySupplierAwardEmail.textContent = "Supplier email copied";
+      setTimeout(() => {
+        els.copySupplierAwardEmail.textContent = "Copy supplier confirmation";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy supplier confirmation", text);
+  }
+  renderAwardHandover();
+}
+
+function downloadAwardHandoverHtml() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-PO-Handover${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, awardHandoverExportHtml(), "text/html;charset=utf-8");
+  renderAwardHandover();
+}
+
+function awardHandoverExportHtml() {
+  const award = awardHandoverData();
+  const handover = awardHandoverText();
+  const supplierEmail = supplierAwardEmailText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(award.title)}</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    h2 { font-size: 18px; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout award handover</div>
+      <h1>${escapeHtml(award.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this as a PO preparation pack after buyer and supplier validation.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>PO readiness</span><strong>${escapeHtml(`${award.readiness}%`)}</strong></div>
+      <div class="stat"><span>Supplier</span><strong>${escapeHtml(award.quote?.supplier || "TBC")}</strong></div>
+      <div class="stat"><span>Commercial</span><strong>${escapeHtml(award.commercialReady ? "Ready" : "Review")}</strong></div>
+      <div class="stat"><span>Blockers</span><strong>${escapeHtml(award.blockers.length)}</strong></div>
+    </div>
+    <section>
+      <h2>Handover Note</h2>
+      <pre>${escapeHtml(handover)}</pre>
+    </section>
+    <section>
+      <h2>Supplier Confirmation Email</h2>
+      <pre>${escapeHtml(supplierEmail)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function renderComplianceGate() {
+  if (!els.complianceStats || !els.complianceTitle || !els.complianceChecklist || !els.complianceBody) {
+    return;
+  }
+
+  const compliance = complianceGateData();
+  els.complianceStats.innerHTML = [
+    complianceStatTemplate("Compliance score", `${compliance.score}%`, compliance.statusLabel),
+    complianceStatTemplate("Supplier", compliance.supplierName, compliance.supplierDetail),
+    complianceStatTemplate("Required checks", compliance.requiredCount, "Due-diligence items to request"),
+    complianceStatTemplate("Missing inputs", compliance.missingCount, compliance.missingCount ? "Needs buyer follow-up" : "No missing source input")
+  ].join("");
+
+  els.complianceTitle.textContent = compliance.title;
+  els.complianceChecklist.innerHTML = compliance.checks.map(complianceCheckTemplate).join("");
+  els.complianceBody.innerHTML = compliancePreviewHtml(compliance);
+  renderBuyerFile();
+}
+
+function complianceGateData() {
+  const award = awardHandoverData();
+  const quote = award.quote;
+  const product = award.product;
+  const source = award.primarySource;
+  const supplierName = quote?.supplier || source?.name || "Supplier TBC";
+  const supplierDetail = quote ? "Quote lead supplier" : source ? source.type : "Add quote or source path";
+  const hasSupplier = Boolean(quote || source);
+  const hasSourceUrl = Boolean(quote?.sourceUrl || source?.url);
+  const strongSource = Boolean(source && /oem|distributor|quote source/i.test(source.type));
+  const hasDocs = Boolean(product?.datasheet && product?.certifications?.length);
+  const commercialReady = award.commercialReady;
+  const hasProject = projectHasValue();
+  const quoteNotes = `${quote?.notes || ""} ${quote?.paymentTerms || ""} ${quote?.deliveryTerms || ""}`.toLowerCase();
+  const hasWarrantySignal = /warranty|return|authorized|certificate|origin/.test(quoteNotes);
+  const checks = [
+    {
+      label: "Supplier identity",
+      status: hasSupplier ? "Review" : "Missing",
+      detail: hasSupplier ? `Confirm legal entity, address, registration, tax ID, and official contact for ${supplierName}.` : "Select or record a supplier before compliance review."
+    },
+    {
+      label: "Seller authorization",
+      status: strongSource ? "Review" : hasSourceUrl ? "Request" : "Missing",
+      detail: strongSource ? "Source path suggests OEM, distributor, or quote path; confirm authorization evidence before award." : "Request authorization proof or seller legitimacy evidence."
+    },
+    {
+      label: "Document pack",
+      status: hasDocs ? "Review" : "Request",
+      detail: product ? `Request latest datasheet, certificates, country of origin, and warranty path for ${product.brand} ${product.sku}.` : "Request product documents after selecting a lead product."
+    },
+    {
+      label: "Commercial terms",
+      status: commercialReady ? "Ready" : quote ? "Review" : "Missing",
+      detail: quote ? `Confirm ${quoteTotalLabel(quote)}, lead ${quote.leadTime || "TBC"}, payment ${quote.paymentTerms || "TBC"}, delivery ${quote.deliveryTerms || "TBC"}.` : "Record supplier quote, price, lead time, payment, and delivery terms."
+    },
+    {
+      label: "Payment safety",
+      status: "Request",
+      detail: "Verify beneficiary name, bank details, payment change controls, and internal approval before releasing funds."
+    },
+    {
+      label: "Trade compliance",
+      status: "Request",
+      detail: "Check export restrictions, sanctions screening, end-use requirements, and local import rules where applicable."
+    },
+    {
+      label: "Warranty and returns",
+      status: hasWarrantySignal ? "Review" : "Request",
+      detail: "Confirm warranty owner, return window, defect process, and who handles post-sale support."
+    },
+    {
+      label: "Buyer approval file",
+      status: hasProject && award.readiness >= 70 ? "Review" : "Missing",
+      detail: hasProject ? "Attach decision memo, award handover, supplier confirmations, and quote evidence to the buyer file." : "Add project context before generating the approval file."
+    }
+  ];
+  const score = complianceScore(checks);
+  const requiredCount = checks.filter((item) => item.status === "Request").length;
+  const missingCount = checks.filter((item) => item.status === "Missing").length;
+  const statusLabel = score >= 78 ? "Ready for due-diligence review" : score >= 58 ? "Supplier checks needed" : "Not compliance-ready";
+  const title = projectHasValue()
+    ? `${projectValue("name", "Project")} supplier compliance gate`
+    : "Draft supplier compliance gate";
+  const recommendation = missingCount
+    ? "Close missing supplier, quote, project, or source inputs before award approval."
+    : requiredCount
+      ? "Send the due-diligence request and attach supplier responses before PO release."
+      : "Review supplied evidence and keep confirmations with the buyer approval file.";
+
+  return {
+    award,
+    quote,
+    product,
+    source,
+    supplierName,
+    supplierDetail,
+    checks,
+    score,
+    requiredCount,
+    missingCount,
+    statusLabel,
+    title,
+    recommendation
+  };
+}
+
+function complianceScore(checks) {
+  const points = checks.reduce((total, item) => {
+    if (item.status === "Ready") {
+      return total + 12.5;
+    }
+    if (item.status === "Review") {
+      return total + 9;
+    }
+    if (item.status === "Request") {
+      return total + 5;
+    }
+    return total;
+  }, 0);
+  return Math.min(100, Math.round(points));
+}
+
+function complianceStatTemplate(label, value, detail) {
+  return `
+    <article class="compliance-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function complianceCheckTemplate(item) {
+  const statusClass = item.status.toLowerCase();
+  return `
+    <article class="compliance-check ${escapeHtml(statusClass)}">
+      <div>
+        <span>${escapeHtml(item.label)}</span>
+        <strong>${escapeHtml(item.status)}</strong>
+      </div>
+      <p>${escapeHtml(item.detail)}</p>
+    </article>
+  `;
+}
+
+function compliancePreviewHtml(compliance) {
+  const productLabel = compliance.product ? `${compliance.product.brand} ${compliance.product.sku} - ${compliance.product.name}` : "Product TBC";
+  const sourceLabel = compliance.source ? `${compliance.source.type} - ${compliance.source.name}` : "Source path TBC";
+  const requestItems = compliance.checks.filter((item) => ["Request", "Missing"].includes(item.status));
+
+  return `
+    <section class="compliance-panel wide">
+      <span>Compliance recommendation</span>
+      <p>${escapeHtml(compliance.recommendation)}</p>
+      <small>InduScout prepares the checklist; final supplier approval remains with the buyer and internal process.</small>
+    </section>
+    <section class="compliance-panel">
+      <span>Supplier under review</span>
+      <p>${escapeHtml(compliance.supplierName)}</p>
+      <small>${escapeHtml(sourceLabel)}</small>
+    </section>
+    <section class="compliance-panel">
+      <span>Product context</span>
+      <p>${escapeHtml(productLabel)}</p>
+      <small>${escapeHtml(compliance.quote ? `${quoteTotalLabel(compliance.quote)} | ${compliance.quote.leadTime || "Lead TBC"}` : "Commercial quote TBC")}</small>
+    </section>
+    <section class="compliance-panel wide">
+      <span>Evidence to request or attach</span>
+      <ul>
+        ${(requestItems.length ? requestItems : compliance.checks.slice(0, 4))
+          .map((item) => `<li><strong>${escapeHtml(item.status)}:</strong> ${escapeHtml(item.label)} - ${escapeHtml(item.detail)}</li>`)
+          .join("")}
+      </ul>
+    </section>
+    <section class="compliance-panel wide">
+      <span>Buyer file should include</span>
+      <ul>
+        <li>Quote, commercial terms, supplier confirmation email, and any revised quotation.</li>
+        <li>Datasheet, certificates, warranty path, country of origin, and authorized seller evidence.</li>
+        <li>Bank verification, payment approval, import/export screening, and internal PO approval reference.</li>
+      </ul>
+    </section>
+  `;
+}
+
+function compliancePackText() {
+  const compliance = complianceGateData();
+  const award = compliance.award;
+  const checkLines = compliance.checks.map((item, index) => `${index + 1}. [${item.status}] ${item.label}: ${item.detail}`).join("\n");
+
+  return `InduScout supplier compliance gate
+Prepared on ${formatCopyDate()}
+
+Project:
+- Project name: ${projectValue("name", "TBC")}
+- Buyer/company: ${projectValue("buyer", "TBC")}
+- Buyer contact: ${projectValue("contact", "TBC")}
+- Delivery country: ${projectValue("country", "TBC")}
+- Target date: ${projectValue("targetDate", "TBC")}
+
+Supplier:
+- Supplier name: ${compliance.supplierName}
+- Source path: ${compliance.source ? `${compliance.source.type} - ${compliance.source.name}: ${compliance.source.url || "URL TBC"}` : "TBC"}
+
+Product / award context:
+- Product: ${compliance.product ? `${compliance.product.brand} ${compliance.product.sku} - ${compliance.product.name}` : "TBC"}
+- Quote lead: ${compliance.quote ? `${compliance.quote.supplier} | ${quoteTotalLabel(compliance.quote)} | lead ${compliance.quote.leadTime || "TBC"}` : "TBC"}
+- Award readiness: ${award.readiness}% - ${award.readinessLabel}
+
+Compliance score:
+- Score: ${compliance.score}%
+- Status: ${compliance.statusLabel}
+- Recommendation: ${compliance.recommendation}
+
+Due-diligence checklist:
+${checkLines}
+
+Supplier evidence to request:
+- Legal entity name, address, registration, tax ID, official contact, and website domain.
+- Authorized seller, distributor, or OEM relationship evidence where applicable.
+- Latest quotation, stock confirmation, price validity, payment terms, delivery terms, and delivery country.
+- Datasheet, certificates, country of origin, warranty, return process, and post-sale support path.
+- Bank beneficiary confirmation and payment change control.
+- Export, sanctions, end-use, and local import compliance confirmation where applicable.
+
+Buyer notes:
+${projectValue("notes", "No project notes added.")}
+
+InduScout is a discovery and RFQ preparation aid. This is not legal, tax, sanctions, or compliance advice. Final supplier approval remains with the buyer and internal compliance process.`;
+}
+
+function supplierDueDiligenceEmailText() {
+  const compliance = complianceGateData();
+  const product = compliance.product;
+  const quote = compliance.quote;
+  const subject = `Supplier due diligence request - ${product ? `${product.brand} ${product.sku}` : "InduScout RFQ item"} - ${projectValue("name", "Project")}`;
+
+  return `Subject: ${subject}
+
+Dear ${compliance.supplierName},
+
+We are completing supplier due diligence before internal award review for the following item:
+
+Product: ${product ? `${product.brand} ${product.sku} - ${product.name}` : "TBC"}
+Project: ${projectValue("name", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Quote reference: ${quote ? `${quoteTotalLabel(quote)} | lead ${quote.leadTime || "TBC"}` : "TBC"}
+
+Please confirm and provide, where applicable:
+- Legal company name, registration number, tax ID, registered address, and official contact.
+- Manufacturer, authorized distributor, reseller, or surplus seller status, with evidence if available.
+- Latest quotation, price validity, stock status, payment terms, delivery terms, and warranty/return terms.
+- Latest datasheet, certificates, country of origin, and any compliance declarations.
+- Bank beneficiary name and payment instructions through an official company channel.
+- Any export restriction, end-use limitation, or local import requirement known to your team.
+
+Buyer notes:
+${projectValue("notes", "No special buyer notes added.")}
+
+Please reply with documents or exceptions so we can complete internal buyer review.
+
+Regards,
+${projectValue("buyer", "Buyer")}`;
+}
+
+async function copyCompliancePack() {
+  updateProjectFromFields();
+  const text = compliancePackText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyCompliancePack) {
+      els.copyCompliancePack.textContent = "Compliance pack copied";
+      setTimeout(() => {
+        els.copyCompliancePack.textContent = "Copy compliance pack";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy compliance pack", text);
+  }
+  renderComplianceGate();
+}
+
+async function copySupplierDueDiligenceEmail() {
+  updateProjectFromFields();
+  const text = supplierDueDiligenceEmailText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copySupplierDueDiligence) {
+      els.copySupplierDueDiligence.textContent = "Due-diligence email copied";
+      setTimeout(() => {
+        els.copySupplierDueDiligence.textContent = "Copy supplier due-diligence email";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy supplier due-diligence email", text);
+  }
+  renderComplianceGate();
+}
+
+function downloadCompliancePackHtml() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Supplier-Compliance${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, compliancePackExportHtml(), "text/html;charset=utf-8");
+  renderComplianceGate();
+}
+
+function compliancePackExportHtml() {
+  const compliance = complianceGateData();
+  const pack = compliancePackText();
+  const email = supplierDueDiligenceEmailText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(compliance.title)}</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    h2 { font-size: 18px; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout supplier compliance gate</div>
+      <h1>${escapeHtml(compliance.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this as a buyer due-diligence pack before supplier award or PO release.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>Compliance score</span><strong>${escapeHtml(`${compliance.score}%`)}</strong></div>
+      <div class="stat"><span>Supplier</span><strong>${escapeHtml(compliance.supplierName)}</strong></div>
+      <div class="stat"><span>Required checks</span><strong>${escapeHtml(compliance.requiredCount)}</strong></div>
+      <div class="stat"><span>Missing inputs</span><strong>${escapeHtml(compliance.missingCount)}</strong></div>
+    </div>
+    <section>
+      <h2>Compliance Pack</h2>
+      <pre>${escapeHtml(pack)}</pre>
+    </section>
+    <section>
+      <h2>Supplier Due-Diligence Email</h2>
+      <pre>${escapeHtml(email)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function renderBuyerFile() {
+  if (!els.buyerFileStats || !els.buyerFileTitle || !els.buyerFileChecklist || !els.buyerFileTimeline) {
+    return;
+  }
+
+  const file = buyerFileData();
+  els.buyerFileStats.innerHTML = [
+    buyerFileStatTemplate("File score", `${file.score}%`, file.statusLabel),
+    buyerFileStatTemplate("File items", file.readyItems, `${file.items.length} sections tracked`),
+    buyerFileStatTemplate("Open gaps", file.openGaps, file.openGaps ? "Needs buyer follow-up" : "Ready for internal review"),
+    buyerFileStatTemplate("Timeline", file.timeline.length, "Session evidence events")
+  ].join("");
+
+  els.buyerFileTitle.textContent = file.title;
+  els.buyerFileChecklist.innerHTML = file.items.map(buyerFileItemTemplate).join("");
+  els.buyerFileTimeline.innerHTML = buyerFileTimelineHtml(file);
+}
+
+function buyerFileData() {
+  const memo = decisionMemoData();
+  const award = awardHandoverData();
+  const compliance = complianceGateData();
+  const reviewItems = evidenceReviewItems();
+  const shortlisted = state.shortlist.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  const compared = state.compare.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  const notesCount = Object.values(state.notes).filter((note) => String(note || "").trim()).length;
+  const receivedQuotes = state.quotes.filter((quote) => ["Received", "Best option"].includes(quote.status)).length;
+  const supplierActions = state.supplierReplies.filter(replyNeedsAction).length;
+  const items = [
+    {
+      label: "Project profile",
+      status: projectHasValue() ? "Ready" : "Missing",
+      detail: projectHasValue() ? `${projectValue("name", "Project")} | ${projectValue("buyer", "Buyer TBC")}` : "Add project name, buyer, delivery country, target date, and notes."
+    },
+    {
+      label: "Shortlist record",
+      status: shortlisted.length ? "Ready" : "Missing",
+      detail: shortlisted.length ? `${shortlisted.length} product ${shortlisted.length === 1 ? "item" : "items"} selected for buyer file.` : "Add at least one product to shortlist."
+    },
+    {
+      label: "Compare evidence",
+      status: compared.length ? "Review" : "Open",
+      detail: compared.length ? `${compared.length} product ${compared.length === 1 ? "item" : "items"} in comparison.` : "Use compare for alternates, lead time, MOQ, certifications, and source review."
+    },
+    {
+      label: "Quote register",
+      status: state.quotes.length ? "Ready" : "Missing",
+      detail: state.quotes.length ? `${state.quotes.length} saved ${state.quotes.length === 1 ? "quote" : "quotes"}; ${receivedQuotes} received or preferred.` : "Save supplier quote records before award."
+    },
+    {
+      label: "Supplier reply log",
+      status: state.supplierReplies.length ? "Review" : "Open",
+      detail: state.supplierReplies.length ? `${state.supplierReplies.length} replies logged; ${supplierActions} need buyer action.` : "Capture supplier replies, certificates, alternates, and next actions."
+    },
+    {
+      label: "Source evidence",
+      status: state.sourceLeads.length ? "Review" : "Open",
+      detail: state.sourceLeads.length ? `${state.sourceLeads.length} source leads captured for review.` : "Add supplier/source leads if new channels are discovered."
+    },
+    {
+      label: "Evidence review board",
+      status: reviewItems.length ? "Review" : "Ready",
+      detail: reviewItems.length ? `${reviewItems.length} review items; ${reviewItems.filter((item) => item.priority === "High").length} high priority.` : "No open review items currently visible."
+    },
+    {
+      label: "Decision memo",
+      status: memo.readiness.score >= 80 ? "Ready" : memo.readiness.score >= 60 ? "Review" : "Draft",
+      detail: `${memo.readiness.score}% - ${memo.readiness.label}.`
+    },
+    {
+      label: "Award handover",
+      status: award.readiness >= 80 ? "Ready" : award.readiness >= 60 ? "Review" : "Draft",
+      detail: `${award.readiness}% - ${award.readinessLabel}.`
+    },
+    {
+      label: "Supplier compliance",
+      status: compliance.score >= 78 ? "Ready" : compliance.score >= 58 ? "Review" : "Draft",
+      detail: `${compliance.score}% - ${compliance.statusLabel}.`
+    },
+    {
+      label: "Buyer notes",
+      status: notesCount ? "Review" : "Open",
+      detail: notesCount ? `${notesCount} product note ${notesCount === 1 ? "entry" : "entries"} saved locally.` : "Add buyer notes for compatibility, project, or supplier instructions."
+    }
+  ];
+  const score = buyerFileScore(items);
+  const readyItems = items.filter((item) => item.status === "Ready").length;
+  const openGaps = items.filter((item) => ["Missing", "Draft"].includes(item.status)).length;
+  const title = projectHasValue() ? `${projectValue("name", "Project")} buyer file` : "Draft buyer file";
+  const statusLabel = score >= 82 ? "Audit file ready" : score >= 60 ? "Review gaps before approval" : "Needs sourcing records";
+  const timeline = buyerFileTimelineEvents({ memo, award, compliance, reviewItems, shortlisted, compared });
+
+  return {
+    memo,
+    award,
+    compliance,
+    reviewItems,
+    shortlisted,
+    compared,
+    items,
+    score,
+    readyItems,
+    openGaps,
+    title,
+    statusLabel,
+    timeline
+  };
+}
+
+function buyerFileScore(items) {
+  const points = items.reduce((total, item) => {
+    if (item.status === "Ready") {
+      return total + 10;
+    }
+    if (item.status === "Review") {
+      return total + 7;
+    }
+    if (item.status === "Open") {
+      return total + 4;
+    }
+    if (item.status === "Draft") {
+      return total + 3;
+    }
+    return total;
+  }, 0);
+  return Math.min(100, Math.round((points / (items.length * 10)) * 100));
+}
+
+function buyerFileTimelineEvents({ memo, award, compliance, reviewItems, shortlisted, compared }) {
+  const events = [
+    {
+      date: new Date().toISOString(),
+      type: "Generated",
+      title: "Buyer file index generated",
+      detail: `${projectValue("name", "Project")} | ${projectValue("buyer", "Buyer TBC")}`
+    },
+    {
+      date: new Date().toISOString(),
+      type: "Decision",
+      title: "Decision memo status",
+      detail: `${memo.readiness.score}% - ${memo.readiness.label}`
+    },
+    {
+      date: new Date().toISOString(),
+      type: "Award",
+      title: "Award handover status",
+      detail: `${award.readiness}% - ${award.readinessLabel}`
+    },
+    {
+      date: new Date().toISOString(),
+      type: "Compliance",
+      title: "Supplier compliance status",
+      detail: `${compliance.score}% - ${compliance.statusLabel}`
+    },
+    ...shortlisted.map((product) => ({
+      date: new Date().toISOString(),
+      type: "Shortlist",
+      title: `${product.brand} ${product.sku}`,
+      detail: `${product.name} | ${product.category}`
+    })),
+    ...compared.map((product) => ({
+      date: new Date().toISOString(),
+      type: "Compare",
+      title: `${product.brand} ${product.sku}`,
+      detail: `${product.name} compared for buyer review.`
+    })),
+    ...state.quotes.map((quote) => ({
+      date: quote.updatedAt || quote.savedAt || new Date().toISOString(),
+      type: "Quote",
+      title: `${quote.supplier} - ${quote.brand} ${quote.sku}`,
+      detail: `${quote.status} | ${quoteTotalLabel(quote)} | ${quote.leadTime || "Lead TBC"}`
+    })),
+    ...state.supplierReplies.map((reply) => ({
+      date: reply.updatedAt || reply.savedAt || reply.replyDate || new Date().toISOString(),
+      type: "Supplier reply",
+      title: `${reply.supplier} - ${reply.brand} ${reply.sku}`,
+      detail: `${reply.status} | ${reply.nextAction}`
+    })),
+    ...state.sourceLeads.map((lead) => ({
+      date: lead.updatedAt || lead.savedAt || new Date().toISOString(),
+      type: "Source lead",
+      title: lead.name,
+      detail: `${lead.type} | ${lead.category} | ${lead.status}`
+    })),
+    ...state.productRequests.map((request) => ({
+      date: request.updatedAt || request.savedAt || new Date().toISOString(),
+      type: "Product request",
+      title: request.part,
+      detail: `${request.brand} | ${request.category} | ${request.urgency}`
+    })),
+    ...reviewItems.slice(0, 8).map((item) => ({
+      date: new Date().toISOString(),
+      type: item.type,
+      title: item.title,
+      detail: `[${item.priority}] ${item.detail}`
+    }))
+  ];
+
+  return events
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 30);
+}
+
+function buyerFileStatTemplate(label, value, detail) {
+  return `
+    <article class="buyer-file-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function buyerFileItemTemplate(item) {
+  return `
+    <article class="buyer-file-item ${escapeHtml(item.status.toLowerCase())}">
+      <div>
+        <span>${escapeHtml(item.label)}</span>
+        <strong>${escapeHtml(item.status)}</strong>
+      </div>
+      <p>${escapeHtml(item.detail)}</p>
+    </article>
+  `;
+}
+
+function buyerFileTimelineHtml(file) {
+  const events = file.timeline.length
+    ? file.timeline
+    : [{ date: new Date().toISOString(), type: "Ready", title: "No session events", detail: "Add project, shortlist, quotes, replies, or source leads." }];
+  return `
+    <section class="buyer-file-panel wide">
+      <span>Buyer file recommendation</span>
+      <p>${escapeHtml(file.statusLabel)}. Export this index with the decision memo, award handover, compliance pack, quote evidence, supplier replies, and source review records.</p>
+    </section>
+    <section class="buyer-file-event-list">
+      ${events.map((event) => `
+        <article class="buyer-file-event">
+          <span>${escapeHtml(event.type)}</span>
+          <strong>${escapeHtml(event.title)}</strong>
+          <p>${escapeHtml(event.detail)}</p>
+          <small>${escapeHtml(formatAuditDate(event.date))}</small>
+        </article>
+      `).join("")}
+    </section>
+  `;
+}
+
+function buyerFileText() {
+  const file = buyerFileData();
+  const checklist = file.items.map((item, index) => `${index + 1}. [${item.status}] ${item.label}: ${item.detail}`).join("\n");
+  const timeline = file.timeline.map((event, index) => `${index + 1}. ${formatAuditDate(event.date)} | ${event.type} | ${event.title} - ${event.detail}`).join("\n");
+
+  return `InduScout buyer file / audit index
+Prepared on ${formatCopyDate()}
+
+Project:
+- Project name: ${projectValue("name", "TBC")}
+- Buyer/company: ${projectValue("buyer", "TBC")}
+- Buyer contact: ${projectValue("contact", "TBC")}
+- Delivery country: ${projectValue("country", "TBC")}
+- Target date: ${projectValue("targetDate", "TBC")}
+
+Buyer file status:
+- Score: ${file.score}%
+- Status: ${file.statusLabel}
+- Ready sections: ${file.readyItems} / ${file.items.length}
+- Open gaps: ${file.openGaps}
+
+File index:
+${checklist}
+
+Timeline / evidence events:
+${timeline || "No session evidence events yet."}
+
+Recommended attachments:
+- RFQ pack, shortlist CSV/XLSX, and workspace JSON.
+- Quote register CSV/XLSX and supplier inbox export.
+- Evidence review report, decision memo, award handover, and supplier compliance pack.
+- Supplier emails, due-diligence responses, datasheets, certificates, warranty path, and payment validation record.
+
+Project notes:
+${projectValue("notes", "No project notes added.")}
+
+InduScout is a local browser discovery and RFQ preparation aid. This buyer file is generated from current browser session data and should be reviewed by the buyer before internal filing or purchase approval.`;
+}
+
+function buyerFileSnapshot() {
+  const file = buyerFileData();
+  return {
+    ...createSessionSnapshot(),
+    buyerFile: {
+      score: file.score,
+      statusLabel: file.statusLabel,
+      readyItems: file.readyItems,
+      openGaps: file.openGaps,
+      checklist: file.items,
+      timeline: file.timeline,
+      generatedText: buyerFileText()
+    }
+  };
+}
+
+async function copyBuyerFileIndex() {
+  updateProjectFromFields();
+  const text = buyerFileText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyBuyerFile) {
+      els.copyBuyerFile.textContent = "Buyer file copied";
+      setTimeout(() => {
+        els.copyBuyerFile.textContent = "Copy buyer file index";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy buyer file index", text);
+  }
+  renderBuyerFile();
+}
+
+function downloadBuyerFileHtml() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Buyer-File${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, buyerFileExportHtml(), "text/html;charset=utf-8");
+  renderBuyerFile();
+}
+
+function exportBuyerFileJson() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = projectSlug ? `InduScout-Buyer-File-${projectSlug}-${date}.json` : `InduScout-Buyer-File-${date}.json`;
+  downloadFile(filename, JSON.stringify(buyerFileSnapshot(), null, 2), "application/json;charset=utf-8");
+  renderBuyerFile();
+}
+
+function buyerFileExportHtml() {
+  const file = buyerFileData();
+  const text = buyerFileText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(file.title)}</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout buyer file</div>
+      <h1>${escapeHtml(file.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this as an audit-ready index for the sourcing record.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>File score</span><strong>${escapeHtml(`${file.score}%`)}</strong></div>
+      <div class="stat"><span>Ready items</span><strong>${escapeHtml(file.readyItems)}</strong></div>
+      <div class="stat"><span>Open gaps</span><strong>${escapeHtml(file.openGaps)}</strong></div>
+      <div class="stat"><span>Timeline</span><strong>${escapeHtml(file.timeline.length)}</strong></div>
+    </div>
+    <section>
+      <pre>${escapeHtml(text)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function formatAuditDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Date TBC";
+  }
+  return date.toISOString().slice(0, 10);
+}
+
 function productTemplate(product) {
   const score = product[state.priority];
   const isShortlisted = state.shortlist.includes(product.id);
@@ -609,7 +2920,7 @@ function productTemplate(product) {
           <button class="detail-action" type="button" data-detail="${escapeHtml(product.id)}">Details / RFQ</button>
           <button class="${isShortlisted ? "remove-action" : ""}" type="button" data-add="${escapeHtml(product.id)}">${isShortlisted ? "Remove shortlist" : "Add to shortlist"}</button>
           <button class="secondary-action" type="button" data-compare="${escapeHtml(product.id)}">${isCompared ? "In compare" : "Compare"}</button>
-          <a class="button-link ghost-button" href="${escapeHtml(product.sources[0].url)}" target="_blank" rel="noreferrer">Open primary source</a>
+          <a class="button-link ghost-button" href="${safeHref(product.sources[0]?.url)}" target="_blank" rel="noreferrer">Open primary source</a>
         </div>
       </div>
     </article>
@@ -618,7 +2929,7 @@ function productTemplate(product) {
 
 function sourceLinkTemplate(source) {
   return `
-    <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer" title="${escapeHtml(source.action)}">
+    <a href="${safeHref(source.url)}" target="_blank" rel="noreferrer" title="${escapeHtml(source.action)}">
       <span>${escapeHtml(source.type)}</span>
       ${escapeHtml(source.name)}
     </a>
@@ -652,7 +2963,7 @@ function renderSources() {
           <span>${escapeHtml(source.type)}</span>
           <h3>${escapeHtml(source.title)}</h3>
           <p>${escapeHtml(source.body)}</p>
-          <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">Explore source</a>
+          <a href="${safeHref(source.url)}" target="_blank" rel="noreferrer">Explore source</a>
         </article>
       `
     )
@@ -679,13 +2990,264 @@ function renderSourceDirectory() {
           <small>${escapeHtml(source.regions.join(", "))}</small>
           <div class="directory-actions">
             <button type="button" data-copy-directory-passport="${escapeHtml(source.name)}">Copy checklist</button>
-            <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">Open</a>
+            <a href="${safeHref(source.url)}" target="_blank" rel="noreferrer">Open</a>
           </div>
         </article>
       `;
       }
     )
     .join("");
+}
+
+function renderSourceIntake() {
+  if (!els.sourceIntakeSummary || !els.sourceLeadList) {
+    return;
+  }
+
+  const total = state.sourceLeads.length;
+  const withEvidence = state.sourceLeads.filter((lead) => lead.evidenceUrl || lead.website).length;
+  const authorizedClaims = state.sourceLeads.filter((lead) => lead.status === "Authorized claim").length;
+  const needsReview = state.sourceLeads.filter((lead) => ["New lead", "Needs verification"].includes(lead.status)).length;
+
+  els.sourceIntakeSummary.innerHTML = `
+    <article><span>Total leads</span><strong>${total}</strong><small>Saved locally</small></article>
+    <article><span>Evidence links</span><strong>${withEvidence}</strong><small>Website or proof supplied</small></article>
+    <article><span>Authorized claims</span><strong>${authorizedClaims}</strong><small>Needs document review</small></article>
+    <article><span>Review queue</span><strong>${needsReview}</strong><small>New or unverified leads</small></article>
+  `;
+
+  if (els.sourceLeadRegisterStatus) {
+    els.sourceLeadRegisterStatus.textContent = total ? `${total} saved source ${total === 1 ? "lead" : "leads"} in this browser` : "Stored locally in this browser";
+  }
+
+  if (!total) {
+    els.sourceLeadList.innerHTML = `
+      <div class="empty-state source-lead-empty">
+        Save supplier or source leads here before adding them to the public catalog. Keep authorization and evidence notes attached to each lead.
+      </div>
+    `;
+    renderBuyerWorkspace();
+    renderEvidenceReviewBoard();
+    renderSupplierScorecard();
+    return;
+  }
+
+  els.sourceLeadList.innerHTML = state.sourceLeads.map(sourceLeadCardTemplate).join("");
+  renderBuyerWorkspace();
+  renderEvidenceReviewBoard();
+  renderSupplierScorecard();
+}
+
+function sourceLeadCardTemplate(lead) {
+  return `
+    <article class="source-lead-card">
+      <div>
+        <span>${escapeHtml(lead.type)} &middot; ${escapeHtml(lead.category)}</span>
+        <h4>${escapeHtml(lead.name)}</h4>
+        <p>${escapeHtml(lead.notes || "No verification notes added.")}</p>
+        <small>${escapeHtml(lead.region || "Region TBC")} &middot; ${escapeHtml(lead.contact || "Contact TBC")}</small>
+      </div>
+      <strong class="source-lead-status">${escapeHtml(lead.status)}</strong>
+      <div class="source-lead-card-actions">
+        <button type="button" data-load-source-lead="${escapeHtml(lead.id)}">Load</button>
+        <button type="button" data-copy-source-lead="${escapeHtml(lead.id)}">Copy packet</button>
+        <button type="button" data-remove-source-lead="${escapeHtml(lead.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function sourceLeadSnapshot() {
+  const existing = state.sourceLeads.find((lead) => lead.id === els.sourceLeadId?.value);
+  const name = cleanText(els.sourceLeadName?.value || "Source TBC", 180);
+  return sanitizeSourceLead({
+    id: cleanText(els.sourceLeadId?.value || `${Date.now()}-${safeFilenamePart(name) || "source-lead"}`, 90),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    name,
+    website: els.sourceLeadWebsite?.value || "",
+    type: els.sourceLeadType?.value || "Distributor",
+    category: els.sourceLeadCategory?.value || "Multiple categories",
+    region: els.sourceLeadRegion?.value || "",
+    evidenceUrl: els.sourceLeadEvidence?.value || "",
+    contact: els.sourceLeadContact?.value || "",
+    status: els.sourceLeadStatus?.value || "New lead",
+    notes: els.sourceLeadNotes?.value || ""
+  });
+}
+
+function hydrateSourceLeadForm(lead = {}) {
+  if (!els.sourceLeadForm) {
+    return;
+  }
+  els.sourceLeadId.value = lead.id || "";
+  els.sourceLeadName.value = lead.name || "";
+  els.sourceLeadWebsite.value = lead.website || "";
+  els.sourceLeadType.value = lead.type || "Distributor";
+  els.sourceLeadCategory.value = lead.category || "Multiple categories";
+  els.sourceLeadRegion.value = lead.region || "";
+  els.sourceLeadEvidence.value = lead.evidenceUrl || "";
+  els.sourceLeadContact.value = lead.contact || "";
+  els.sourceLeadStatus.value = lead.status || "New lead";
+  els.sourceLeadNotes.value = lead.notes || "";
+}
+
+function saveSourceLead() {
+  const lead = sourceLeadSnapshot();
+  if (!lead || !lead.name || lead.name === "Source TBC") {
+    els.saveSourceLead.textContent = "Add source first";
+    setTimeout(() => {
+      els.saveSourceLead.textContent = "Save source lead";
+    }, 1200);
+    return;
+  }
+
+  state.sourceLeads = [lead, ...state.sourceLeads.filter((item) => item.id !== lead.id)].slice(0, 120);
+  saveSourceLeads();
+  hydrateSourceLeadForm(lead);
+  renderSourceIntake();
+  els.saveSourceLead.textContent = "Source lead saved";
+  setTimeout(() => {
+    els.saveSourceLead.textContent = "Save source lead";
+  }, 1200);
+}
+
+function loadSourceLead(id) {
+  const lead = state.sourceLeads.find((item) => item.id === id);
+  if (!lead) {
+    return;
+  }
+  hydrateSourceLeadForm(lead);
+  els.sourceLeadForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function removeSourceLead(id) {
+  state.sourceLeads = state.sourceLeads.filter((lead) => lead.id !== id);
+  saveSourceLeads();
+  renderSourceIntake();
+}
+
+function clearSourceLeadForm() {
+  hydrateSourceLeadForm();
+}
+
+function clearSourceLeads() {
+  state.sourceLeads = [];
+  saveSourceLeads();
+  clearSourceLeadForm();
+  renderSourceIntake();
+}
+
+async function copyCurrentSourceLead() {
+  const lead = sourceLeadSnapshot();
+  await copySourceLeadText(sourceLeadReviewText(lead), els.copySourceLead, "Packet copied", "Copy review packet");
+}
+
+async function copySavedSourceLead(id, triggerButton) {
+  const lead = state.sourceLeads.find((item) => item.id === id);
+  if (!lead) {
+    return;
+  }
+  await copySourceLeadText(sourceLeadReviewText(lead), triggerButton, "Packet copied", "Copy packet");
+}
+
+async function copySourceLeadText(text, triggerButton, copiedLabel, defaultLabel) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = copiedLabel;
+      setTimeout(() => {
+        triggerButton.textContent = defaultLabel;
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy source review packet", text);
+  }
+}
+
+function sourceLeadReviewText(lead) {
+  return `InduScout supplier/source review packet
+Prepared on ${formatCopyDate()}
+
+Source name: ${lead.name}
+Source type: ${lead.type}
+Primary category: ${lead.category}
+Regions served: ${lead.region || "TBC"}
+Website/profile: ${lead.website || "TBC"}
+Evidence or authorization URL: ${lead.evidenceUrl || "TBC"}
+Review status: ${lead.status}
+Submitter/contact: ${lead.contact || "TBC"}
+
+Verification notes:
+${lead.notes || "No verification notes added."}
+
+Review checklist:
+- Confirm company identity, website ownership, and contact path.
+- Confirm whether this is an OEM, authorized distributor, marketplace, RFQ network, surplus seller, data directory, or local supplier.
+- Request line card, authorization proof, certificates, warranty path, and official buying or RFQ links where relevant.
+- Confirm product categories, brands carried, regions served, currencies, payment terms, delivery terms, and support capability.
+- Check whether this source should become a catalog source, a supplier passport entry, or a watchlist item.
+
+InduScout is a discovery and RFQ preparation aid. Supplier/source leads require review before public catalog inclusion.`;
+}
+
+function sourceLeadExportTable() {
+  const headers = [
+    "Source Name",
+    "Source Type",
+    "Category",
+    "Regions Served",
+    "Website",
+    "Evidence URL",
+    "Review Status",
+    "Contact",
+    "Notes",
+    "Saved At",
+    "Updated At"
+  ];
+  const rows = state.sourceLeads.map((lead) => [
+    lead.name,
+    lead.type,
+    lead.category,
+    lead.region,
+    lead.website,
+    lead.evidenceUrl,
+    lead.status,
+    lead.contact,
+    lead.notes,
+    lead.savedAt,
+    lead.updatedAt
+  ]);
+  return { headers, rows };
+}
+
+function exportSourceLeadCsv() {
+  const table = sourceLeadExportTable();
+  if (!table.rows.length) {
+    els.exportSourceLeadCsv.textContent = "Add leads first";
+    setTimeout(() => {
+      els.exportSourceLeadCsv.textContent = "Export CSV";
+    }, 1200);
+    return;
+  }
+  const csv = [table.headers, ...table.rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  downloadFile(`InduScout-Source-Intake-${new Date().toISOString().slice(0, 10)}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
+}
+
+function exportSourceLeadXlsx() {
+  const table = sourceLeadExportTable();
+  if (!table.rows.length) {
+    els.exportSourceLeadXlsx.textContent = "Add leads first";
+    setTimeout(() => {
+      els.exportSourceLeadXlsx.textContent = "Export XLSX";
+    }, 1200);
+    return;
+  }
+  downloadFile(
+    `InduScout-Source-Intake-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    createXlsxWorkbook(table.headers, table.rows, "Source Intake", "InduScout Source Intake"),
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
 }
 
 function renderQualityDashboard() {
@@ -1088,7 +3650,7 @@ function detailSourceTemplate(source, index, productId) {
   const passport = sourceTrustPassport(source);
   return `
     <article class="detail-source-card ${escapeHtml(confidence.level)}">
-      <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">
+      <a href="${safeHref(source.url)}" target="_blank" rel="noreferrer">
         <span>${escapeHtml(source.type)}</span>
         <strong>${escapeHtml(source.name)}</strong>
         <small>${escapeHtml(source.action)} &middot; ${escapeHtml(source.region)} &middot; ${escapeHtml(confidence.label)}</small>
@@ -1167,9 +3729,1002 @@ function compareTemplate(product) {
         <div><dt>Sources</dt><dd>${escapeHtml(sourceNames)}</dd></div>
         <div><dt>Alternates</dt><dd>${escapeHtml(product.alternatives.join(", "))}</dd></div>
       </dl>
-      <a class="button-link ghost-button" href="${escapeHtml(product.sources[0].url)}" target="_blank" rel="noreferrer">Open primary source</a>
+      <a class="button-link ghost-button" href="${safeHref(product.sources[0]?.url)}" target="_blank" rel="noreferrer">Open primary source</a>
     </article>
   `;
+}
+
+function specRequirementInputs() {
+  return [
+    els.specApplication,
+    els.specMustHave,
+    els.specCertifications,
+    els.specSourceRequirement,
+    els.specCriticality
+  ].filter(Boolean);
+}
+
+function defaultSpecRequirements() {
+  return {
+    application: "",
+    mustHave: "",
+    certifications: "",
+    sourceRequirement: "any",
+    criticality: "Standard sourcing"
+  };
+}
+
+function hydrateSpecRequirementFields() {
+  if (!els.specForm) {
+    return;
+  }
+  const requirements = { ...defaultSpecRequirements(), ...state.specRequirements };
+  els.specApplication.value = requirements.application;
+  els.specMustHave.value = requirements.mustHave;
+  els.specCertifications.value = requirements.certifications;
+  els.specSourceRequirement.value = requirements.sourceRequirement;
+  els.specCriticality.value = requirements.criticality;
+}
+
+function specRequirementsFromFields() {
+  return sanitizeSpecRequirements({
+    application: els.specApplication?.value || "",
+    mustHave: els.specMustHave?.value || "",
+    certifications: els.specCertifications?.value || "",
+    sourceRequirement: els.specSourceRequirement?.value || "any",
+    criticality: els.specCriticality?.value || "Standard sourcing"
+  });
+}
+
+function updateSpecRequirementsFromFields() {
+  state.specRequirements = specRequirementsFromFields();
+  saveSpecRequirements();
+  renderSpecMatchDesk();
+}
+
+function saveSpecRequirementsFromFields() {
+  updateSpecRequirementsFromFields();
+  if (els.saveSpecRequirements) {
+    els.saveSpecRequirements.textContent = "Requirements saved";
+    setTimeout(() => {
+      els.saveSpecRequirements.textContent = "Save requirements";
+    }, 1200);
+  }
+}
+
+function resetSpecRequirements() {
+  state.specRequirements = defaultSpecRequirements();
+  saveSpecRequirements();
+  hydrateSpecRequirementFields();
+  renderSpecMatchDesk();
+}
+
+function renderSpecMatchDesk(prefilteredProducts) {
+  if (!els.specMatchStats || !els.specMatchSummary || !els.specMatchGrid) {
+    return;
+  }
+
+  const matrix = specMatchData(prefilteredProducts);
+  els.specMatchSummary.textContent = matrix.title;
+  els.specMatchStats.innerHTML = [
+    specStatTemplate("Products scored", matrix.cards.length, matrix.scopeLabel),
+    specStatTemplate("Best fit", matrix.top ? `${matrix.top.score}%` : "TBC", matrix.top ? `${matrix.top.product.brand} ${matrix.top.product.sku}` : "Add requirements or products"),
+    specStatTemplate("Strong fits", matrix.strongFits, "Products at 80% or higher"),
+    specStatTemplate("Open gaps", matrix.gapCount, matrix.gapCount ? "Technical checks to close" : "No visible gaps")
+  ].join("");
+
+  if (!matrix.cards.length) {
+    els.specMatchGrid.innerHTML = `
+      <div class="empty-state spec-empty">
+        Add products to Compare or Shortlist, or use Finder filters, then enter buyer requirements to build a spec match matrix.
+      </div>
+    `;
+    return;
+  }
+
+  els.specMatchGrid.innerHTML = matrix.cards.map(specMatchCardTemplate).join("");
+}
+
+function specMatchData(prefilteredProducts) {
+  const requirements = state.specRequirements || defaultSpecRequirements();
+  const candidates = specCandidateProducts(prefilteredProducts);
+  const cards = candidates
+    .map((product) => scoreSpecProduct(product, requirements))
+    .sort((a, b) => b.score - a.score || b.product[state.priority] - a.product[state.priority])
+    .slice(0, 12);
+  const top = cards[0] || null;
+  const strongFits = cards.filter((card) => card.score >= 80).length;
+  const gapCount = cards.reduce((total, card) => total + card.gaps.length, 0);
+  const requirementLabel = specRequirementsLabel(requirements);
+  const scopeLabel = specScopeLabel();
+  const title = top
+    ? `${top.product.brand} ${top.product.sku} leads technical fit`
+    : "Spec matrix needs buyer requirements";
+
+  return { requirements, candidates, cards, top, strongFits, gapCount, requirementLabel, scopeLabel, title };
+}
+
+function specCandidateProducts(prefilteredProducts) {
+  const valid = (items) => items.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+  if (state.compare.length) {
+    return valid(state.compare);
+  }
+  if (state.shortlist.length) {
+    return valid(state.shortlist);
+  }
+  const fallback = Array.isArray(prefilteredProducts) ? prefilteredProducts : products.filter(matchesFilters);
+  return fallback.slice(0, 12);
+}
+
+function specScopeLabel() {
+  if (state.compare.length) {
+    return "Using compare list";
+  }
+  if (state.shortlist.length) {
+    return "Using shortlist";
+  }
+  return "Using current Finder results";
+}
+
+function scoreSpecProduct(product, requirements) {
+  const specTokens = requirementTokens(requirements.mustHave);
+  const appTokens = requirementTokens(requirements.application);
+  const certTokens = requirementTokens(requirements.certifications);
+  const productText = productSearchText(product);
+  const specHits = specTokens.filter((token) => productText.includes(normalizeToken(token)));
+  const appHits = appTokens.filter((token) => productText.includes(normalizeToken(token)));
+  const certHits = certTokens.filter((token) => product.certifications.some((cert) => normalizeToken(cert).includes(normalizeToken(token))));
+  const sourceOk = sourceRequirementMet(product, requirements.sourceRequirement);
+  const confidence = confidenceForProduct(product);
+  const gaps = [];
+  const strengths = [];
+
+  const specRatio = specTokens.length ? specHits.length / specTokens.length : 1;
+  const appRatio = appTokens.length ? appHits.length / appTokens.length : 1;
+  const certRatio = certTokens.length ? certHits.length / certTokens.length : 1;
+
+  if (specTokens.length) {
+    strengths.push(`${specHits.length}/${specTokens.length} must-have spec signals matched`);
+    specTokens.filter((token) => !specHits.includes(token)).slice(0, 6).forEach((token) => gaps.push(`Spec not visible: ${token}`));
+  } else {
+    strengths.push("No must-have spec list entered yet");
+  }
+
+  if (appTokens.length) {
+    strengths.push(`${appHits.length}/${appTokens.length} application signals matched`);
+    appTokens.filter((token) => !appHits.includes(token)).slice(0, 4).forEach((token) => gaps.push(`Application not visible: ${token}`));
+  }
+
+  if (certTokens.length) {
+    strengths.push(`${certHits.length}/${certTokens.length} certification signals matched`);
+    certTokens.filter((token) => !certHits.includes(token)).slice(0, 4).forEach((token) => gaps.push(`Certification to confirm: ${token}`));
+  }
+
+  if (product.datasheet) {
+    strengths.push("Datasheet signal available");
+  } else {
+    gaps.push("Datasheet not confirmed");
+  }
+
+  if (product.verified) {
+    strengths.push("Verified source signal present");
+  } else {
+    gaps.push("Verified source signal missing");
+  }
+
+  if (sourceOk) {
+    strengths.push(sourceRequirementLabel(requirements.sourceRequirement));
+  } else {
+    gaps.push(`Source requirement not met: ${sourceRequirementLabel(requirements.sourceRequirement)}`);
+  }
+
+  if (requirements.criticality === "Safety or process critical") {
+    if (!product.datasheet) {
+      gaps.push("Safety/process critical: latest datasheet must be requested");
+    }
+    if (!product.certifications.length) {
+      gaps.push("Safety/process critical: certificates must be confirmed");
+    }
+    if (confidence.level === "review") {
+      gaps.push("Safety/process critical: catalog confidence needs review");
+    }
+  }
+
+  if (requirements.criticality === "Production critical" && confidence.level === "review") {
+    gaps.push("Production critical: confidence should be strengthened before RFQ award");
+  }
+
+  if (requirements.criticality === "Obsolete replacement" && !product.alternatives.length) {
+    gaps.push("Obsolete replacement: alternates should be reviewed");
+  }
+
+  let score = 30;
+  score += specRatio * 28;
+  score += appRatio * 14;
+  score += certRatio * 12;
+  score += sourceOk ? 10 : -8;
+  score += product.datasheet ? 5 : -4;
+  score += product.verified ? 5 : -3;
+  score += Math.round(product[state.priority] * 0.08);
+  score += confidence.level === "high" ? 5 : confidence.level === "review" ? -8 : 0;
+  if (requirements.criticality === "Safety or process critical") {
+    score -= gaps.filter((gap) => /critical|certificate|datasheet|confidence/i.test(gap)).length * 3;
+  }
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  const status = score >= 86 ? "Strong technical fit" : score >= 72 ? "Plausible fit" : score >= 56 ? "Engineering review" : "Weak fit";
+  const statusClass = score >= 86 ? "strong" : score >= 72 ? "plausible" : score >= 56 ? "review" : "weak";
+  const nextAction = specNextAction({ product, requirements, gaps, score });
+
+  return {
+    product,
+    score,
+    status,
+    statusClass,
+    strengths: strengths.slice(0, 6),
+    gaps: [...new Set(gaps)].slice(0, 8),
+    matched: {
+      specs: specHits,
+      applications: appHits,
+      certifications: certHits
+    },
+    nextAction
+  };
+}
+
+function productSearchText(product) {
+  return normalizeToken([
+    product.brand,
+    product.sku,
+    product.name,
+    product.category,
+    product.family,
+    product.description,
+    product.lifecycle,
+    ...product.specs,
+    ...product.applications,
+    ...product.certifications,
+    ...product.alternatives,
+    ...product.sources.map((source) => `${source.type} ${source.name} ${source.action} ${source.region}`)
+  ].join(" "));
+}
+
+function requirementTokens(value) {
+  return [...new Set(String(value || "")
+    .split(/[\n,;|]+/)
+    .map((token) => cleanText(token, 80).trim())
+    .filter(Boolean))]
+    .slice(0, 18);
+}
+
+function normalizeToken(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function sourceRequirementMet(product, requirement) {
+  if (requirement === "datasheet") {
+    return Boolean(product.datasheet);
+  }
+  if (requirement === "verified") {
+    return Boolean(product.verified);
+  }
+  if (requirement === "oem-distributor") {
+    return product.sources.some((source) => ["OEM", "Distributor", "MRO"].includes(source.type));
+  }
+  return product.sources.length > 0;
+}
+
+function sourceRequirementLabel(requirement) {
+  const labels = {
+    any: "Any useful source path present",
+    "oem-distributor": "OEM or distributor path present",
+    datasheet: "Datasheet required",
+    verified: "Verified source signal required"
+  };
+  return labels[requirement] || labels.any;
+}
+
+function specRequirementsLabel(requirements) {
+  const tokens = [
+    requirements.application ? `Application: ${requirements.application}` : "",
+    requirements.mustHave ? `Specs: ${requirements.mustHave}` : "",
+    requirements.certifications ? `Certs: ${requirements.certifications}` : "",
+    sourceRequirementLabel(requirements.sourceRequirement),
+    requirements.criticality
+  ].filter(Boolean);
+  return tokens.join(" | ");
+}
+
+function specNextAction({ product, requirements, gaps, score }) {
+  if (!requirements.mustHave && !requirements.application && !requirements.certifications) {
+    return "Add buyer specs, application, or certification requirements for a more useful match matrix.";
+  }
+  if (score >= 86 && !gaps.length) {
+    return "Use as a technical front-runner, then confirm exact suffix, datasheet revision, certificates, and installed-equipment compatibility.";
+  }
+  if (score >= 72) {
+    return "Send RFQ with the open gaps as supplier confirmation questions before treating it as technically acceptable.";
+  }
+  if (score >= 56) {
+    return "Request engineering or maintenance review before comparing commercial offers.";
+  }
+  return `Do not treat ${product.brand} ${product.sku} as a direct fit until missing specs and source evidence are confirmed.`;
+}
+
+function specStatTemplate(label, value, detail) {
+  return `
+    <article class="spec-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function specMatchCardTemplate(card) {
+  const product = card.product;
+  const sourceNames = product.sources.slice(0, 3).map((source) => `${source.type}: ${source.name}`).join(", ");
+  const certs = product.certifications.length ? product.certifications.join(", ") : "Check";
+  return `
+    <article class="spec-card ${escapeHtml(card.statusClass)}">
+      <div class="spec-card-head">
+        <div>
+          <span>${escapeHtml(product.category)}</span>
+          <h3>${escapeHtml(product.brand)} ${escapeHtml(product.sku)}</h3>
+          <p>${escapeHtml(product.name)}</p>
+        </div>
+        <strong>${escapeHtml(card.status)}</strong>
+      </div>
+      <div class="spec-score">
+        <div>
+          <span>Requirement fit</span>
+          <strong>${card.score}</strong>
+        </div>
+        <div class="bar" aria-hidden="true"><i style="width:${card.score}%"></i></div>
+      </div>
+      <dl class="spec-facts">
+        <div><dt>Family</dt><dd>${escapeHtml(product.family)}</dd></div>
+        <div><dt>Lead</dt><dd>${escapeHtml(product.lead)}</dd></div>
+        <div><dt>MOQ</dt><dd>${escapeHtml(product.moq)}</dd></div>
+        <div><dt>Certs</dt><dd>${escapeHtml(certs)}</dd></div>
+        <div><dt>Datasheet</dt><dd>${product.datasheet ? "Yes" : "Check"}</dd></div>
+        <div><dt>Sources</dt><dd>${escapeHtml(sourceNames)}</dd></div>
+      </dl>
+      <div class="spec-columns">
+        <div>
+          <span>Matched / strengths</span>
+          <ul>${card.strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        </div>
+        <div>
+          <span>Gaps to confirm</span>
+          <ul>${card.gaps.length ? card.gaps.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "<li>No visible gaps from current requirement profile.</li>"}</ul>
+        </div>
+      </div>
+      <p class="spec-next"><strong>Next action:</strong> ${escapeHtml(card.nextAction)}</p>
+    </article>
+  `;
+}
+
+function specMatrixText() {
+  const matrix = specMatchData();
+  const rows = matrix.cards.map((card, index) => `#${index + 1} ${card.product.brand} ${card.product.sku} - ${card.score}% (${card.status})
+Product: ${card.product.name}
+Category: ${card.product.category}
+Matched specs: ${card.matched.specs.join(", ") || "None visible"}
+Matched applications: ${card.matched.applications.join(", ") || "None visible"}
+Matched certifications: ${card.matched.certifications.join(", ") || "None visible"}
+Strengths:
+${card.strengths.map((item) => `- ${item}`).join("\n")}
+Gaps:
+${card.gaps.length ? card.gaps.map((item) => `- ${item}`).join("\n") : "- No visible gaps from current requirement profile."}
+Next action: ${card.nextAction}`).join("\n\n");
+
+  return `InduScout spec match matrix
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
+
+Requirement profile:
+- Application: ${matrix.requirements.application || "TBC"}
+- Must-have specs: ${matrix.requirements.mustHave || "TBC"}
+- Required certifications: ${matrix.requirements.certifications || "TBC"}
+- Source requirement: ${sourceRequirementLabel(matrix.requirements.sourceRequirement)}
+- Criticality: ${matrix.requirements.criticality}
+- Scope: ${matrix.scopeLabel}
+
+Summary:
+- Products scored: ${matrix.cards.length}
+- Best fit: ${matrix.top ? `${matrix.top.product.brand} ${matrix.top.product.sku} (${matrix.top.score}%)` : "TBC"}
+- Strong fits: ${matrix.strongFits}
+- Open technical gaps: ${matrix.gapCount}
+
+Technical fit matrix:
+${rows || "No products available for spec matching."}
+
+Buyer reminder:
+Use this as a screening aid only. Confirm exact part number, suffix, dimensions, voltage, material, datasheet revision, certificate scope, installed-equipment compatibility, and supplier evidence before RFQ award or purchase.`;
+}
+
+function specMatrixSnapshot() {
+  const matrix = specMatchData();
+  return {
+    ...createSessionSnapshot(),
+    specMatch: {
+      generatedAt: new Date().toISOString(),
+      requirements: matrix.requirements,
+      scopeLabel: matrix.scopeLabel,
+      topProduct: matrix.top,
+      strongFits: matrix.strongFits,
+      gapCount: matrix.gapCount,
+      products: matrix.cards,
+      generatedText: specMatrixText()
+    }
+  };
+}
+
+async function copySpecMatrix() {
+  updateProjectFromFields();
+  const text = specMatrixText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copySpecMatrix) {
+      els.copySpecMatrix.textContent = "Matrix copied";
+      setTimeout(() => {
+        els.copySpecMatrix.textContent = "Copy spec matrix";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy spec matrix", text);
+  }
+  renderSpecMatchDesk();
+}
+
+function downloadSpecMatrixHtml() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Spec-Match${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, specMatrixHtml(), "text/html;charset=utf-8");
+  renderSpecMatchDesk();
+}
+
+function exportSpecMatrixJson() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = projectSlug ? `InduScout-Spec-Match-${projectSlug}-${date}.json` : `InduScout-Spec-Match-${date}.json`;
+  downloadFile(filename, JSON.stringify(specMatrixSnapshot(), null, 2), "application/json;charset=utf-8");
+  renderSpecMatchDesk();
+}
+
+function specMatrixHtml() {
+  const matrix = specMatchData();
+  const text = specMatrixText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InduScout Spec Match Matrix</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout spec match matrix</div>
+      <h1>${escapeHtml(matrix.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this as a technical screening aid before RFQ or supplier award.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>Products scored</span><strong>${escapeHtml(matrix.cards.length)}</strong></div>
+      <div class="stat"><span>Best fit</span><strong>${escapeHtml(matrix.top ? `${matrix.top.score}%` : "TBC")}</strong></div>
+      <div class="stat"><span>Strong fits</span><strong>${escapeHtml(matrix.strongFits)}</strong></div>
+      <div class="stat"><span>Open gaps</span><strong>${escapeHtml(matrix.gapCount)}</strong></div>
+    </div>
+    <section>
+      <pre>${escapeHtml(text)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function alternateReviewInputs() {
+  return [
+    els.alternateProduct,
+    els.alternateCriticality,
+    els.alternateEquipment,
+    els.alternateConstraint
+  ].filter(Boolean);
+}
+
+function defaultAlternateReview() {
+  return {
+    productId: products[0]?.id || "",
+    criticality: "Standard spare",
+    equipment: "",
+    constraint: ""
+  };
+}
+
+function hydrateAlternateReviewFields() {
+  if (!els.alternateForm) {
+    return;
+  }
+  const review = { ...defaultAlternateReview(), ...state.alternateReview };
+  const productId = products.some((product) => product.id === review.productId) ? review.productId : products[0]?.id || "";
+  els.alternateProduct.value = productId;
+  els.alternateCriticality.value = review.criticality;
+  els.alternateEquipment.value = review.equipment;
+  els.alternateConstraint.value = review.constraint;
+  state.alternateReview = sanitizeAlternateReview({ ...review, productId });
+}
+
+function alternateReviewFromFields() {
+  return sanitizeAlternateReview({
+    productId: els.alternateProduct?.value || "",
+    criticality: els.alternateCriticality?.value || "Standard spare",
+    equipment: els.alternateEquipment?.value || "",
+    constraint: els.alternateConstraint?.value || ""
+  });
+}
+
+function updateAlternateReviewFromFields() {
+  state.alternateReview = alternateReviewFromFields();
+  saveAlternateReview();
+  renderAlternateDesk();
+}
+
+function saveAlternateReviewFromFields() {
+  updateAlternateReviewFromFields();
+  if (els.saveAlternateDesk) {
+    els.saveAlternateDesk.textContent = "Review setup saved";
+    setTimeout(() => {
+      els.saveAlternateDesk.textContent = "Save review setup";
+    }, 1200);
+  }
+}
+
+function resetAlternateReview() {
+  state.alternateReview = defaultAlternateReview();
+  saveAlternateReview();
+  hydrateAlternateReviewFields();
+  renderAlternateDesk();
+}
+
+function renderAlternateDesk(prefilteredProducts) {
+  if (!els.alternateStats || !els.alternateSummary || !els.alternateGrid) {
+    return;
+  }
+
+  const review = alternateReviewData(prefilteredProducts);
+  els.alternateSummary.textContent = review.title;
+  els.alternateStats.innerHTML = [
+    alternateStatTemplate("Base product", review.base ? `${review.base.brand} ${review.base.sku}` : "TBC", review.base ? review.base.lifecycle : "Select a product"),
+    alternateStatTemplate("Known alternates", review.cards.length, review.cards.length ? "Catalog candidates found" : "No catalog matches"),
+    alternateStatTemplate("Best candidate", review.best ? `${review.best.product.brand} ${review.best.product.sku}` : "TBC", review.best ? `${review.best.score}% engineering fit` : "Needs research"),
+    alternateStatTemplate("Review gaps", review.gapCount, review.gapCount ? "Checks before substitution" : "No visible gaps")
+  ].join("");
+
+  if (!review.base) {
+    els.alternateGrid.innerHTML = '<div class="empty-state alternate-empty">Select a base product to review alternate and obsolescence risk.</div>';
+    return;
+  }
+
+  els.alternateGrid.innerHTML = [
+    alternateBaseTemplate(review),
+    ...review.cards.map(alternateCardTemplate)
+  ].join("");
+}
+
+function alternateReviewData(prefilteredProducts) {
+  const setup = state.alternateReview || defaultAlternateReview();
+  const base = products.find((product) => product.id === setup.productId) || products[0] || null;
+  const candidates = base ? alternateCandidateProducts(base, prefilteredProducts) : [];
+  const cards = candidates
+    .map((product) => scoreAlternateCandidate(base, product, setup))
+    .sort((a, b) => b.score - a.score || b.product[state.priority] - a.product[state.priority])
+    .slice(0, 8);
+  const best = cards[0] || null;
+  const gapCount = cards.reduce((total, card) => total + card.gaps.length, 0);
+  const title = base
+    ? `${base.brand} ${base.sku} alternate review`
+    : "Alternate review needs a base product";
+  return { setup, base, candidates, cards, best, gapCount, title };
+}
+
+function alternateCandidateProducts(base, prefilteredProducts) {
+  const byId = new Map();
+  const add = (product) => {
+    if (product && product.id !== base.id) {
+      byId.set(product.id, product);
+    }
+  };
+  base.alternatives.forEach((name) => findProductByAlternateName(name, base.category).forEach(add));
+  products.filter((product) => product.category === base.category && product.id !== base.id).forEach(add);
+  (state.compare.length ? state.compare : state.shortlist).forEach((id) => add(products.find((product) => product.id === id)));
+  if (!byId.size && Array.isArray(prefilteredProducts)) {
+    prefilteredProducts.filter((product) => product.category === base.category).forEach(add);
+  }
+  return [...byId.values()];
+}
+
+function findProductByAlternateName(name, category) {
+  const token = normalizeToken(name);
+  if (!token) {
+    return [];
+  }
+  return products.filter((product) => {
+    if (category && product.category !== category) {
+      return false;
+    }
+    const haystack = normalizeToken(`${product.brand} ${product.sku} ${product.name} ${product.family}`);
+    return haystack.includes(token) || token.includes(normalizeToken(product.sku)) || token.includes(normalizeToken(product.brand));
+  });
+}
+
+function scoreAlternateCandidate(base, product, setup) {
+  const baseText = productSearchText(base);
+  const productText = productSearchText(product);
+  const baseSpecTokens = [...base.specs, ...base.applications, base.family, base.category].map(normalizeToken).filter(Boolean);
+  const matches = baseSpecTokens.filter((token) => productText.includes(token)).slice(0, 8);
+  const gaps = [];
+  const strengths = [];
+  const sourceOk = product.sources.some((source) => ["OEM", "Distributor", "MRO"].includes(source.type));
+  const confidence = confidenceForProduct(product);
+  const certOverlap = product.certifications.filter((cert) => base.certifications.map(normalizeToken).includes(normalizeToken(cert)));
+
+  if (product.category === base.category) {
+    strengths.push("Same procurement category");
+  } else {
+    gaps.push(`Different category: ${product.category}`);
+  }
+
+  if (product.family === base.family) {
+    strengths.push("Same product family");
+  } else {
+    gaps.push("Different family or series; dimensional and functional fit must be checked");
+  }
+
+  if (matches.length) {
+    strengths.push(`${matches.length} overlapping spec/application signals`);
+  } else {
+    gaps.push("No visible spec overlap in current catalog record");
+  }
+
+  if (certOverlap.length) {
+    strengths.push(`Shared certifications: ${certOverlap.join(", ")}`);
+  } else if (base.certifications.length) {
+    gaps.push(`Confirm required certifications: ${base.certifications.join(", ")}`);
+  }
+
+  if (product.datasheet) {
+    strengths.push("Candidate datasheet signal available");
+  } else {
+    gaps.push("Candidate datasheet not confirmed");
+  }
+
+  if (sourceOk) {
+    strengths.push("Candidate has OEM, distributor, or MRO source path");
+  } else {
+    gaps.push("Candidate lacks primary source path");
+  }
+
+  if (setup.constraint) {
+    const constraintTokens = requirementTokens(setup.constraint);
+    const constraintHits = constraintTokens.filter((token) => productText.includes(normalizeToken(token)));
+    if (constraintHits.length) {
+      strengths.push(`${constraintHits.length}/${constraintTokens.length} known constraints visible`);
+    }
+    constraintTokens.filter((token) => !constraintHits.includes(token)).slice(0, 4).forEach((token) => gaps.push(`Constraint to confirm: ${token}`));
+  }
+
+  if (/obsolete|no-stock/i.test(setup.criticality) && !product.alternatives.length) {
+    gaps.push("Obsolete/no-stock review: ask supplier for substitute justification and current lifecycle");
+  }
+
+  if (setup.criticality === "Safety or process critical") {
+    gaps.push("Safety/process critical: buyer should require engineering sign-off before substitution");
+    if (!product.datasheet || !product.certifications.length) {
+      gaps.push("Safety/process critical: datasheet and certificate evidence are mandatory");
+    }
+  }
+
+  let score = 25;
+  score += product.category === base.category ? 18 : -10;
+  score += product.family === base.family ? 18 : 0;
+  score += Math.min(matches.length, 6) * 5;
+  score += Math.min(certOverlap.length, 3) * 4;
+  score += product.datasheet ? 7 : -5;
+  score += sourceOk ? 8 : -6;
+  score += confidence.level === "high" ? 8 : confidence.level === "review" ? -8 : 3;
+  score += Math.round(product[state.priority] * 0.05);
+  if (setup.criticality === "Safety or process critical") {
+    score -= 10;
+  }
+  if (/obsolete|no-stock/i.test(setup.criticality)) {
+    score -= 4;
+  }
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  const status = score >= 82 ? "Strong candidate" : score >= 68 ? "Review candidate" : score >= 52 ? "High review effort" : "Weak substitute";
+  const statusClass = score >= 82 ? "strong" : score >= 68 ? "plausible" : score >= 52 ? "review" : "weak";
+  const nextAction = alternateNextAction({ base, product, setup, score, gaps });
+
+  return {
+    product,
+    score,
+    status,
+    statusClass,
+    strengths: [...new Set(strengths)].slice(0, 7),
+    gaps: [...new Set(gaps)].slice(0, 9),
+    nextAction
+  };
+}
+
+function alternateNextAction({ base, product, setup, score, gaps }) {
+  if (setup.criticality === "Safety or process critical") {
+    return `Require engineering sign-off, latest datasheet, certificate scope, and supplier written confirmation before replacing ${base.brand} ${base.sku} with ${product.brand} ${product.sku}.`;
+  }
+  if (score >= 82 && gaps.length <= 2) {
+    return "Treat as a front-runner alternate, but confirm exact suffix, dimensions, electrical/mechanical interface, certificate scope, and warranty path.";
+  }
+  if (score >= 68) {
+    return "Send the open gaps as supplier questions and ask maintenance or engineering to approve before commercial award.";
+  }
+  return "Keep as research-only until missing fit, source, lifecycle, and certification evidence is closed.";
+}
+
+function alternateRiskLevel(product, setup) {
+  const confidence = confidenceForProduct(product);
+  if (setup.criticality === "Safety or process critical") {
+    return "Engineering sign-off required";
+  }
+  if (/obsolete|no-stock/i.test(setup.criticality)) {
+    return "Obsolescence review";
+  }
+  if (confidence.level === "review" || !product.datasheet || !product.verified) {
+    return "Buyer review required";
+  }
+  return "Standard verification";
+}
+
+function alternateStatTemplate(label, value, detail) {
+  return `
+    <article class="alternate-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function alternateBaseTemplate(review) {
+  const base = review.base;
+  const setup = review.setup;
+  return `
+    <article class="alternate-base-card">
+      <div>
+        <span>Base product</span>
+        <h3>${escapeHtml(base.brand)} ${escapeHtml(base.sku)}</h3>
+        <p>${escapeHtml(base.name)}</p>
+      </div>
+      <dl>
+        <div><dt>Category</dt><dd>${escapeHtml(base.category)}</dd></div>
+        <div><dt>Family</dt><dd>${escapeHtml(base.family)}</dd></div>
+        <div><dt>Lifecycle</dt><dd>${escapeHtml(base.lifecycle)}</dd></div>
+        <div><dt>Criticality</dt><dd>${escapeHtml(setup.criticality)}</dd></div>
+        <div><dt>Equipment</dt><dd>${escapeHtml(setup.equipment || "TBC")}</dd></div>
+        <div><dt>Known constraint</dt><dd>${escapeHtml(setup.constraint || "TBC")}</dd></div>
+      </dl>
+      <p>Buyer reminder: alternates are technical review candidates only. Confirm exact model, suffix, dimensions, voltage, protocol, material, certificate scope, firmware/revision, warranty route, and installed-equipment compatibility before substitution.</p>
+    </article>
+  `;
+}
+
+function alternateCardTemplate(card) {
+  const product = card.product;
+  return `
+    <article class="alternate-card ${escapeHtml(card.statusClass)}">
+      <div class="alternate-card-head">
+        <div>
+          <span>${escapeHtml(product.category)}</span>
+          <h3>${escapeHtml(product.brand)} ${escapeHtml(product.sku)}</h3>
+          <p>${escapeHtml(product.name)}</p>
+        </div>
+        <strong>${escapeHtml(card.status)}</strong>
+      </div>
+      <div class="alternate-score">
+        <div>
+          <span>Engineering fit</span>
+          <strong>${card.score}</strong>
+        </div>
+        <div class="bar" aria-hidden="true"><i style="width:${card.score}%"></i></div>
+      </div>
+      <dl class="alternate-facts">
+        <div><dt>Family</dt><dd>${escapeHtml(product.family)}</dd></div>
+        <div><dt>Lifecycle</dt><dd>${escapeHtml(product.lifecycle)}</dd></div>
+        <div><dt>Lead</dt><dd>${escapeHtml(product.lead)}</dd></div>
+        <div><dt>Datasheet</dt><dd>${product.datasheet ? "Yes" : "Check"}</dd></div>
+        <div><dt>Risk</dt><dd>${escapeHtml(alternateRiskLevel(product, state.alternateReview))}</dd></div>
+      </dl>
+      <div class="alternate-columns">
+        <div>
+          <span>Positive signals</span>
+          <ul>${card.strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        </div>
+        <div>
+          <span>Checks before substitution</span>
+          <ul>${card.gaps.length ? card.gaps.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "<li>No visible gaps from current catalog data.</li>"}</ul>
+        </div>
+      </div>
+      <p class="alternate-next"><strong>Next action:</strong> ${escapeHtml(card.nextAction)}</p>
+    </article>
+  `;
+}
+
+function alternateReviewText() {
+  const review = alternateReviewData();
+  const base = review.base;
+  const rows = review.cards.map((card, index) => `#${index + 1} ${card.product.brand} ${card.product.sku} - ${card.score}% (${card.status})
+Product: ${card.product.name}
+Lifecycle: ${card.product.lifecycle}
+Positive signals:
+${card.strengths.map((item) => `- ${item}`).join("\n")}
+Checks before substitution:
+${card.gaps.length ? card.gaps.map((item) => `- ${item}`).join("\n") : "- No visible gaps from current catalog data."}
+Next action: ${card.nextAction}`).join("\n\n");
+
+  return `InduScout alternate and obsolescence review
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Installed equipment/location: ${review.setup.equipment || "TBC"}
+Known constraint: ${review.setup.constraint || "TBC"}
+Replacement criticality: ${review.setup.criticality}
+
+Base product:
+${base ? `${base.brand} ${base.sku} - ${base.name}` : "TBC"}
+Category: ${base ? base.category : "TBC"}
+Family: ${base ? base.family : "TBC"}
+Lifecycle: ${base ? base.lifecycle : "TBC"}
+
+Review summary:
+- Known alternates scored: ${review.cards.length}
+- Best candidate: ${review.best ? `${review.best.product.brand} ${review.best.product.sku} (${review.best.score}%)` : "TBC"}
+- Open checks: ${review.gapCount}
+
+Candidate alternates:
+${rows || "No catalog alternate candidates found. Create a product request or source lead for further research."}
+
+Engineering review checklist:
+- Confirm exact model, suffix, voltage, dimensions, material, protocol, mounting, connection, firmware/revision, and environmental rating.
+- Confirm latest datasheet, certificate scope, country of origin, warranty route, and lifecycle status.
+- Confirm installed-equipment compatibility with maintenance, engineering, or OEM before approving a substitute.
+- Treat alternates as review candidates only, not automatic replacements.
+
+InduScout is a discovery and RFQ preparation aid. Final substitute approval remains with the buyer, engineering team, OEM, and supplier evidence.`;
+}
+
+function alternateReviewSnapshot() {
+  const review = alternateReviewData();
+  return {
+    ...createSessionSnapshot(),
+    alternateReviewDesk: {
+      generatedAt: new Date().toISOString(),
+      setup: review.setup,
+      baseProduct: review.base,
+      bestCandidate: review.best,
+      gapCount: review.gapCount,
+      candidates: review.cards,
+      generatedText: alternateReviewText()
+    }
+  };
+}
+
+async function copyAlternateReview() {
+  updateProjectFromFields();
+  const text = alternateReviewText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyAlternateReview) {
+      els.copyAlternateReview.textContent = "Review note copied";
+      setTimeout(() => {
+        els.copyAlternateReview.textContent = "Copy review note";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy alternate review note", text);
+  }
+  renderAlternateDesk();
+}
+
+function downloadAlternateReviewHtml() {
+  updateProjectFromFields();
+  const review = alternateReviewData();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const productSlug = safeFilenamePart(review.base ? `${review.base.brand}-${review.base.sku}` : "alternate-review");
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Alternate-Review-${productSlug}${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, alternateReviewHtml(), "text/html;charset=utf-8");
+  renderAlternateDesk();
+}
+
+function exportAlternateReviewJson() {
+  updateProjectFromFields();
+  const review = alternateReviewData();
+  const productSlug = safeFilenamePart(review.base ? `${review.base.brand}-${review.base.sku}` : "alternate-review");
+  const date = new Date().toISOString().slice(0, 10);
+  downloadFile(`InduScout-Alternate-Review-${productSlug}-${date}.json`, JSON.stringify(alternateReviewSnapshot(), null, 2), "application/json;charset=utf-8");
+  renderAlternateDesk();
+}
+
+function alternateReviewHtml() {
+  const review = alternateReviewData();
+  const text = alternateReviewText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InduScout Alternate Review</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout alternate review</div>
+      <h1>${escapeHtml(review.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this as a conservative replacement review aid before substitution approval.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>Base product</span><strong>${escapeHtml(review.base ? `${review.base.brand} ${review.base.sku}` : "TBC")}</strong></div>
+      <div class="stat"><span>Candidates</span><strong>${escapeHtml(review.cards.length)}</strong></div>
+      <div class="stat"><span>Best fit</span><strong>${escapeHtml(review.best ? `${review.best.score}%` : "TBC")}</strong></div>
+      <div class="stat"><span>Open checks</span><strong>${escapeHtml(review.gapCount)}</strong></div>
+    </div>
+    <section>
+      <pre>${escapeHtml(text)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
 }
 
 function selectedQuoteProduct() {
@@ -1281,6 +4836,8 @@ function saveQuoteFromForm() {
   saveQuoteRecords();
   hydrateQuoteForm(quote);
   renderQuoteTracker();
+  populateReplyItems();
+  renderSupplierInbox();
   els.saveQuote.textContent = "Quote saved";
   setTimeout(() => {
     els.saveQuote.textContent = "Save quote";
@@ -1295,6 +4852,8 @@ function clearQuoteRecords() {
   state.quotes = [];
   saveQuoteRecords();
   renderQuoteTracker();
+  populateReplyItems();
+  renderSupplierInbox();
 }
 
 function loadQuoteToForm(id) {
@@ -1311,6 +4870,8 @@ function removeQuoteRecord(id) {
   state.quotes = state.quotes.filter((quote) => quote.id !== id);
   saveQuoteRecords();
   renderQuoteTracker();
+  populateReplyItems();
+  renderSupplierInbox();
 }
 
 function renderQuoteTracker() {
@@ -1320,17 +4881,21 @@ function renderQuoteTracker() {
 
   const total = state.quotes.length;
   const received = state.quotes.filter((quote) => ["Received", "Best option"].includes(quote.status)).length;
-  const best = state.quotes.filter((quote) => quote.status === "Best option").length;
   const followUp = state.quotes.filter((quote) => quote.status === "Follow-up needed").length;
+  const decision = quoteDecisionInsights();
   const totalsByCurrency = quoteTotalsByCurrency();
   const valueSummary = Object.entries(totalsByCurrency)
     .map(([currency, value]) => `${currency} ${formatAmount(value)}`)
     .join(" | ") || "Add price + quantity";
+  const decisionLead = decision.recommended ? `${decision.recommended.quote.supplier} (${decision.recommended.score})` : "Add quote data";
+  const lowestLabel = decision.lowestPrice ? quoteTotalLabel(decision.lowestPrice.quote) : "Price TBC";
+  const fastestLabel = decision.fastestLead ? `${decision.fastestLead.days} days` : "Lead time TBC";
 
   els.quoteSummary.innerHTML = `
-    <article><span>Total quotes</span><strong>${total}</strong><small>Saved locally</small></article>
-    <article><span>Received</span><strong>${received}</strong><small>Commercial replies logged</small></article>
-    <article><span>Best options</span><strong>${best}</strong><small>Marked for buyer review</small></article>
+    <article><span>Total quotes</span><strong>${total}</strong><small>${received} commercial ${received === 1 ? "reply" : "replies"} logged</small></article>
+    <article><span>Decision lead</span><strong>${escapeHtml(decisionLead)}</strong><small>Highest current score</small></article>
+    <article><span>Lowest price</span><strong>${escapeHtml(lowestLabel)}</strong><small>${escapeHtml(decision.lowestPrice?.quote.supplier || "Add comparable prices")}</small></article>
+    <article><span>Fastest lead</span><strong>${escapeHtml(fastestLabel)}</strong><small>${escapeHtml(decision.fastestLead?.quote.supplier || "Add lead times")}</small></article>
     <article><span>Follow-ups</span><strong>${followUp}</strong><small>Need supplier action</small></article>
     <article class="wide"><span>Estimated value</span><strong>${escapeHtml(valueSummary)}</strong><small>Calculated when unit price and numeric quantity are available</small></article>
   `;
@@ -1345,16 +4910,52 @@ function renderQuoteTracker() {
         Save supplier replies here after sending RFQs. Quote records can be exported as CSV/XLSX or copied into buyer review notes.
       </div>
     `;
+    renderBuyerWorkspace();
+    renderEvidenceReviewBoard();
+    renderSupplierScorecard();
     return;
   }
 
-  els.quoteList.innerHTML = state.quotes.map(quoteCardTemplate).join("");
+  els.quoteList.innerHTML = `${quoteDecisionPanel(decision)}${decision.scoredQuotes.map((item) => quoteCardTemplate(item.quote, decision)).join("")}`;
+  renderBuyerWorkspace();
+  renderEvidenceReviewBoard();
+  renderSupplierScorecard();
 }
 
-function quoteCardTemplate(quote) {
+function quoteDecisionPanel(decision) {
+  const recommendation = decision.recommended
+    ? `${decision.recommended.quote.supplier} leads with a decision score of ${decision.recommended.score}.`
+    : "Add supplier, price, lead time, payment terms, delivery terms, and validity to calculate a decision lead.";
+  const lowest = decision.lowestPrice
+    ? `${decision.lowestPrice.quote.supplier} has the lowest comparable total at ${quoteTotalLabel(decision.lowestPrice.quote)}.`
+    : "No comparable price yet.";
+  const fastest = decision.fastestLead
+    ? `${decision.fastestLead.quote.supplier} has the fastest lead signal at ${decision.fastestLead.days} days.`
+    : "No parsed lead time yet.";
+  const riskCount = decision.scoredQuotes.filter((item) => item.flags.length).length;
+
+  return `
+    <section class="quote-decision-panel" aria-label="Quote decision guidance">
+      <div>
+        <span>Decision guidance</span>
+        <strong>${escapeHtml(recommendation)}</strong>
+        <p>${escapeHtml(lowest)} ${escapeHtml(fastest)}</p>
+      </div>
+      <div class="decision-chips">
+        <span>${riskCount} ${riskCount === 1 ? "quote" : "quotes"} with review flags</span>
+        <span>${decision.scoredQuotes.filter((item) => item.priceTotal).length} priced ${decision.scoredQuotes.filter((item) => item.priceTotal).length === 1 ? "quote" : "quotes"}</span>
+        <span>${decision.scoredQuotes.filter((item) => item.days).length} lead-time ${decision.scoredQuotes.filter((item) => item.days).length === 1 ? "signal" : "signals"}</span>
+      </div>
+    </section>
+  `;
+}
+
+function quoteCardTemplate(quote, decision) {
+  const score = decision.scoredQuotes.find((item) => item.quote.id === quote.id) || scoreQuote(quote);
   const total = quoteEstimatedTotal(quote);
-  const totalLabel = total ? `${quote.currency} ${formatAmount(total)}` : "Price TBC";
+  const totalLabel = total ? quoteTotalLabel(quote) : "Price TBC";
   const statusClass = quote.status.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const badges = quoteDecisionBadges(score, decision);
   return `
     <article class="quote-card">
       <div class="quote-card-head">
@@ -1365,6 +4966,14 @@ function quoteCardTemplate(quote) {
         </div>
         <strong class="quote-status ${escapeHtml(statusClass)}">${escapeHtml(quote.status)}</strong>
       </div>
+      <div class="quote-score">
+        <div>
+          <span>Decision score</span>
+          <strong>${score.score}</strong>
+        </div>
+        <div class="bar" aria-hidden="true"><i style="width:${score.score}%"></i></div>
+      </div>
+      <div class="decision-badges">${badges.map((badge) => `<span class="${escapeHtml(badge.type)}">${escapeHtml(badge.label)}</span>`).join("")}</div>
       <dl class="quote-facts">
         <div><dt>Unit price</dt><dd>${escapeHtml(quote.currency)} ${escapeHtml(quote.unitPrice || "TBC")}</dd></div>
         <div><dt>Quantity</dt><dd>${escapeHtml(quote.quantity || "TBC")}</dd></div>
@@ -1374,6 +4983,7 @@ function quoteCardTemplate(quote) {
         <div><dt>Delivery</dt><dd>${escapeHtml(quote.deliveryTerms || "TBC")}</dd></div>
         <div><dt>Valid until</dt><dd>${escapeHtml(quote.validUntil || "TBC")}</dd></div>
       </dl>
+      <p class="score-reason">${escapeHtml(score.reason)}</p>
       <p>${escapeHtml(quote.notes || "No supplier notes added.")}</p>
       <div class="quote-card-actions">
         <button type="button" data-load-quote="${escapeHtml(quote.id)}">Load</button>
@@ -1384,6 +4994,123 @@ function quoteCardTemplate(quote) {
   `;
 }
 
+function quoteDecisionInsights() {
+  const scoredQuotes = state.quotes.map(scoreQuote).sort((a, b) => b.score - a.score);
+  const eligibleQuotes = scoredQuotes.filter((item) => item.quote.status !== "Rejected");
+  const pricedQuotes = eligibleQuotes.filter((item) => item.priceTotal);
+  const leadQuotes = eligibleQuotes.filter((item) => item.days);
+  return {
+    scoredQuotes,
+    recommended: eligibleQuotes[0] || null,
+    lowestPrice: pricedQuotes.sort((a, b) => a.priceTotal - b.priceTotal)[0] || null,
+    fastestLead: leadQuotes.sort((a, b) => a.days - b.days)[0] || null
+  };
+}
+
+function scoreQuote(quote) {
+  let score = 48;
+  const signals = [];
+  const flags = [];
+  const priceTotal = quoteEstimatedTotal(quote);
+  const days = parseLeadTimeDays(quote.leadTime);
+  const validity = quoteValidityStatus(quote.validUntil);
+  const hasPayment = hasMeaningfulTerm(quote.paymentTerms);
+  const hasDelivery = hasMeaningfulTerm(quote.deliveryTerms);
+
+  if (quote.status === "Best option") {
+    score += 18;
+    signals.push("marked best option");
+  } else if (quote.status === "Received") {
+    score += 12;
+    signals.push("received quote");
+  } else if (quote.status === "Follow-up needed") {
+    score -= 10;
+    flags.push("follow-up needed");
+  } else if (quote.status === "Requested") {
+    score -= 8;
+    flags.push("still requested");
+  } else if (quote.status === "Rejected") {
+    score -= 38;
+    flags.push("rejected");
+  }
+
+  if (priceTotal) {
+    score += 14;
+    signals.push("priced");
+  } else {
+    score -= 18;
+    flags.push("missing price or quantity");
+  }
+
+  if (days) {
+    score += days <= 7 ? 12 : days <= 21 ? 7 : 3;
+    signals.push("lead time available");
+  } else {
+    score -= 6;
+    flags.push("lead time unclear");
+  }
+
+  if (hasPayment) {
+    score += 5;
+  } else {
+    score -= 5;
+    flags.push("payment terms missing");
+  }
+
+  if (hasDelivery) {
+    score += 5;
+  } else {
+    score -= 5;
+    flags.push("delivery terms missing");
+  }
+
+  if (validity === "healthy") {
+    score += 5;
+    signals.push("valid quote");
+  } else if (validity === "risk") {
+    score -= 10;
+    flags.push("validity risk");
+  } else {
+    score -= 3;
+    flags.push("validity missing");
+  }
+
+  if (quote.sourceUrl) {
+    score += 3;
+  }
+
+  if (/stock|certificate|warranty|datasheet|origin/i.test(quote.notes || "")) {
+    score += 3;
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  const reason = signals.length
+    ? `Strengths: ${signals.slice(0, 3).join(", ")}.${flags.length ? ` Review: ${flags.slice(0, 3).join(", ")}.` : ""}`
+    : `Needs review: ${flags.slice(0, 4).join(", ")}.`;
+
+  return { quote, score, priceTotal, days, validity, flags, signals, reason };
+}
+
+function quoteDecisionBadges(scoredQuote, decision) {
+  const badges = [];
+  if (decision.recommended?.quote.id === scoredQuote.quote.id) {
+    badges.push({ label: "Best current score", type: "best" });
+  }
+  if (decision.lowestPrice?.quote.id === scoredQuote.quote.id) {
+    badges.push({ label: "Lowest price", type: "price" });
+  }
+  if (decision.fastestLead?.quote.id === scoredQuote.quote.id) {
+    badges.push({ label: "Fastest lead", type: "speed" });
+  }
+  scoredQuote.flags.slice(0, 3).forEach((flag) => {
+    badges.push({ label: flag, type: "risk" });
+  });
+  if (!badges.length) {
+    badges.push({ label: "Ready for buyer review", type: "ready" });
+  }
+  return badges;
+}
+
 function quoteEstimatedTotal(quote) {
   const price = parseFirstNumber(quote.unitPrice);
   const quantity = parseFirstNumber(quote.quantity);
@@ -1391,6 +5118,11 @@ function quoteEstimatedTotal(quote) {
     return 0;
   }
   return price * quantity;
+}
+
+function quoteTotalLabel(quote) {
+  const total = quoteEstimatedTotal(quote);
+  return total ? `${quote.currency} ${formatAmount(total)}` : "Price TBC";
 }
 
 function quoteTotalsByCurrency() {
@@ -1409,12 +5141,49 @@ function parseFirstNumber(value) {
   return match ? Number(match[0]) : NaN;
 }
 
+function parseLeadTimeDays(value) {
+  const text = String(value || "").toLowerCase();
+  const numbers = [...text.matchAll(/\d+(\.\d+)?/g)].map((match) => Number(match[0])).filter(Number.isFinite);
+  if (!numbers.length) {
+    return 0;
+  }
+  const average = numbers.length > 1 ? (numbers[0] + numbers[numbers.length - 1]) / 2 : numbers[0];
+  if (/week/.test(text)) {
+    return Math.round(average * 7);
+  }
+  if (/month/.test(text)) {
+    return Math.round(average * 30);
+  }
+  return Math.round(average);
+}
+
+function quoteValidityStatus(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return "missing";
+  }
+  const date = new Date(`${raw}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return "missing";
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((date - today) / 86400000);
+  return days >= 7 ? "healthy" : "risk";
+}
+
+function hasMeaningfulTerm(value) {
+  const term = String(value || "").trim().toLowerCase();
+  return Boolean(term && !["tbc", "na", "n/a", "none", "unknown"].includes(term));
+}
+
 function formatAmount(value) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value);
 }
 
 function quoteExportTable() {
   updateProjectFromFields();
+  const decision = quoteDecisionInsights();
   const headers = [
     "Project Name",
     "Buyer / Company",
@@ -1427,6 +5196,9 @@ function quoteExportTable() {
     "Category",
     "Supplier",
     "Status",
+    "Decision Score",
+    "Decision Signals",
+    "Review Flags",
     "Currency",
     "Unit Price",
     "Quantity",
@@ -1440,36 +5212,43 @@ function quoteExportTable() {
     "Supplier Notes",
     "Saved At"
   ];
-  const rows = state.quotes.map((quote) => [
-    projectValue("name", quote.projectName || ""),
-    projectValue("buyer", quote.buyer || ""),
-    projectValue("contact", quote.buyerContact || ""),
-    projectValue("country", quote.deliveryCountry || ""),
-    projectValue("targetDate", quote.targetDate || ""),
-    quote.productName,
-    quote.brand,
-    quote.sku,
-    quote.category,
-    quote.supplier,
-    quote.status,
-    quote.currency,
-    quote.unitPrice,
-    quote.quantity,
-    quoteEstimatedTotal(quote) ? formatAmount(quoteEstimatedTotal(quote)) : "",
-    quote.leadTime,
-    quote.moq,
-    quote.paymentTerms,
-    quote.deliveryTerms,
-    quote.validUntil,
-    quote.sourceUrl,
-    quote.notes,
-    quote.savedAt
-  ]);
+  const rows = state.quotes.map((quote) => {
+    const scored = decision.scoredQuotes.find((item) => item.quote.id === quote.id) || scoreQuote(quote);
+    return [
+      projectValue("name", quote.projectName || ""),
+      projectValue("buyer", quote.buyer || ""),
+      projectValue("contact", quote.buyerContact || ""),
+      projectValue("country", quote.deliveryCountry || ""),
+      projectValue("targetDate", quote.targetDate || ""),
+      quote.productName,
+      quote.brand,
+      quote.sku,
+      quote.category,
+      quote.supplier,
+      quote.status,
+      scored.score,
+      scored.signals.join(" | "),
+      scored.flags.join(" | "),
+      quote.currency,
+      quote.unitPrice,
+      quote.quantity,
+      quoteEstimatedTotal(quote) ? formatAmount(quoteEstimatedTotal(quote)) : "",
+      quote.leadTime,
+      quote.moq,
+      quote.paymentTerms,
+      quote.deliveryTerms,
+      quote.validUntil,
+      quote.sourceUrl,
+      quote.notes,
+      quote.savedAt
+    ];
+  });
   return { headers, rows };
 }
 
 async function copyQuoteSummary() {
   const table = quoteExportTable();
+  const decision = quoteDecisionInsights();
   const text = table.rows.length
     ? `InduScout quote tracker summary
 Prepared on ${formatCopyDate()}
@@ -1479,9 +5258,18 @@ Buyer/company: ${projectValue("buyer", "TBC")}
 Delivery country: ${projectValue("country", "TBC")}
 Target date: ${projectValue("targetDate", "TBC")}
 
+Decision signals:
+- Best current score: ${decision.recommended ? `${decision.recommended.quote.supplier} (${decision.recommended.score})` : "TBC"}
+- Lowest price: ${decision.lowestPrice ? `${decision.lowestPrice.quote.supplier} - ${quoteTotalLabel(decision.lowestPrice.quote)}` : "TBC"}
+- Fastest lead: ${decision.fastestLead ? `${decision.fastestLead.quote.supplier} - ${decision.fastestLead.days} days` : "TBC"}
+- Quotes with review flags: ${decision.scoredQuotes.filter((item) => item.flags.length).length}
+
 ${state.quotes
-        .map((quote, index) => `${index + 1}. ${quote.supplier} - ${quote.brand} ${quote.sku}
+        .map((quote, index) => {
+          const scored = decision.scoredQuotes.find((item) => item.quote.id === quote.id) || scoreQuote(quote);
+          return `${index + 1}. ${quote.supplier} - ${quote.brand} ${quote.sku}
 Status: ${quote.status}
+Decision score: ${scored.score}
 Unit price: ${quote.currency} ${quote.unitPrice || "TBC"}
 Quantity: ${quote.quantity || "TBC"}
 Estimated total: ${quoteEstimatedTotal(quote) ? `${quote.currency} ${formatAmount(quoteEstimatedTotal(quote))}` : "TBC"}
@@ -1489,7 +5277,9 @@ Lead time: ${quote.leadTime || "TBC"}
 Payment terms: ${quote.paymentTerms || "TBC"}
 Delivery terms: ${quote.deliveryTerms || "TBC"}
 Valid until: ${quote.validUntil || "TBC"}
-Notes: ${quote.notes || "None"}`)
+Decision notes: ${scored.reason}
+Notes: ${quote.notes || "None"}`;
+        })
         .join("\n\n")}`
     : "No InduScout quote records saved yet.";
 
@@ -1608,6 +5398,987 @@ function exportQuoteXlsx() {
   );
 }
 
+function replyFieldValue(element, fallback = "") {
+  const value = String(element?.value || "").trim();
+  return value || fallback;
+}
+
+function selectedReplyContext(value = els.replyQuote?.value) {
+  const raw = String(value || "");
+  const separatorIndex = raw.indexOf(":");
+  const type = separatorIndex >= 0 ? raw.slice(0, separatorIndex) : "product";
+  const id = separatorIndex >= 0 ? raw.slice(separatorIndex + 1) : raw;
+
+  if (type === "quote") {
+    const quote = state.quotes.find((item) => item.id === id);
+    const product = products.find((item) => item.id === quote?.productId) || products.find((item) => item.sku === quote?.sku) || products[0];
+    if (quote || product) {
+      return {
+        itemRef: raw,
+        type: "quote",
+        quoteId: quote?.id || "",
+        productId: product?.id || quote?.productId || "",
+        product,
+        quote,
+        brand: quote?.brand || product?.brand || "",
+        sku: quote?.sku || product?.sku || "",
+        productName: quote?.productName || product?.name || "",
+        category: quote?.category || product?.category || "",
+        supplier: quote?.supplier || product?.sources[0]?.name || "",
+        leadTime: quote?.leadTime || product?.lead || "",
+        moq: quote?.moq || product?.moq || "",
+        sourceUrl: quote?.sourceUrl || product?.sources[0]?.url || ""
+      };
+    }
+  }
+
+  const product = products.find((item) => item.id === id) || products[0];
+  return {
+    itemRef: product ? `product:${product.id}` : raw,
+    type: "product",
+    quoteId: "",
+    productId: product?.id || "",
+    product,
+    quote: null,
+    brand: product?.brand || "",
+    sku: product?.sku || "",
+    productName: product?.name || "",
+    category: product?.category || "",
+    supplier: product?.sources[0]?.name || "",
+    leadTime: product?.lead || "",
+    moq: product?.moq || "",
+    sourceUrl: product?.sources[0]?.url || ""
+  };
+}
+
+function replyFormSnapshot() {
+  updateProjectFromFields();
+  const context = selectedReplyContext();
+  const existing = state.supplierReplies.find((reply) => reply.id === els.replyId?.value);
+  const status = replyFieldValue(els.replyStatus, "Received");
+  const supplier = replyFieldValue(els.replySupplier, context.supplier || "Supplier TBC");
+  const subject = replyFieldValue(els.replySubject, `${context.brand} ${context.sku} supplier reply`.trim());
+  return {
+    id: replyFieldValue(els.replyId, `${Date.now()}-${safeFilenamePart(`${supplier}-${context.sku || "reply"}`).toLowerCase() || "reply"}`),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    projectName: projectValue("name", ""),
+    buyer: projectValue("buyer", ""),
+    buyerContact: projectValue("contact", ""),
+    deliveryCountry: projectValue("country", ""),
+    targetDate: projectValue("targetDate", ""),
+    itemRef: context.itemRef,
+    quoteId: context.quoteId,
+    productId: context.productId,
+    brand: context.brand,
+    sku: context.sku,
+    productName: context.productName,
+    category: context.category,
+    supplier,
+    status,
+    nextAction: replyFieldValue(els.replyAction, defaultReplyAction(status)),
+    receivedDate: replyFieldValue(els.replyDate, new Date().toISOString().slice(0, 10)),
+    subject,
+    message: replyFieldValue(els.replyMessage, ""),
+    notes: replyFieldValue(els.replyNotes, "")
+  };
+}
+
+function hydrateSupplierReplyForm(reply = {}) {
+  if (!els.replyQuote) {
+    return;
+  }
+
+  populateReplyItems();
+  const fallbackContext = selectedReplyContext();
+  const itemRef = reply.itemRef || (reply.quoteId ? `quote:${reply.quoteId}` : reply.productId ? `product:${reply.productId}` : fallbackContext.itemRef);
+  const hasOption = [...els.replyQuote.querySelectorAll("option")].some((option) => option.value === itemRef);
+
+  els.replyId.value = reply.id || "";
+  els.replyQuote.value = hasOption ? itemRef : fallbackContext.itemRef;
+  els.replySupplier.value = reply.supplier || "";
+  els.replyStatus.value = reply.status || "Received";
+  els.replyAction.value = reply.nextAction || defaultReplyAction(reply.status || "Received");
+  els.replyDate.value = reply.receivedDate || "";
+  els.replySubject.value = reply.subject || "";
+  els.replyMessage.value = reply.message || "";
+  els.replyNotes.value = reply.notes || "";
+}
+
+function prefillReplyFromContext() {
+  if (!els.replyQuote || els.replyId?.value) {
+    return;
+  }
+
+  const context = selectedReplyContext();
+  if (!els.replySupplier.value) {
+    els.replySupplier.value = context.supplier || "";
+  }
+  if (!els.replySubject.value) {
+    els.replySubject.value = `${context.brand} ${context.sku} - supplier reply`.trim();
+  }
+}
+
+function saveSupplierReply() {
+  if (!els.replyQuote) {
+    return;
+  }
+
+  const reply = sanitizeSupplierReply(replyFormSnapshot());
+  if (!reply) {
+    return;
+  }
+
+  state.supplierReplies = [reply, ...state.supplierReplies.filter((item) => item.id !== reply.id)].slice(0, 120);
+  saveSupplierReplies();
+  hydrateSupplierReplyForm(reply);
+  renderSupplierInbox();
+  els.saveReply.textContent = "Reply saved";
+  setTimeout(() => {
+    els.saveReply.textContent = "Save reply";
+  }, 1200);
+}
+
+function clearSupplierReplyForm() {
+  hydrateSupplierReplyForm();
+  prefillReplyFromContext();
+}
+
+function clearSupplierReplies() {
+  state.supplierReplies = [];
+  saveSupplierReplies();
+  clearSupplierReplyForm();
+  renderSupplierInbox();
+}
+
+function loadSupplierReply(id) {
+  const reply = state.supplierReplies.find((item) => item.id === id);
+  if (!reply) {
+    return;
+  }
+
+  hydrateSupplierReplyForm(reply);
+  els.replyForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function removeSupplierReply(id) {
+  state.supplierReplies = state.supplierReplies.filter((reply) => reply.id !== id);
+  saveSupplierReplies();
+  renderSupplierInbox();
+}
+
+function renderSupplierInbox() {
+  if (!els.replyList || !els.inboxSummary) {
+    return;
+  }
+
+  const total = state.supplierReplies.length;
+  const needsAction = state.supplierReplies.filter(replyNeedsAction).length;
+  const missingDocs = state.supplierReplies.filter((reply) => reply.status === "Missing certificate").length;
+  const alternates = state.supplierReplies.filter((reply) => reply.status === "Alternate offered").length;
+  const quoteReady = state.supplierReplies.filter(replyQuoteReady).length;
+
+  els.inboxSummary.innerHTML = `
+    <article><span>Total replies</span><strong>${total}</strong><small>Supplier messages saved locally</small></article>
+    <article><span>Needs action</span><strong>${needsAction}</strong><small>Buyer response or supplier follow-up required</small></article>
+    <article><span>Missing docs</span><strong>${missingDocs}</strong><small>Certificate, datasheet, or evidence gaps</small></article>
+    <article><span>Alternates</span><strong>${alternates}</strong><small>Substitutes needing technical review</small></article>
+    <article><span>Quote ready</span><strong>${quoteReady}</strong><small>Can update the quote tracker</small></article>
+  `;
+
+  if (els.replyRegisterStatus) {
+    els.replyRegisterStatus.textContent = total ? `${total} saved supplier ${total === 1 ? "reply" : "replies"} in this browser` : "Stored locally in this browser";
+  }
+
+  if (!total) {
+    els.replyList.innerHTML = `
+      <div class="empty-state inbox-empty">
+        Save supplier email or portal replies here. Use it to prepare the next buyer response before updating the quote tracker.
+      </div>
+    `;
+    renderBuyerWorkspace();
+    renderEvidenceReviewBoard();
+    renderSupplierScorecard();
+    return;
+  }
+
+  els.replyList.innerHTML = state.supplierReplies.map(replyCardTemplate).join("");
+  renderBuyerWorkspace();
+  renderEvidenceReviewBoard();
+  renderSupplierScorecard();
+}
+
+function renderSupplierScorecard() {
+  if (!els.supplierScoreStats || !els.supplierScoreTitle || !els.supplierScoreGrid) {
+    return;
+  }
+
+  const scorecard = supplierScorecardData();
+  els.supplierScoreStats.innerHTML = [
+    scorecardStatTemplate("Supplier paths", scorecard.cards.length, "Quotes, replies, sources, and leads"),
+    scorecardStatTemplate("Top path", scorecard.top ? scorecard.top.name : "TBC", scorecard.top ? `${scorecard.top.score}% - ${scorecard.top.statusLabel}` : "Add shortlist or quote data"),
+    scorecardStatTemplate("Follow-ups", scorecard.followUps, scorecard.followUps ? "Need supplier or buyer action" : "No open supplier actions"),
+    scorecardStatTemplate("Review risks", scorecard.riskCount, scorecard.riskCount ? "Visible supplier path risks" : "No major supplier path risks")
+  ].join("");
+
+  els.supplierScoreTitle.textContent = scorecard.title;
+
+  if (!scorecard.cards.length) {
+    els.supplierScoreGrid.innerHTML = `
+      <div class="empty-state scorecard-empty">
+        Add shortlist items, supplier quotes, supplier replies, or source leads to generate supplier path ranking.
+      </div>
+    `;
+    return;
+  }
+
+  els.supplierScoreGrid.innerHTML = scorecard.cards.map(supplierScorecardTemplate).join("");
+}
+
+function supplierScorecardData() {
+  const paths = new Map();
+  const selectedProducts = [...new Set([...state.shortlist, ...state.compare])]
+    .map((id) => products.find((product) => product.id === id))
+    .filter(Boolean);
+
+  const ensurePath = (name) => {
+    const supplierName = String(name || "").trim();
+    if (!supplierName || supplierName === "Supplier TBC") {
+      return null;
+    }
+    const key = supplierKey(supplierName);
+    if (!key) {
+      return null;
+    }
+    if (!paths.has(key)) {
+      paths.set(key, {
+        key,
+        name: supplierName,
+        quotes: [],
+        replies: [],
+        sources: [],
+        sourceLeads: [],
+        products: new Map()
+      });
+    }
+    return paths.get(key);
+  };
+
+  const addProduct = (path, product) => {
+    if (path && product) {
+      path.products.set(product.id, product);
+    }
+  };
+
+  state.quotes.forEach((quote) => {
+    const path = ensurePath(quote.supplier);
+    if (!path) {
+      return;
+    }
+    path.quotes.push(quote);
+    addProduct(path, products.find((product) => product.id === quote.productId));
+  });
+
+  state.supplierReplies.forEach((reply) => {
+    const path = ensurePath(reply.supplier);
+    if (!path) {
+      return;
+    }
+    path.replies.push(reply);
+    addProduct(path, products.find((product) => product.id === reply.productId));
+  });
+
+  selectedProducts.forEach((product) => {
+    product.sources.forEach((source) => {
+      const path = ensurePath(source.name);
+      if (!path) {
+        return;
+      }
+      path.sources.push({ source, product });
+      addProduct(path, product);
+    });
+  });
+
+  state.sourceLeads.forEach((lead) => {
+    const path = ensurePath(lead.name);
+    if (!path) {
+      return;
+    }
+    path.sourceLeads.push(lead);
+  });
+
+  const cards = [...paths.values()]
+    .map(scoreSupplierPath)
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+    .slice(0, 12);
+  const top = cards[0] || null;
+  const followUps = cards.reduce((total, card) => total + card.followUps, 0);
+  const riskCount = cards.filter((card) => card.risks.length).length;
+  const title = top ? `${top.name} leads supplier ranking` : "Supplier scorecard needs sourcing data";
+
+  return { cards, top, followUps, riskCount, title };
+}
+
+function scoreSupplierPath(path) {
+  const scoredQuotes = path.quotes.map(scoreQuote).sort((a, b) => b.score - a.score);
+  const bestQuote = scoredQuotes[0] || null;
+  const receivedQuotes = path.quotes.filter((quote) => ["Received", "Best option"].includes(quote.status));
+  const bestOptions = path.quotes.filter((quote) => quote.status === "Best option");
+  const pricedQuotes = scoredQuotes.filter((item) => item.priceTotal);
+  const healthyValidity = path.quotes.some((quote) => quoteValidityStatus(quote.validUntil) === "healthy");
+  const paymentTerms = path.quotes.some((quote) => hasMeaningfulTerm(quote.paymentTerms));
+  const deliveryTerms = path.quotes.some((quote) => hasMeaningfulTerm(quote.deliveryTerms));
+  const sourceUrls = path.quotes.filter((quote) => quote.sourceUrl).length;
+  const replyActions = path.replies.filter(replyNeedsAction);
+  const missingDocs = path.replies.filter((reply) => reply.status === "Missing certificate");
+  const alternates = path.replies.filter((reply) => reply.status === "Alternate offered");
+  const evidenceLeads = path.sourceLeads.filter((lead) => lead.website || lead.evidenceUrl);
+  const provenLeads = path.sourceLeads.filter((lead) => ["Buyer proven", "Authorized claim", "Evidence supplied"].includes(lead.status));
+  const sourceTypes = [...new Set([
+    ...path.sources.map((item) => item.source.type),
+    ...path.sourceLeads.map((lead) => lead.type)
+  ])];
+  const hasPrimaryPath = sourceTypes.some((type) => ["OEM", "Distributor", "MRO"].includes(type));
+  const hasHigherRiskPath = sourceTypes.some((type) => ["Marketplace", "Surplus"].includes(type));
+
+  let score = 42;
+  if (path.quotes.length) {
+    score += Math.min(18, path.quotes.length * 6);
+  }
+  if (receivedQuotes.length) {
+    score += 12;
+  }
+  if (bestOptions.length) {
+    score += 10;
+  }
+  if (bestQuote) {
+    score += Math.round((bestQuote.score - 50) * 0.25);
+  }
+  if (pricedQuotes.length) {
+    score += 6;
+  }
+  if (paymentTerms) {
+    score += 4;
+  }
+  if (deliveryTerms) {
+    score += 4;
+  }
+  if (healthyValidity) {
+    score += 4;
+  }
+  if (sourceUrls || evidenceLeads.length) {
+    score += 5;
+  }
+  if (path.replies.length) {
+    score += 4;
+  }
+  if (provenLeads.length) {
+    score += 7;
+  }
+  if (hasPrimaryPath) {
+    score += 7;
+  }
+  if (hasHigherRiskPath) {
+    score -= 5;
+  }
+  if (replyActions.length) {
+    score -= Math.min(18, replyActions.length * 6);
+  }
+  if (missingDocs.length) {
+    score -= 10;
+  }
+  if (alternates.length) {
+    score -= 5;
+  }
+  if (!path.quotes.length) {
+    score -= 12;
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  const strengths = [];
+  const risks = [];
+
+  if (bestOptions.length) {
+    strengths.push("Marked as best option in quote tracker");
+  } else if (receivedQuotes.length) {
+    strengths.push(`${receivedQuotes.length} received quote ${receivedQuotes.length === 1 ? "record" : "records"}`);
+  }
+  if (pricedQuotes.length) {
+    strengths.push("Comparable price and quantity captured");
+  }
+  if (paymentTerms && deliveryTerms) {
+    strengths.push("Payment and delivery terms captured");
+  }
+  if (healthyValidity) {
+    strengths.push("Quote validity date is usable");
+  }
+  if (hasPrimaryPath) {
+    strengths.push(`Primary source path present: ${sourceTypes.filter((type) => ["OEM", "Distributor", "MRO"].includes(type)).join(", ")}`);
+  }
+  if (provenLeads.length) {
+    strengths.push("Source lead has buyer/evidence signal");
+  }
+  if (!strengths.length) {
+    strengths.push("Supplier path is visible but needs more commercial evidence");
+  }
+
+  if (!path.quotes.length) {
+    risks.push("No saved quote record");
+  }
+  if (path.quotes.length && !pricedQuotes.length) {
+    risks.push("No comparable price captured");
+  }
+  if (path.quotes.length && (!paymentTerms || !deliveryTerms)) {
+    risks.push("Payment or delivery terms still TBC");
+  }
+  if (path.quotes.length && !healthyValidity) {
+    risks.push("Quote validity missing or near expiry");
+  }
+  if (replyActions.length) {
+    risks.push(`${replyActions.length} supplier reply ${replyActions.length === 1 ? "action" : "actions"} still open`);
+  }
+  if (missingDocs.length) {
+    risks.push("Certificate or document evidence missing");
+  }
+  if (alternates.length) {
+    risks.push("Alternate offer needs technical review");
+  }
+  if (hasHigherRiskPath) {
+    risks.push("Marketplace or surplus path needs extra legitimacy checks");
+  }
+
+  const statusLabel = score >= 85
+    ? "Preferred supplier path"
+    : score >= 70
+      ? "Strong with checks"
+      : score >= 55
+        ? "Needs follow-up"
+        : "High review risk";
+  const statusClass = score >= 85 ? "preferred" : score >= 70 ? "strong" : score >= 55 ? "review" : "risk";
+  const nextAction = supplierNextAction({ path, risks, score, bestQuote, replyActions });
+  const totalValue = path.quotes.reduce((total, quote) => total + quoteEstimatedTotal(quote), 0);
+  const currencies = [...new Set(path.quotes.map((quote) => quote.currency).filter(Boolean))];
+  const valueLabel = totalValue ? `${currencies[0] || "USD"} ${formatAmount(totalValue)}` : "Value TBC";
+
+  return {
+    name: path.name,
+    score,
+    statusLabel,
+    statusClass,
+    quotes: path.quotes.length,
+    replies: path.replies.length,
+    followUps: replyActions.length,
+    products: [...path.products.values()],
+    sourceTypes,
+    sourceLeads: path.sourceLeads.length,
+    bestQuote: bestQuote?.quote || null,
+    valueLabel,
+    strengths: strengths.slice(0, 5),
+    risks: risks.slice(0, 6),
+    nextAction
+  };
+}
+
+function supplierNextAction({ path, risks, score, bestQuote, replyActions }) {
+  if (!path.quotes.length) {
+    return "Request a formal quote with price, lead time, validity, payment terms, delivery terms, warranty path, and certificate evidence.";
+  }
+  if (replyActions.length) {
+    return "Close open supplier replies before award: certificates, alternates, revised price, lead time, and stock confirmation.";
+  }
+  if (risks.length) {
+    return `Resolve before award: ${risks.slice(0, 2).join("; ")}.`;
+  }
+  if (score >= 85 && bestQuote) {
+    return "Use this path as the current award candidate, then complete compliance and buyer file attachments.";
+  }
+  return "Keep as a viable supplier path while comparing commercial terms and final due-diligence evidence.";
+}
+
+function supplierKey(value) {
+  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function scorecardStatTemplate(label, value, detail) {
+  return `
+    <article class="scorecard-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function supplierScorecardTemplate(card, index) {
+  const productsLabel = card.products.length
+    ? card.products.slice(0, 4).map((product) => `${product.brand} ${product.sku}`).join(", ")
+    : "No linked products yet";
+  const sourceLabel = card.sourceTypes.length ? card.sourceTypes.join(", ") : "Source type TBC";
+  return `
+    <article class="scorecard-item ${escapeHtml(card.statusClass)}">
+      <div class="scorecard-rank">
+        <span>#${index + 1}</span>
+        <strong>${escapeHtml(card.name)}</strong>
+        <small>${escapeHtml(card.statusLabel)}</small>
+      </div>
+      <div class="scorecard-score">
+        <span>Supplier score</span>
+        <strong>${card.score}</strong>
+        <div class="bar" aria-hidden="true"><i style="width:${card.score}%"></i></div>
+      </div>
+      <dl class="scorecard-facts">
+        <div><dt>Quotes</dt><dd>${card.quotes}</dd></div>
+        <div><dt>Replies</dt><dd>${card.replies}</dd></div>
+        <div><dt>Open actions</dt><dd>${card.followUps}</dd></div>
+        <div><dt>Value</dt><dd>${escapeHtml(card.valueLabel)}</dd></div>
+        <div><dt>Source type</dt><dd>${escapeHtml(sourceLabel)}</dd></div>
+        <div><dt>Products</dt><dd>${escapeHtml(productsLabel)}</dd></div>
+      </dl>
+      <div class="scorecard-columns">
+        <div>
+          <span>Strengths</span>
+          <ul>${card.strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        </div>
+        <div>
+          <span>Risks / checks</span>
+          <ul>${card.risks.length ? card.risks.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "<li>No major open risk visible from current session data.</li>"}</ul>
+        </div>
+      </div>
+      <p class="scorecard-next"><strong>Next action:</strong> ${escapeHtml(card.nextAction)}</p>
+    </article>
+  `;
+}
+
+function supplierScorecardText() {
+  const scorecard = supplierScorecardData();
+  const rows = scorecard.cards.map((card, index) => `#${index + 1} ${card.name} - ${card.score}% (${card.statusLabel})
+Products: ${card.products.length ? card.products.map((product) => `${product.brand} ${product.sku}`).join(", ") : "TBC"}
+Quotes: ${card.quotes} | Replies: ${card.replies} | Open actions: ${card.followUps} | Value: ${card.valueLabel}
+Source types: ${card.sourceTypes.join(", ") || "TBC"}
+Strengths:
+${card.strengths.map((item) => `- ${item}`).join("\n")}
+Risks / checks:
+${card.risks.length ? card.risks.map((item) => `- ${item}`).join("\n") : "- No major open risk visible from current session data."}
+Next action: ${card.nextAction}`).join("\n\n");
+
+  return `InduScout supplier scorecard
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
+
+Summary:
+- Supplier paths reviewed: ${scorecard.cards.length}
+- Top path: ${scorecard.top ? `${scorecard.top.name} (${scorecard.top.score}%)` : "TBC"}
+- Follow-ups open: ${scorecard.followUps}
+- Supplier paths with risks: ${scorecard.riskCount}
+
+Supplier ranking:
+${rows || "No supplier paths available yet. Add shortlist items, quotes, supplier replies, or source leads."}
+
+Buyer reminder:
+Treat this as a sourcing decision aid. Confirm exact part number, stock, price, lead time, payment terms, delivery terms, warranty path, certificates, country of origin, and seller legitimacy before purchase or award.`;
+}
+
+function supplierScorecardSnapshot() {
+  const scorecard = supplierScorecardData();
+  return {
+    ...createSessionSnapshot(),
+    supplierScorecard: {
+      generatedAt: new Date().toISOString(),
+      project: state.project,
+      topSupplier: scorecard.top,
+      followUps: scorecard.followUps,
+      riskCount: scorecard.riskCount,
+      suppliers: scorecard.cards,
+      generatedText: supplierScorecardText()
+    }
+  };
+}
+
+async function copySupplierScorecard() {
+  updateProjectFromFields();
+  const text = supplierScorecardText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copySupplierScorecard) {
+      els.copySupplierScorecard.textContent = "Scorecard copied";
+      setTimeout(() => {
+        els.copySupplierScorecard.textContent = "Copy scorecard";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy supplier scorecard", text);
+  }
+  renderSupplierScorecard();
+}
+
+function downloadSupplierScorecardHtml() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Supplier-Scorecard${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, supplierScorecardHtml(), "text/html;charset=utf-8");
+  renderSupplierScorecard();
+}
+
+function exportSupplierScorecardJson() {
+  updateProjectFromFields();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = projectSlug ? `InduScout-Supplier-Scorecard-${projectSlug}-${date}.json` : `InduScout-Supplier-Scorecard-${date}.json`;
+  downloadFile(filename, JSON.stringify(supplierScorecardSnapshot(), null, 2), "application/json;charset=utf-8");
+  renderSupplierScorecard();
+}
+
+function supplierScorecardHtml() {
+  const scorecard = supplierScorecardData();
+  const text = supplierScorecardText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InduScout Supplier Scorecard</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout supplier scorecard</div>
+      <h1>${escapeHtml(scorecard.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this as a buyer review aid for supplier path ranking and follow-up planning.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>Supplier paths</span><strong>${escapeHtml(scorecard.cards.length)}</strong></div>
+      <div class="stat"><span>Top path</span><strong>${escapeHtml(scorecard.top ? scorecard.top.name : "TBC")}</strong></div>
+      <div class="stat"><span>Follow-ups</span><strong>${escapeHtml(scorecard.followUps)}</strong></div>
+      <div class="stat"><span>Risks</span><strong>${escapeHtml(scorecard.riskCount)}</strong></div>
+    </div>
+    <section>
+      <pre>${escapeHtml(text)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function replyCardTemplate(reply) {
+  const statusClass = reply.status.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const contextLabel = `${reply.brand} ${reply.sku} - ${reply.productName}`.trim();
+  return `
+    <article class="reply-card">
+      <div class="reply-card-head">
+        <div>
+          <span>${escapeHtml(reply.category || "Supplier thread")}</span>
+          <h3>${escapeHtml(reply.supplier)}</h3>
+          <p>${escapeHtml(contextLabel || reply.subject || "Supplier reply")}</p>
+        </div>
+        <strong class="reply-status ${escapeHtml(statusClass)}">${escapeHtml(reply.status)}</strong>
+      </div>
+      <dl class="reply-facts">
+        <div><dt>Next action</dt><dd>${escapeHtml(reply.nextAction)}</dd></div>
+        <div><dt>Reply date</dt><dd>${escapeHtml(reply.receivedDate || "TBC")}</dd></div>
+        <div><dt>Subject</dt><dd>${escapeHtml(reply.subject || "TBC")}</dd></div>
+        <div><dt>Quote link</dt><dd>${reply.quoteId ? "Linked" : "Not linked"}</dd></div>
+      </dl>
+      <p>${escapeHtml(reply.message || "No supplier message pasted yet.")}</p>
+      <p class="score-reason">${escapeHtml(reply.notes || "No buyer notes added.")}</p>
+      <div class="reply-card-actions">
+        <button type="button" data-load-reply="${escapeHtml(reply.id)}">Load</button>
+        <button type="button" data-copy-buyer-reply="${escapeHtml(reply.id)}">Copy buyer reply</button>
+        <button type="button" data-convert-reply="${escapeHtml(reply.id)}">Convert to quote</button>
+        <button type="button" data-remove-reply="${escapeHtml(reply.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function replyNeedsAction(reply) {
+  return reply.status !== "Closed" && reply.nextAction !== "Close thread";
+}
+
+function replyQuoteReady(reply) {
+  return ["Received", "Price revised"].includes(reply.status) || reply.nextAction === "Update quote tracker";
+}
+
+function defaultReplyAction(status) {
+  if (status === "Missing certificate") {
+    return "Ask for datasheet / certificate";
+  }
+  if (status === "Alternate offered") {
+    return "Review alternate";
+  }
+  if (status === "Price revised" || status === "Received") {
+    return "Update quote tracker";
+  }
+  if (status === "Closed") {
+    return "Close thread";
+  }
+  return "Confirm stock and lead time";
+}
+
+async function copyBuyerReplyFromForm() {
+  const reply = sanitizeSupplierReply(replyFormSnapshot());
+  if (!reply) {
+    return;
+  }
+  await copyReplyText(buyerReplyText(reply), els.copyBuyerReply, "Buyer reply copied", "Copy buyer reply");
+}
+
+async function copyBuyerReply(id, triggerButton) {
+  const reply = state.supplierReplies.find((item) => item.id === id);
+  if (!reply) {
+    return;
+  }
+  await copyReplyText(buyerReplyText(reply), triggerButton, "Buyer reply copied", "Copy buyer reply");
+}
+
+function buyerReplyText(reply) {
+  const requestLines = replyRequestChecklist(reply);
+  return `Subject: Re: ${reply.subject || `${reply.brand} ${reply.sku} sourcing`}${reply.subject ? "" : ""}
+
+Hello ${reply.supplier},
+
+Thank you for your update. We are reviewing the item below for buyer approval.
+
+Project: ${projectValue("name", reply.projectName || "Unnamed sourcing project")}
+Buyer/company: ${projectValue("buyer", reply.buyer || "TBC")}
+Delivery country: ${projectValue("country", reply.deliveryCountry || "TBC")}
+Target date: ${projectValue("targetDate", reply.targetDate || "TBC")}
+
+Product: ${reply.brand} ${reply.sku} - ${reply.productName}
+Current reply status: ${reply.status}
+Next action: ${reply.nextAction}
+
+Please confirm:
+${requestLines.map((line) => `- ${line}`).join("\n")}
+
+Supplier message captured:
+${reply.message || "No supplier message pasted."}
+
+Buyer notes:
+${reply.notes || "No additional buyer notes."}
+
+Once confirmed, we can update the quote tracker and proceed with internal review.
+
+InduScout is being used as a discovery and RFQ preparation aid. Final purchasing validation remains with the buyer and supplier.`;
+}
+
+function replyRequestChecklist(reply) {
+  if (reply.status === "Missing certificate" || reply.nextAction === "Ask for datasheet / certificate") {
+    return [
+      "Latest datasheet and applicable certificate copies.",
+      "Warranty path, country of origin, and authorized supply route.",
+      "Whether the certificate applies to the exact suffix/configuration offered."
+    ];
+  }
+  if (reply.status === "Alternate offered" || reply.nextAction === "Review alternate") {
+    return [
+      "Exact alternate part number and manufacturer.",
+      "Technical equivalence against the requested part, including differences.",
+      "Datasheet, certifications, lead time, and warranty path for the alternate."
+    ];
+  }
+  if (reply.status === "Price revised" || reply.nextAction === "Request revised quote") {
+    return [
+      "Final unit price, currency, validity, and any quantity breaks.",
+      "Stock availability, dispatch date, lead time, and delivery terms.",
+      "Payment terms, warranty path, and whether the price includes all applicable charges."
+    ];
+  }
+  return [
+    "Exact part number and suffix/configuration.",
+    "Current stock, lead time, MOQ, and quote validity.",
+    "Datasheet, certificate, warranty path, country of origin, and seller legitimacy."
+  ];
+}
+
+async function copyReplyText(text, triggerButton, copiedLabel, defaultLabel) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = copiedLabel;
+      setTimeout(() => {
+        triggerButton.textContent = defaultLabel;
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy buyer reply", text);
+  }
+}
+
+function convertReplyToQuote(replyOrId, triggerButton) {
+  const rawReply = typeof replyOrId === "string" ? state.supplierReplies.find((item) => item.id === replyOrId) : replyOrId;
+  const reply = sanitizeSupplierReply(rawReply);
+  if (!reply) {
+    return;
+  }
+
+  const context = selectedReplyContext(reply.itemRef || (reply.quoteId ? `quote:${reply.quoteId}` : `product:${reply.productId}`));
+  const existing = state.quotes.find((quote) => quote.id === reply.quoteId);
+  const notes = [
+    existing?.notes,
+    `Inbox reply ${reply.receivedDate || new Date().toISOString().slice(0, 10)}: ${reply.status}. ${reply.nextAction}. ${reply.message || ""} ${reply.notes || ""}`.trim()
+  ].filter(Boolean).join("\n\n");
+  const quote = sanitizeQuoteRecord({
+    ...existing,
+    id: existing?.id || `${Date.now()}-${safeFilenamePart(`${reply.supplier}-${context.sku || "quote"}`).toLowerCase() || "quote"}`,
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    projectName: projectValue("name", reply.projectName || ""),
+    buyer: projectValue("buyer", reply.buyer || ""),
+    buyerContact: projectValue("contact", reply.buyerContact || ""),
+    deliveryCountry: projectValue("country", reply.deliveryCountry || ""),
+    targetDate: projectValue("targetDate", reply.targetDate || ""),
+    productId: context.productId,
+    brand: context.brand,
+    sku: context.sku,
+    productName: context.productName,
+    category: context.category,
+    supplier: reply.supplier,
+    status: replyQuoteReady(reply) ? "Received" : "Follow-up needed",
+    currency: existing?.currency || "USD",
+    unitPrice: existing?.unitPrice || "",
+    quantity: existing?.quantity || defaultQuantity(context.product?.moq || ""),
+    leadTime: existing?.leadTime || context.leadTime,
+    moq: existing?.moq || context.moq,
+    paymentTerms: existing?.paymentTerms || "TBC",
+    deliveryTerms: existing?.deliveryTerms || "TBC",
+    validUntil: existing?.validUntil || "",
+    sourceUrl: existing?.sourceUrl || context.sourceUrl,
+    notes
+  });
+
+  if (!quote) {
+    return;
+  }
+
+  state.quotes = [quote, ...state.quotes.filter((item) => item.id !== quote.id)].slice(0, 80);
+  saveQuoteRecords();
+  hydrateQuoteForm(quote);
+  renderQuoteTracker();
+  populateReplyItems();
+
+  const linkedReply = { ...reply, quoteId: quote.id, itemRef: `quote:${quote.id}`, updatedAt: new Date().toISOString() };
+  state.supplierReplies = [linkedReply, ...state.supplierReplies.filter((item) => item.id !== linkedReply.id)].slice(0, 120);
+  saveSupplierReplies();
+  hydrateSupplierReplyForm(linkedReply);
+  renderSupplierInbox();
+
+  if (triggerButton) {
+    triggerButton.textContent = "Quote updated";
+    setTimeout(() => {
+      triggerButton.textContent = "Convert to quote";
+    }, 1200);
+  }
+}
+
+function supplierReplyExportTable() {
+  updateProjectFromFields();
+  const headers = [
+    "Project Name",
+    "Buyer / Company",
+    "Buyer Contact",
+    "Delivery Country",
+    "Target Date",
+    "Product",
+    "Brand",
+    "SKU",
+    "Category",
+    "Supplier",
+    "Reply Status",
+    "Next Action",
+    "Received Date",
+    "Subject",
+    "Supplier Message",
+    "Buyer Notes",
+    "Linked Quote",
+    "Saved At"
+  ];
+  const rows = state.supplierReplies.map((reply) => [
+    projectValue("name", reply.projectName || ""),
+    projectValue("buyer", reply.buyer || ""),
+    projectValue("contact", reply.buyerContact || ""),
+    projectValue("country", reply.deliveryCountry || ""),
+    projectValue("targetDate", reply.targetDate || ""),
+    reply.productName,
+    reply.brand,
+    reply.sku,
+    reply.category,
+    reply.supplier,
+    reply.status,
+    reply.nextAction,
+    reply.receivedDate,
+    reply.subject,
+    reply.message,
+    reply.notes,
+    reply.quoteId ? "Yes" : "No",
+    reply.savedAt
+  ]);
+  return { headers, rows };
+}
+
+function exportSupplierReplyCsv() {
+  const table = supplierReplyExportTable();
+  if (!table.rows.length) {
+    els.exportReplyCsv.textContent = "Add replies first";
+    setTimeout(() => {
+      els.exportReplyCsv.textContent = "Export CSV";
+    }, 1200);
+    return;
+  }
+
+  const csv = [table.headers, ...table.rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  downloadFile(
+    projectSlug
+      ? `InduScout-Supplier-Inbox-${projectSlug}-${new Date().toISOString().slice(0, 10)}.csv`
+      : `InduScout-Supplier-Inbox-${new Date().toISOString().slice(0, 10)}.csv`,
+    `\ufeff${csv}`,
+    "text/csv;charset=utf-8"
+  );
+}
+
+function exportSupplierReplyXlsx() {
+  const table = supplierReplyExportTable();
+  if (!table.rows.length) {
+    els.exportReplyXlsx.textContent = "Add replies first";
+    setTimeout(() => {
+      els.exportReplyXlsx.textContent = "Export XLSX";
+    }, 1200);
+    return;
+  }
+
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  downloadFile(
+    projectSlug
+      ? `InduScout-Supplier-Inbox-${projectSlug}-${new Date().toISOString().slice(0, 10)}.xlsx`
+      : `InduScout-Supplier-Inbox-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    createXlsxWorkbook(table.headers, table.rows, "Supplier Inbox", "InduScout Supplier Inbox"),
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+}
+
 function removeFromShortlist(id) {
   state.shortlist = state.shortlist.filter((item) => item !== id);
   renderShortlist();
@@ -1674,11 +6445,19 @@ function defaultFilters() {
 
 function createSessionSnapshot() {
   updateProjectFromFields();
+  if (els.specForm) {
+    state.specRequirements = specRequirementsFromFields();
+  }
+  if (els.alternateForm) {
+    state.alternateReview = alternateReviewFromFields();
+  }
   return {
     app: "InduScout",
-    version: "2.4",
+    version: "3.8",
     savedAt: new Date().toISOString(),
     project: state.project,
+    specRequirements: state.specRequirements,
+    alternateReview: state.alternateReview,
     filters: {
       query: state.query,
       category: state.category,
@@ -1695,7 +6474,9 @@ function createSessionSnapshot() {
       Object.entries(state.notes).filter(([id, note]) => products.some((product) => product.id === id) && String(note).trim())
     ),
     productRequests: state.productRequests,
-    quotes: state.quotes
+    sourceLeads: state.sourceLeads,
+    quotes: state.quotes,
+    supplierReplies: state.supplierReplies
   };
 }
 
@@ -1713,13 +6494,25 @@ function applySession(session) {
   state.verifiedOnly = Boolean(filters.verifiedOnly);
   state.shortlist = [...new Set(session.shortlist || [])].filter((id) => validProductIds.has(id));
   state.compare = [...new Set(session.compare || [])].filter((id) => validProductIds.has(id)).slice(0, 4);
-  state.notes = { ...state.notes, ...(session.notes || {}) };
-  state.productRequests = Array.isArray(session.productRequests) ? session.productRequests.slice(0, 30) : state.productRequests;
+  state.notes = { ...state.notes, ...sanitizeNotes(session.notes || {}, validProductIds) };
+  state.productRequests = Array.isArray(session.productRequests)
+    ? session.productRequests.map(sanitizeProductRequest).filter(Boolean).slice(0, 30)
+    : state.productRequests;
+  state.sourceLeads = Array.isArray(session.sourceLeads)
+    ? session.sourceLeads.map(sanitizeSourceLead).filter(Boolean).slice(0, 120)
+    : state.sourceLeads;
   state.quotes = Array.isArray(session.quotes) ? session.quotes.map(sanitizeQuoteRecord).filter(Boolean).slice(0, 80) : state.quotes;
-  state.project = { ...defaultProjectProfile(), ...(session.project || {}) };
+  state.supplierReplies = Array.isArray(session.supplierReplies)
+    ? session.supplierReplies.map(sanitizeSupplierReply).filter(Boolean).slice(0, 120)
+    : state.supplierReplies;
+  state.project = sanitizeProjectProfile(session.project || {});
+  state.specRequirements = sanitizeSpecRequirements(session.specRequirements || {});
+  state.alternateReview = sanitizeAlternateReview(session.alternateReview || {});
 
   setQuery(state.query);
   hydrateProjectFields();
+  hydrateSpecRequirementFields();
+  hydrateAlternateReviewFields();
   els.category.value = state.category;
   els.region.value = state.region;
   els.sourceType.value = state.sourceType;
@@ -1731,12 +6524,21 @@ function applySession(session) {
   });
   saveNotes();
   saveProductRequests();
+  saveSourceLeads();
   saveQuoteRecords();
+  saveSupplierReplies();
   saveProjectProfile();
+  saveSpecRequirements();
+  saveAlternateReview();
   renderProjectStatus();
   renderProductRequests();
+  renderSourceIntake();
   renderCompare();
+  renderSpecMatchDesk();
+  renderAlternateDesk();
   renderQuoteTracker();
+  populateReplyItems();
+  renderSupplierInbox();
   renderShortlist();
   closeOverlays();
 }
@@ -1757,7 +6559,7 @@ function loadSession() {
       setSessionStatus("No saved session found");
       return;
     }
-    applySession(JSON.parse(rawSession));
+    applySession(parseSessionJson(rawSession));
     render();
     setSessionStatus("Saved session loaded");
   } catch {
@@ -1777,10 +6579,14 @@ function importSessionFile(event) {
   if (!file) {
     return;
   }
+  if (file.size > SESSION_IMPORT_MAX_BYTES) {
+    setSessionStatus("Session JSON is too large");
+    return;
+  }
   const reader = new FileReader();
   reader.addEventListener("load", () => {
     try {
-      applySession(JSON.parse(String(reader.result || "{}")));
+      applySession(parseSessionJson(String(reader.result || "{}")));
       render();
       setSessionStatus("Session JSON imported");
     } catch {
@@ -1793,7 +6599,7 @@ function importSessionFile(event) {
 function setSessionStatus(message) {
   els.sessionStatus.textContent = message;
   setTimeout(() => {
-    els.sessionStatus.textContent = "Save shortlist, filters, compare list, quote tracker, and notes locally.";
+    els.sessionStatus.textContent = "Save shortlist, filters, compare list, source intake, quote tracker, supplier inbox, and notes locally.";
   }, 1800);
 }
 
@@ -1887,6 +6693,62 @@ Buyer verification:
   }
 }
 
+async function copyPrivacyBrief() {
+  const text = `InduScout privacy and trust brief
+Prepared on ${formatCopyDate()}
+
+Current product status:
+InduScout is a static GitHub Pages public beta for industrial product discovery and RFQ preparation.
+
+What stays local:
+- Buyer notes
+- Project context
+- Spec match requirement profile
+- Alternate and obsolescence review setup
+- Shortlists and compare selections
+- Quote tracker records
+- Supplier inbox replies
+- Supplier/source intake leads
+- Saved session data
+
+How data leaves the browser:
+- The user exports RFQ packs, CSV, XLSX, source intake registers, workspace snapshots, evidence review JSON, decision memo HTML, PO handover HTML, supplier compliance HTML, buyer file HTML/JSON, supplier scorecard HTML/JSON, spec match matrix HTML/JSON, alternate review HTML/JSON, or session JSON files.
+- The user copies RFQ, supplier email, supplier confirmation email, supplier due-diligence email, buyer reply, project brief, procurement brief, source review packet, evidence review report, decision memo, award handover note, compliance pack, buyer file index, supplier scorecard, spec match matrix, alternate review note, or data update text.
+- The user manually shares downloaded files or copied text.
+
+What the beta does not currently use:
+- No login system
+- No backend database
+- No payment workflow
+- No embedded API keys
+- No server-side buyer record storage
+
+Public beta guidance:
+Users should avoid entering confidential tender data, passwords, access tokens, payment data, regulated personal data, private contracts, or sensitive commercial documents until a governed backend, privacy terms, retention policy, and access controls exist.
+
+Security baseline:
+- Imported session JSON is size-limited and sanitized before use.
+- CSV and XLSX exports guard against common spreadsheet formula injection patterns.
+- Source links are restricted to safe web and email protocols.
+- Downloaded filenames are sanitized.
+
+Future backend requirements:
+Before accounts, supplier submissions, shared projects, APIs, or server-side quote storage are launched, InduScout should add access control, audit logs, encrypted storage, rate limits, deletion workflows, monitoring, backups, privacy policy, and terms of use.`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    if (!els.copyPrivacyBrief) {
+      return;
+    }
+    els.copyPrivacyBrief.textContent = "Privacy brief copied";
+    setTimeout(() => {
+      els.copyPrivacyBrief.textContent = "Copy privacy brief";
+    }, 1400);
+  } catch {
+    window.prompt("Copy privacy brief", text);
+  }
+}
+
 function clearProjectProfile() {
   state.project = defaultProjectProfile();
   hydrateProjectFields();
@@ -1917,11 +6779,21 @@ function projectValue(key, fallback) {
 function renderProjectStatus() {
   if (!els.projectStatus) {
     renderShortlistProjectSummary();
+    renderBuyerWorkspace();
+    renderDecisionMemo();
+    renderAwardHandover();
+    renderComplianceGate();
+    renderBuyerFile();
     return;
   }
 
   els.projectStatus.textContent = projectHasValue() ? projectValue("name", "Project context added") : "Add project context for exports";
   renderShortlistProjectSummary();
+  renderBuyerWorkspace();
+  renderDecisionMemo();
+  renderAwardHandover();
+  renderComplianceGate();
+  renderBuyerFile();
 }
 
 function renderShortlistProjectSummary() {
@@ -1977,7 +6849,7 @@ async function copyProductRequest() {
 }
 
 function saveProductRequest() {
-  const request = productRequestSnapshot();
+  const request = sanitizeProductRequest(productRequestSnapshot());
   if (!request.part || request.part === "TBC") {
     els.saveProductRequest.textContent = "Add item first";
     setTimeout(() => {
@@ -2099,6 +6971,8 @@ function renderProductRequests() {
 
   if (!count) {
     els.requestList.innerHTML = '<div class="request-list-empty">No saved missing-product requests yet.</div>';
+    renderBuyerWorkspace();
+    renderEvidenceReviewBoard();
     return;
   }
 
@@ -2120,6 +6994,8 @@ function renderProductRequests() {
       `
     )
     .join("");
+  renderBuyerWorkspace();
+  renderEvidenceReviewBoard();
 }
 
 async function copySavedProductRequest(id) {
@@ -2232,7 +7108,7 @@ function downloadRfqPack() {
     .map((product, index) => {
       const confidence = confidenceForProduct(product);
       const sources = product.sources
-        .map((source) => `<li><strong>${escapeHtml(source.type)}:</strong> <a href="${escapeHtml(source.url)}">${escapeHtml(source.name)}</a></li>`)
+        .map((source) => `<li><strong>${escapeHtml(source.type)}:</strong> <a href="${safeHref(source.url)}">${escapeHtml(source.name)}</a></li>`)
         .join("");
       const notes = state.notes[product.id] || "None added";
       return `
@@ -2886,7 +7762,7 @@ function defaultQuantity(moq) {
 }
 
 function csvEscape(value) {
-  const text = String(value ?? "");
+  const text = spreadsheetSafeText(value);
   return `"${text.replace(/"/g, '""')}"`;
 }
 
@@ -2980,7 +7856,7 @@ function buildWorksheetXml(rows) {
         .map((value, columnIndex) => {
           const ref = `${columnName(columnIndex + 1)}${rowIndex + 1}`;
           const style = rowIndex === 0 ? 1 : 2;
-          return `<c r="${ref}" t="inlineStr" s="${style}"><is><t>${xmlEscape(value)}</t></is></c>`;
+          return `<c r="${ref}" t="inlineStr" s="${style}"><is><t>${xmlEscape(spreadsheetSafeText(value))}</t></is></c>`;
         })
         .join("");
       return `<row r="${rowIndex + 1}">${cells}</row>`;
@@ -3135,12 +8011,71 @@ function xmlEscape(value) {
   });
 }
 
+function safeHref(value, fallback = "#") {
+  return escapeHtml(safeExternalUrl(value, fallback));
+}
+
+function safeExternalUrl(value, fallback = "#") {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return fallback;
+  }
+
+  try {
+    const base = window.location?.href || "https://dhirajnyse.github.io/induscout/";
+    const url = new URL(raw, base);
+    if (["http:", "https:", "mailto:"].includes(url.protocol)) {
+      return url.href;
+    }
+  } catch {
+    return fallback;
+  }
+  return fallback;
+}
+
+function spreadsheetSafeText(value) {
+  const text = limitText(String(value ?? ""), 8000);
+  const leftTrimmed = text.replace(/^\s+/, "");
+  return /^[=+\-@\t\r]/.test(leftTrimmed) ? `'${text}` : text;
+}
+
+function cleanText(value, maxLength = 600) {
+  return limitText(String(value ?? "").replace(/\u0000/g, ""), maxLength);
+}
+
+function limitText(value, maxLength = 600) {
+  const text = String(value ?? "");
+  return text.length > maxLength ? text.slice(0, maxLength) : text;
+}
+
+function parseSessionJson(raw) {
+  const text = String(raw || "");
+  if (text.length > SESSION_IMPORT_MAX_BYTES) {
+    throw new Error("Session JSON exceeds size limit");
+  }
+  const session = JSON.parse(text);
+  if (!session || typeof session !== "object" || Array.isArray(session)) {
+    throw new Error("Session JSON must be an object");
+  }
+  if (session.app && session.app !== "InduScout") {
+    throw new Error("Session JSON is not an InduScout session");
+  }
+  return session;
+}
+
+function safeDownloadFilename(filename) {
+  return cleanText(filename || "induscout-download", 150)
+    .replace(/[<>:"/\\|?*\x00-\x1f]+/g, "-")
+    .replace(/\s+/g, " ")
+    .trim() || "induscout-download";
+}
+
 function downloadFile(filename, content, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = filename;
+  link.download = safeDownloadFilename(filename);
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -3188,7 +8123,7 @@ function saveNotes() {
 
 function loadProjectProfile() {
   try {
-    return { ...defaultProjectProfile(), ...JSON.parse(window.localStorage.getItem("induscoutProjectProfile") || "{}") };
+    return sanitizeProjectProfile(JSON.parse(window.localStorage.getItem("induscoutProjectProfile") || "{}"));
   } catch {
     return defaultProjectProfile();
   }
@@ -3202,10 +8137,79 @@ function saveProjectProfile() {
   }
 }
 
+function loadSpecRequirements() {
+  try {
+    return sanitizeSpecRequirements(JSON.parse(window.localStorage.getItem("induscoutSpecRequirements") || "{}"));
+  } catch {
+    return defaultSpecRequirements();
+  }
+}
+
+function saveSpecRequirements() {
+  try {
+    window.localStorage.setItem("induscoutSpecRequirements", JSON.stringify(state.specRequirements));
+  } catch {
+    // Requirement profiles are a convenience only; the matrix still works if storage is blocked.
+  }
+}
+
+function loadAlternateReview() {
+  try {
+    return sanitizeAlternateReview(JSON.parse(window.localStorage.getItem("induscoutAlternateReview") || "{}"));
+  } catch {
+    return defaultAlternateReview();
+  }
+}
+
+function saveAlternateReview() {
+  try {
+    window.localStorage.setItem("induscoutAlternateReview", JSON.stringify(state.alternateReview));
+  } catch {
+    // Alternate review setup is a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
+function sanitizeAlternateReview(record) {
+  const source = record && typeof record === "object" && !Array.isArray(record) ? record : {};
+  const productId = products.some((product) => product.id === source.productId) ? source.productId : products[0]?.id || "";
+  const criticality = ALTERNATE_CRITICALITY_LEVELS.includes(source.criticality) ? source.criticality : "Standard spare";
+  return {
+    productId,
+    criticality,
+    equipment: cleanText(source.equipment || "", 220),
+    constraint: cleanText(source.constraint || "", 260)
+  };
+}
+
+function sanitizeSpecRequirements(record) {
+  const source = record && typeof record === "object" && !Array.isArray(record) ? record : {};
+  const sourceRequirement = SPEC_SOURCE_REQUIREMENTS.includes(source.sourceRequirement) ? source.sourceRequirement : "any";
+  const criticality = SPEC_CRITICALITY_LEVELS.includes(source.criticality) ? source.criticality : "Standard sourcing";
+  return {
+    application: cleanText(source.application || "", 280),
+    mustHave: cleanText(source.mustHave || "", 1400),
+    certifications: cleanText(source.certifications || "", 260),
+    sourceRequirement,
+    criticality
+  };
+}
+
+function sanitizeProjectProfile(profile) {
+  const source = profile && typeof profile === "object" && !Array.isArray(profile) ? profile : {};
+  return {
+    name: cleanText(source.name || "", 180),
+    buyer: cleanText(source.buyer || "", 180),
+    contact: cleanText(source.contact || "", 180),
+    country: cleanText(source.country || "", 120),
+    targetDate: cleanText(source.targetDate || "", 40),
+    notes: cleanText(source.notes || "", 1800)
+  };
+}
+
 function loadProductRequests() {
   try {
     const saved = JSON.parse(window.localStorage.getItem("induscoutProductRequests") || "[]");
-    return Array.isArray(saved) ? saved.slice(0, 30) : [];
+    return Array.isArray(saved) ? saved.map(sanitizeProductRequest).filter(Boolean).slice(0, 30) : [];
   } catch {
     return [];
   }
@@ -3216,6 +8220,23 @@ function saveProductRequests() {
     window.localStorage.setItem("induscoutProductRequests", JSON.stringify(state.productRequests));
   } catch {
     // Product requests are a convenience only; copy actions still work if storage is blocked.
+  }
+}
+
+function loadSourceLeads() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutSourceLeads") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizeSourceLead).filter(Boolean).slice(0, 120) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSourceLeads() {
+  try {
+    window.localStorage.setItem("induscoutSourceLeads", JSON.stringify(state.sourceLeads));
+  } catch {
+    // Source intake is a convenience only; copy/export actions still work if storage is blocked.
   }
 }
 
@@ -3236,6 +8257,86 @@ function saveQuoteRecords() {
   }
 }
 
+function sanitizeNotes(notes, validProductIds = new Set(products.map((product) => product.id))) {
+  if (!notes || typeof notes !== "object" || Array.isArray(notes)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(notes)
+      .filter(([id]) => validProductIds.has(id))
+      .map(([id, note]) => [id, cleanText(note, 1500)])
+      .filter(([, note]) => note.trim())
+  );
+}
+
+function sanitizeProductRequest(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const fallbackPart = cleanText(record.part || "TBC", 180);
+  return {
+    id: cleanText(record.id || `${Date.now()}-${safeFilenamePart(fallbackPart) || "request"}`, 90),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    part: fallbackPart,
+    brand: cleanText(record.brand || "TBC", 120),
+    category: cleanText(record.category || "Not sure", 120),
+    country: cleanText(record.country || "TBC", 120),
+    urgency: cleanText(record.urgency || "Standard sourcing", 80),
+    quantity: cleanText(record.quantity || "TBC", 80),
+    notes: cleanText(record.notes || "No extra notes added", 1500),
+    query: cleanText(record.query || "None", 180),
+    filters: {
+      category: cleanText(record.filters?.category || "All categories", 120),
+      region: cleanText(record.filters?.region || "Global", 120),
+      sourceType: cleanText(record.filters?.sourceType || "All source types", 120),
+      confidence: cleanText(record.filters?.confidence || "All confidence levels", 120)
+    }
+  };
+}
+
+function sanitizeSourceLead(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const allowedStatuses = ["New lead", "Needs verification", "Evidence supplied", "Authorized claim", "Buyer proven"];
+  const allowedTypes = ["Distributor", "OEM", "Marketplace", "RFQ network", "Surplus", "Data directory", "Local supplier"];
+  const fallbackName = cleanText(record.name || "Source TBC", 180);
+  return {
+    id: cleanText(record.id || `${Date.now()}-${safeFilenamePart(fallbackName) || "source-lead"}`, 90),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(record.updatedAt || record.savedAt || new Date().toISOString(), 40),
+    name: fallbackName,
+    website: cleanText(safeExternalUrl(record.website || "", ""), 240),
+    type: allowedTypes.includes(record.type) ? record.type : "Distributor",
+    category: cleanText(record.category || "Multiple categories", 140),
+    region: cleanText(record.region || "", 180),
+    evidenceUrl: cleanText(safeExternalUrl(record.evidenceUrl || "", ""), 240),
+    contact: cleanText(record.contact || "", 180),
+    status: allowedStatuses.includes(record.status) ? record.status : "New lead",
+    notes: cleanText(record.notes || "", 1800)
+  };
+}
+
+function loadSupplierReplies() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutSupplierReplies") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizeSupplierReply).filter(Boolean).slice(0, 120) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSupplierReplies() {
+  try {
+    window.localStorage.setItem("induscoutSupplierReplies", JSON.stringify(state.supplierReplies));
+  } catch {
+    // Supplier reply tracking is a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
 function sanitizeQuoteRecord(record) {
   if (!record || typeof record !== "object") {
     return null;
@@ -3243,32 +8344,91 @@ function sanitizeQuoteRecord(record) {
 
   const product = products.find((item) => item.id === record.productId) || products.find((item) => item.sku === record.sku) || products[0];
   return {
-    id: String(record.id || `${Date.now()}-${safeFilenamePart(record.supplier || product?.sku || "quote")}`),
-    savedAt: String(record.savedAt || new Date().toISOString()),
-    updatedAt: String(record.updatedAt || record.savedAt || new Date().toISOString()),
-    projectName: String(record.projectName || ""),
-    buyer: String(record.buyer || ""),
-    buyerContact: String(record.buyerContact || ""),
-    deliveryCountry: String(record.deliveryCountry || ""),
-    targetDate: String(record.targetDate || ""),
-    productId: product?.id || String(record.productId || ""),
-    brand: String(record.brand || product?.brand || ""),
-    sku: String(record.sku || product?.sku || ""),
-    productName: String(record.productName || product?.name || ""),
-    category: String(record.category || product?.category || ""),
-    supplier: String(record.supplier || "Supplier TBC"),
+    id: cleanText(record.id || `${Date.now()}-${safeFilenamePart(record.supplier || product?.sku || "quote")}`, 90),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(record.updatedAt || record.savedAt || new Date().toISOString(), 40),
+    projectName: cleanText(record.projectName || "", 180),
+    buyer: cleanText(record.buyer || "", 180),
+    buyerContact: cleanText(record.buyerContact || "", 180),
+    deliveryCountry: cleanText(record.deliveryCountry || "", 120),
+    targetDate: cleanText(record.targetDate || "", 40),
+    productId: product?.id || cleanText(record.productId || "", 90),
+    brand: cleanText(record.brand || product?.brand || "", 120),
+    sku: cleanText(record.sku || product?.sku || "", 120),
+    productName: cleanText(record.productName || product?.name || "", 180),
+    category: cleanText(record.category || product?.category || "", 120),
+    supplier: cleanText(record.supplier || "Supplier TBC", 180),
     status: ["Requested", "Received", "Follow-up needed", "Best option", "Rejected"].includes(record.status) ? record.status : "Requested",
-    currency: String(record.currency || "USD"),
-    unitPrice: String(record.unitPrice || ""),
-    quantity: String(record.quantity || ""),
-    leadTime: String(record.leadTime || product?.lead || ""),
-    moq: String(record.moq || product?.moq || ""),
-    paymentTerms: String(record.paymentTerms || ""),
-    deliveryTerms: String(record.deliveryTerms || ""),
-    validUntil: String(record.validUntil || ""),
-    sourceUrl: String(record.sourceUrl || product?.sources[0]?.url || ""),
-    notes: String(record.notes || "")
+    currency: cleanText(record.currency || "USD", 12),
+    unitPrice: cleanText(record.unitPrice || "", 60),
+    quantity: cleanText(record.quantity || "", 80),
+    leadTime: cleanText(record.leadTime || product?.lead || "", 120),
+    moq: cleanText(record.moq || product?.moq || "", 80),
+    paymentTerms: cleanText(record.paymentTerms || "", 180),
+    deliveryTerms: cleanText(record.deliveryTerms || "", 180),
+    validUntil: cleanText(record.validUntil || "", 40),
+    sourceUrl: safeExternalUrl(record.sourceUrl || product?.sources[0]?.url || "", ""),
+    notes: cleanText(record.notes || "", 1800)
   };
+}
+
+function sanitizeSupplierReply(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const product = products.find((item) => item.id === record.productId) || products.find((item) => item.sku === record.sku) || products[0];
+  const status = replyStatuses().includes(record.status) ? record.status : "Received";
+  const nextAction = replyActions().includes(record.nextAction) ? record.nextAction : defaultReplyAction(status);
+  const quoteId = cleanText(record.quoteId || "", 90);
+  const productId = product?.id || cleanText(record.productId || "", 90);
+  return {
+    id: cleanText(record.id || `${Date.now()}-supplier-reply`, 90),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(record.updatedAt || record.savedAt || new Date().toISOString(), 40),
+    projectName: cleanText(record.projectName || "", 180),
+    buyer: cleanText(record.buyer || "", 180),
+    buyerContact: cleanText(record.buyerContact || "", 180),
+    deliveryCountry: cleanText(record.deliveryCountry || "", 120),
+    targetDate: cleanText(record.targetDate || "", 40),
+    itemRef: cleanText(record.itemRef || (quoteId ? `quote:${quoteId}` : productId ? `product:${productId}` : ""), 120),
+    quoteId,
+    productId,
+    brand: cleanText(record.brand || product?.brand || "", 120),
+    sku: cleanText(record.sku || product?.sku || "", 120),
+    productName: cleanText(record.productName || product?.name || "", 180),
+    category: cleanText(record.category || product?.category || "", 120),
+    supplier: cleanText(record.supplier || product?.sources[0]?.name || "Supplier TBC", 180),
+    status,
+    nextAction,
+    receivedDate: cleanText(record.receivedDate || "", 40),
+    subject: cleanText(record.subject || "", 220),
+    message: cleanText(record.message || "", 1800),
+    notes: cleanText(record.notes || "", 1500)
+  };
+}
+
+function replyStatuses() {
+  return [
+    "Received",
+    "Clarification needed",
+    "Missing certificate",
+    "Price revised",
+    "Alternate offered",
+    "Awaiting buyer reply",
+    "Closed"
+  ];
+}
+
+function replyActions() {
+  return [
+    "Request revised quote",
+    "Ask for datasheet / certificate",
+    "Confirm stock and lead time",
+    "Review alternate",
+    "Update quote tracker",
+    "Close thread"
+  ];
 }
 
 function escapeHtml(value) {
