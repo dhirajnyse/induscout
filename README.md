@@ -1,6 +1,6 @@
 # InduScout
 
-InduScout is a GitHub Pages-ready beta for a global industrial product finder. It helps procurement teams search industrial parts, compare source options, review confidence signals, check technical fit, review alternates before substitution, prepare RFQ-ready sourcing briefs, rank supplier paths, draft internal buyer decision memos, create PO-ready award handover packs, prepare supplier due-diligence checks, and assemble audit-ready buyer files.
+InduScout is a GitHub Pages-ready beta for a global industrial product finder. It helps procurement teams search industrial parts, compare source options, review confidence signals, check technical fit, review alternates before substitution, prepare substitution approval packs, estimate landed costs, prepare negotiation and savings notes, prepare RFQ-ready sourcing briefs, rank supplier paths, draft internal buyer decision memos, create PO-ready award handover packs, prepare supplier due-diligence checks, and assemble audit-ready buyer files.
 
 Live site: https://dhirajnyse.github.io/induscout/
 
@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v3.8 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v3.8 adds an Alternate & Obsolescence Desk that reviews lifecycle risk, known replacement candidates, source evidence, constraints, and engineering sign-off needs before substitution.
+This v4.3 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v4.3 adds a Savings Register & KPI Desk so accepted, pending, rejected, and target savings can be saved, copied, and exported after supplier negotiations.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -37,6 +37,8 @@ This v3.8 public beta is still static and lightweight, but it already demonstrat
 - Supplier Scorecard with ranked supplier paths, score drivers, strengths, risks, next buyer action, copyable scorecard, downloadable HTML, and JSON export.
 - Spec Match Desk with saved buyer requirement profile, technical fit scores, strengths, gaps, next buyer actions, copyable matrix, downloadable HTML, and JSON export.
 - Alternate & Obsolescence Desk with base-product selection, replacement criticality, installed-equipment context, constraint checks, alternate scoring, copyable engineering review note, downloadable HTML, and JSON export.
+- Substitution Approval Pack with original/substitute product selection, decision status, reviewer ownership, equipment context, minimum approval checklist, approval score, open conditions, copyable approval note, downloadable HTML, and JSON export.
+- Polished application navigation with primary buyer workflows visible and deeper trust, launch, review, and documentation sections grouped under a More menu.
 - Catalog quality dashboard with verified coverage, datasheet coverage, confidence mix, category strength, source depth, and review queue.
 - Product detail drawer with specifications, applications, alternates, source actions, and RFQ fields.
 - Copyable procurement brief for internal buyer review, source validation, and shortlist decisions.
@@ -46,6 +48,9 @@ This v3.8 public beta is still static and lightweight, but it already demonstrat
 - RFQ pack, XLSX, CSV, procurement brief, supplier email, and RFQ copy actions include project workspace context.
 - Quote Tracker section for supplier, status, price, quantity, lead time, MOQ, payment terms, delivery terms, validity, source URL, notes, CSV/XLSX export, and follow-up email copy.
 - Quote Decision Scoring for best current score, lowest price, fastest lead, review flags, validity risk, and commercial completeness.
+- Landed Cost Desk with catalog or saved-quote selection, supplier, currency, unit price, quantity, freight, duty, tax/VAT, handling, bank charges, FX/contingency buffer, delivery terms, buyer checks, copyable cost brief, downloadable HTML, and JSON export.
+- Negotiation & Savings Desk with saved-quote selection, target unit price or discount, target lead time, quote-validity request, buyer leverage, potential savings calculation, copyable supplier counter-offer email, copyable savings note, downloadable HTML, and JSON export.
+- Savings Register with quote/negotiation prefill, baseline and final price tracking, accepted and pipeline savings KPIs, evidence references, copyable savings report, CSV export, and JSON export.
 - Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
 - Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.
 - Security baseline with session import size checks, sanitized imported records, safe external-link handling, spreadsheet formula-injection protection, and safer downloaded filenames.
@@ -54,7 +59,7 @@ This v3.8 public beta is still static and lightweight, but it already demonstrat
 - Product detail RFQ drawer includes a Track quote action that opens the selected product in the quote form.
 - Copyable product data update/report request.
 - Browser-saved buyer notes for each product.
-- Save/load session desk for project profile, spec match requirements, alternate review setup, filters, shortlist, compare list, source intake, quote records, supplier replies, and notes, with JSON export/import for moving work between browsers or machines.
+- Save/load session desk for project profile, spec match requirements, alternate review setup, substitution approval setup, landed cost scenario, negotiation plan, savings register, filters, shortlist, compare list, source intake, quote records, supplier replies, and notes, with JSON export/import for moving work between browsers or machines.
 - Saved missing-product requests are included in session JSON export/import.
 - Compare desk for up to four selected products.
 - Shortlist drawer with exportable RFQ-style summary.

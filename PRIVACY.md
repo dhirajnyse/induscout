@@ -12,6 +12,10 @@ The following information is stored locally in the user's browser when the user 
 - Project RFQ workspace fields.
 - Spec match requirement profile.
 - Alternate and obsolescence review setup.
+- Substitution approval setup.
+- Landed cost scenario inputs.
+- Negotiation plan inputs.
+- Savings register records.
 - Shortlist and compare selections.
 - Quote tracker records.
 - Supplier inbox replies.
@@ -38,8 +42,12 @@ InduScout can generate:
 - Supplier scorecard HTML and JSON exports.
 - Spec match matrix HTML and JSON exports.
 - Alternate review HTML and JSON exports.
+- Substitution approval HTML and JSON exports.
+- Landed cost HTML and JSON exports.
+- Negotiation HTML and JSON exports.
+- Savings register CSV and JSON exports.
 - Session JSON files.
-- Copyable RFQ, supplier email, supplier confirmation email, supplier due-diligence email, buyer reply, procurement brief, project brief, source review packet, evidence review report, decision memo, award handover note, compliance pack, buyer file index, supplier scorecard, spec match matrix, alternate review note, and product update text.
+- Copyable RFQ, supplier email, supplier counter-offer email, supplier confirmation email, supplier due-diligence email, buyer reply, procurement brief, project brief, source review packet, evidence review report, decision memo, award handover note, compliance pack, buyer file index, supplier scorecard, spec match matrix, alternate review note, substitution approval note, landed cost brief, negotiation savings note, savings register report, and product update text.
 
 Users are responsible for deciding where exported files and copied text are stored or shared.
 

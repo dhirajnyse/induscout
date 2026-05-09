@@ -7,6 +7,7 @@ const SESSION_IMPORT_MAX_BYTES = 750000;
 const SPEC_SOURCE_REQUIREMENTS = ["any", "oem-distributor", "datasheet", "verified"];
 const SPEC_CRITICALITY_LEVELS = ["Standard sourcing", "Production critical", "Safety or process critical", "Obsolete replacement"];
 const ALTERNATE_CRITICALITY_LEVELS = ["Standard spare", "Production critical", "Safety or process critical", "Obsolete or no-stock replacement"];
+const APPROVAL_DECISIONS = ["Engineering review required", "Approved for RFQ only", "Approved substitute", "Trial order only", "Rejected substitute"];
 
 const state = {
   query: "",
@@ -23,10 +24,14 @@ const state = {
   productRequests: loadProductRequests(),
   sourceLeads: loadSourceLeads(),
   quotes: loadQuoteRecords(),
+  savingsRecords: loadSavingsRecords(),
   supplierReplies: loadSupplierReplies(),
   project: loadProjectProfile(),
   specRequirements: loadSpecRequirements(),
   alternateReview: loadAlternateReview(),
+  substitutionApproval: loadSubstitutionApproval(),
+  landedCost: loadLandedCostScenario(),
+  negotiationPlan: loadNegotiationPlan(),
   activeProductId: null
 };
 
@@ -149,6 +154,26 @@ const els = {
   alternateStats: document.querySelector("#alternateStats"),
   alternateSummary: document.querySelector("#alternateSummary"),
   alternateGrid: document.querySelector("#alternateGrid"),
+  approvalForm: document.querySelector("#approvalForm"),
+  approvalBase: document.querySelector("#approvalBase"),
+  approvalCandidate: document.querySelector("#approvalCandidate"),
+  approvalDecision: document.querySelector("#approvalDecision"),
+  approvalReviewer: document.querySelector("#approvalReviewer"),
+  approvalEquipment: document.querySelector("#approvalEquipment"),
+  approvalNotes: document.querySelector("#approvalNotes"),
+  approvalCheckModel: document.querySelector("#approvalCheckModel"),
+  approvalCheckDatasheet: document.querySelector("#approvalCheckDatasheet"),
+  approvalCheckInterface: document.querySelector("#approvalCheckInterface"),
+  approvalCheckSafety: document.querySelector("#approvalCheckSafety"),
+  approvalCheckSupplier: document.querySelector("#approvalCheckSupplier"),
+  saveApprovalPack: document.querySelector("#saveApprovalPack"),
+  resetApprovalPack: document.querySelector("#resetApprovalPack"),
+  copyApprovalPack: document.querySelector("#copyApprovalPack"),
+  downloadApprovalPack: document.querySelector("#downloadApprovalPack"),
+  exportApprovalJson: document.querySelector("#exportApprovalJson"),
+  approvalStats: document.querySelector("#approvalStats"),
+  approvalSummary: document.querySelector("#approvalSummary"),
+  approvalPreview: document.querySelector("#approvalPreview"),
   quoteSummary: document.querySelector("#quoteSummary"),
   quoteForm: document.querySelector("#quoteForm"),
   quoteId: document.querySelector("#quoteId"),
@@ -174,6 +199,77 @@ const els = {
   clearQuotes: document.querySelector("#clearQuotes"),
   quoteRegisterStatus: document.querySelector("#quoteRegisterStatus"),
   quoteList: document.querySelector("#quoteList"),
+  costForm: document.querySelector("#costForm"),
+  costProduct: document.querySelector("#costProduct"),
+  costQuote: document.querySelector("#costQuote"),
+  costSupplier: document.querySelector("#costSupplier"),
+  costCurrency: document.querySelector("#costCurrency"),
+  costUnitPrice: document.querySelector("#costUnitPrice"),
+  costQuantity: document.querySelector("#costQuantity"),
+  costFreight: document.querySelector("#costFreight"),
+  costDutyRate: document.querySelector("#costDutyRate"),
+  costTaxRate: document.querySelector("#costTaxRate"),
+  costHandling: document.querySelector("#costHandling"),
+  costBankCharges: document.querySelector("#costBankCharges"),
+  costFxBuffer: document.querySelector("#costFxBuffer"),
+  costDeliveryTerms: document.querySelector("#costDeliveryTerms"),
+  costCountry: document.querySelector("#costCountry"),
+  costNotes: document.querySelector("#costNotes"),
+  saveCostScenario: document.querySelector("#saveCostScenario"),
+  resetCostScenario: document.querySelector("#resetCostScenario"),
+  copyCostBrief: document.querySelector("#copyCostBrief"),
+  downloadCostHtml: document.querySelector("#downloadCostHtml"),
+  exportCostJson: document.querySelector("#exportCostJson"),
+  costStats: document.querySelector("#costStats"),
+  costSummary: document.querySelector("#costSummary"),
+  costPreview: document.querySelector("#costPreview"),
+  negotiationForm: document.querySelector("#negotiationForm"),
+  negotiationProduct: document.querySelector("#negotiationProduct"),
+  negotiationQuote: document.querySelector("#negotiationQuote"),
+  negotiationSupplier: document.querySelector("#negotiationSupplier"),
+  negotiationCurrency: document.querySelector("#negotiationCurrency"),
+  negotiationCurrentPrice: document.querySelector("#negotiationCurrentPrice"),
+  negotiationQuantity: document.querySelector("#negotiationQuantity"),
+  negotiationTargetPrice: document.querySelector("#negotiationTargetPrice"),
+  negotiationDiscount: document.querySelector("#negotiationDiscount"),
+  negotiationLeadTime: document.querySelector("#negotiationLeadTime"),
+  negotiationValidity: document.querySelector("#negotiationValidity"),
+  negotiationLeverage: document.querySelector("#negotiationLeverage"),
+  negotiationReason: document.querySelector("#negotiationReason"),
+  negotiationNotes: document.querySelector("#negotiationNotes"),
+  saveNegotiationPlan: document.querySelector("#saveNegotiationPlan"),
+  resetNegotiationPlan: document.querySelector("#resetNegotiationPlan"),
+  copyNegotiationEmail: document.querySelector("#copyNegotiationEmail"),
+  copySavingsNote: document.querySelector("#copySavingsNote"),
+  downloadNegotiationHtml: document.querySelector("#downloadNegotiationHtml"),
+  exportNegotiationJson: document.querySelector("#exportNegotiationJson"),
+  negotiationStats: document.querySelector("#negotiationStats"),
+  negotiationSummary: document.querySelector("#negotiationSummary"),
+  negotiationPreview: document.querySelector("#negotiationPreview"),
+  savingsSummary: document.querySelector("#savingsSummary"),
+  savingsForm: document.querySelector("#savingsForm"),
+  savingsId: document.querySelector("#savingsId"),
+  savingsProduct: document.querySelector("#savingsProduct"),
+  savingsQuote: document.querySelector("#savingsQuote"),
+  savingsSupplier: document.querySelector("#savingsSupplier"),
+  savingsCurrency: document.querySelector("#savingsCurrency"),
+  savingsBaselineUnit: document.querySelector("#savingsBaselineUnit"),
+  savingsFinalUnit: document.querySelector("#savingsFinalUnit"),
+  savingsQuantity: document.querySelector("#savingsQuantity"),
+  savingsStatus: document.querySelector("#savingsStatus"),
+  savingsOwner: document.querySelector("#savingsOwner"),
+  savingsEvidenceUrl: document.querySelector("#savingsEvidenceUrl"),
+  savingsDate: document.querySelector("#savingsDate"),
+  savingsNotes: document.querySelector("#savingsNotes"),
+  saveSavingsRecord: document.querySelector("#saveSavingsRecord"),
+  useNegotiationPlan: document.querySelector("#useNegotiationPlan"),
+  clearSavingsForm: document.querySelector("#clearSavingsForm"),
+  copySavingsRegister: document.querySelector("#copySavingsRegister"),
+  exportSavingsCsv: document.querySelector("#exportSavingsCsv"),
+  exportSavingsJson: document.querySelector("#exportSavingsJson"),
+  clearSavingsRecords: document.querySelector("#clearSavingsRecords"),
+  savingsRegisterStatus: document.querySelector("#savingsRegisterStatus"),
+  savingsList: document.querySelector("#savingsList"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -257,11 +353,22 @@ function init() {
   renderMetrics();
   populateFilters();
   populateQuoteProducts();
+  populateCostProducts();
+  populateCostQuotes();
+  populateNegotiationProducts();
+  populateNegotiationQuotes();
+  populateSavingsProducts();
+  populateSavingsQuotes();
   populateAlternateProducts();
+  populateApprovalProducts();
   hydrateFromUrl();
   hydrateProjectFields();
   hydrateSpecRequirementFields();
   hydrateAlternateReviewFields();
+  hydrateSubstitutionApprovalFields();
+  hydrateLandedCostFields();
+  hydrateNegotiationFields();
+  hydrateSavingsForm();
   renderCategories();
   renderSources();
   renderSourceDirectory();
@@ -278,7 +385,11 @@ function init() {
   renderCompare();
   renderSpecMatchDesk();
   renderAlternateDesk();
+  renderSubstitutionApprovalPack();
   renderQuoteTracker();
+  renderLandedCostDesk();
+  renderNegotiationDesk();
+  renderSavingsRegister();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -332,6 +443,144 @@ function populateQuoteProducts() {
   });
 }
 
+function populateCostProducts() {
+  if (!els.costProduct) {
+    return;
+  }
+
+  const currentValue = els.costProduct.value || state.landedCost.productId;
+  els.costProduct.innerHTML = "";
+  products.forEach((product) => {
+    const option = document.createElement("option");
+    option.value = product.id;
+    option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
+    els.costProduct.append(option);
+  });
+
+  const productId = currentValue && products.some((product) => product.id === currentValue)
+    ? currentValue
+    : state.shortlist[0] || state.compare[0] || products[0]?.id || "";
+  if (productId) {
+    els.costProduct.value = productId;
+    state.landedCost.productId = productId;
+  }
+}
+
+function populateCostQuotes() {
+  if (!els.costQuote) {
+    return;
+  }
+
+  const currentValue = els.costQuote.value || state.landedCost.quoteId || "";
+  els.costQuote.innerHTML = "";
+  const manualOption = document.createElement("option");
+  manualOption.value = "";
+  manualOption.textContent = "Manual estimate / no saved quote";
+  els.costQuote.append(manualOption);
+
+  state.quotes.forEach((quote) => {
+    const option = document.createElement("option");
+    option.value = quote.id;
+    option.textContent = `${quote.supplier} - ${quote.brand} ${quote.sku} - ${quote.currency} ${quote.unitPrice || "price TBC"}`;
+    els.costQuote.append(option);
+  });
+
+  const quoteId = currentValue && state.quotes.some((quote) => quote.id === currentValue) ? currentValue : "";
+  els.costQuote.value = quoteId;
+  state.landedCost.quoteId = quoteId;
+}
+
+function populateNegotiationProducts() {
+  if (!els.negotiationProduct) {
+    return;
+  }
+
+  const currentValue = els.negotiationProduct.value || state.negotiationPlan.productId;
+  els.negotiationProduct.innerHTML = "";
+  products.forEach((product) => {
+    const option = document.createElement("option");
+    option.value = product.id;
+    option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
+    els.negotiationProduct.append(option);
+  });
+
+  const productId = currentValue && products.some((product) => product.id === currentValue)
+    ? currentValue
+    : state.shortlist[0] || state.compare[0] || products[0]?.id || "";
+  if (productId) {
+    els.negotiationProduct.value = productId;
+    state.negotiationPlan.productId = productId;
+  }
+}
+
+function populateNegotiationQuotes() {
+  if (!els.negotiationQuote) {
+    return;
+  }
+
+  const currentValue = els.negotiationQuote.value || state.negotiationPlan.quoteId || "";
+  els.negotiationQuote.innerHTML = "";
+  const manualOption = document.createElement("option");
+  manualOption.value = "";
+  manualOption.textContent = "Manual negotiation / no saved quote";
+  els.negotiationQuote.append(manualOption);
+
+  state.quotes.forEach((quote) => {
+    const option = document.createElement("option");
+    option.value = quote.id;
+    option.textContent = `${quote.supplier} - ${quote.brand} ${quote.sku} - ${quote.currency} ${quote.unitPrice || "price TBC"}`;
+    els.negotiationQuote.append(option);
+  });
+
+  const quoteId = currentValue && state.quotes.some((quote) => quote.id === currentValue) ? currentValue : "";
+  els.negotiationQuote.value = quoteId;
+  state.negotiationPlan.quoteId = quoteId;
+}
+
+function populateSavingsProducts() {
+  if (!els.savingsProduct) {
+    return;
+  }
+
+  const currentValue = els.savingsProduct.value;
+  els.savingsProduct.innerHTML = "";
+  products.forEach((product) => {
+    const option = document.createElement("option");
+    option.value = product.id;
+    option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
+    els.savingsProduct.append(option);
+  });
+
+  const productId = currentValue && products.some((product) => product.id === currentValue)
+    ? currentValue
+    : state.shortlist[0] || state.compare[0] || products[0]?.id || "";
+  if (productId) {
+    els.savingsProduct.value = productId;
+  }
+}
+
+function populateSavingsQuotes() {
+  if (!els.savingsQuote) {
+    return;
+  }
+
+  const currentValue = els.savingsQuote.value || "";
+  els.savingsQuote.innerHTML = "";
+  const manualOption = document.createElement("option");
+  manualOption.value = "";
+  manualOption.textContent = "Manual savings record / no saved quote";
+  els.savingsQuote.append(manualOption);
+
+  state.quotes.forEach((quote) => {
+    const option = document.createElement("option");
+    option.value = quote.id;
+    option.textContent = `${quote.supplier} - ${quote.brand} ${quote.sku} - ${quote.currency} ${quote.unitPrice || "price TBC"}`;
+    els.savingsQuote.append(option);
+  });
+
+  els.savingsQuote.value = currentValue && state.quotes.some((quote) => quote.id === currentValue) ? currentValue : "";
+}
+
 function populateAlternateProducts() {
   if (!els.alternateProduct) {
     return;
@@ -352,6 +601,43 @@ function populateAlternateProducts() {
   if (preferred) {
     els.alternateProduct.value = preferred;
     state.alternateReview.productId = preferred;
+  }
+}
+
+function populateApprovalProducts() {
+  if (!els.approvalBase || !els.approvalCandidate) {
+    return;
+  }
+
+  const currentBase = els.approvalBase.value || state.substitutionApproval.baseProductId;
+  const currentCandidate = els.approvalCandidate.value || state.substitutionApproval.candidateProductId;
+  els.approvalBase.innerHTML = "";
+  els.approvalCandidate.innerHTML = "";
+  products.forEach((product) => {
+    const label = `${product.brand} ${product.sku} - ${product.name}`;
+    const baseOption = document.createElement("option");
+    baseOption.value = product.id;
+    baseOption.textContent = label;
+    els.approvalBase.append(baseOption);
+
+    const candidateOption = document.createElement("option");
+    candidateOption.value = product.id;
+    candidateOption.textContent = label;
+    els.approvalCandidate.append(candidateOption);
+  });
+
+  const baseId = currentBase && products.some((product) => product.id === currentBase)
+    ? currentBase
+    : state.alternateReview.productId || state.shortlist[0] || products[0]?.id || "";
+  if (baseId) {
+    els.approvalBase.value = baseId;
+  }
+
+  const candidateId = currentCandidate && products.some((product) => product.id === currentCandidate)
+    ? currentCandidate
+    : suggestedApprovalCandidateId(baseId);
+  if (candidateId) {
+    els.approvalCandidate.value = candidateId;
   }
 }
 
@@ -399,6 +685,28 @@ function renderMetrics() {
 }
 
 function wireEvents() {
+  document.querySelectorAll(".more-menu").forEach((menu) => {
+    menu.addEventListener("click", (event) => {
+      if (event.target.closest("a")) {
+        menu.removeAttribute("open");
+      }
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    document.querySelectorAll(".more-menu[open]").forEach((menu) => {
+      if (!menu.contains(event.target)) {
+        menu.removeAttribute("open");
+      }
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      document.querySelectorAll(".more-menu[open]").forEach((menu) => menu.removeAttribute("open"));
+    }
+  });
+
   els.heroSearch.addEventListener("submit", (event) => {
     event.preventDefault();
     setQuery(els.search.value);
@@ -557,6 +865,28 @@ function wireEvents() {
   if (els.exportAlternateJson) {
     els.exportAlternateJson.addEventListener("click", exportAlternateReviewJson);
   }
+  substitutionApprovalInputs().forEach((input) => {
+    input.addEventListener("input", updateSubstitutionApprovalFromFields);
+    input.addEventListener("change", updateSubstitutionApprovalFromFields);
+  });
+  if (els.approvalBase) {
+    els.approvalBase.addEventListener("change", syncApprovalCandidateToBase);
+  }
+  if (els.saveApprovalPack) {
+    els.saveApprovalPack.addEventListener("click", saveSubstitutionApprovalFromFields);
+  }
+  if (els.resetApprovalPack) {
+    els.resetApprovalPack.addEventListener("click", resetSubstitutionApproval);
+  }
+  if (els.copyApprovalPack) {
+    els.copyApprovalPack.addEventListener("click", copySubstitutionApprovalPack);
+  }
+  if (els.downloadApprovalPack) {
+    els.downloadApprovalPack.addEventListener("click", downloadSubstitutionApprovalHtml);
+  }
+  if (els.exportApprovalJson) {
+    els.exportApprovalJson.addEventListener("click", exportSubstitutionApprovalJson);
+  }
   if (els.saveQuote) {
     els.saveQuote.addEventListener("click", saveQuoteFromForm);
   }
@@ -580,6 +910,96 @@ function wireEvents() {
   }
   if (els.clearQuotes) {
     els.clearQuotes.addEventListener("click", clearQuoteRecords);
+  }
+  landedCostInputs().forEach((input) => {
+    input.addEventListener("input", updateLandedCostFromFields);
+    input.addEventListener("change", updateLandedCostFromFields);
+  });
+  if (els.costQuote) {
+    els.costQuote.addEventListener("change", applyCostQuoteSelection);
+  }
+  if (els.saveCostScenario) {
+    els.saveCostScenario.addEventListener("click", saveLandedCostFromFields);
+  }
+  if (els.resetCostScenario) {
+    els.resetCostScenario.addEventListener("click", resetLandedCostScenario);
+  }
+  if (els.copyCostBrief) {
+    els.copyCostBrief.addEventListener("click", copyLandedCostBrief);
+  }
+  if (els.downloadCostHtml) {
+    els.downloadCostHtml.addEventListener("click", downloadLandedCostHtml);
+  }
+  if (els.exportCostJson) {
+    els.exportCostJson.addEventListener("click", exportLandedCostJson);
+  }
+  negotiationInputs().forEach((input) => {
+    input.addEventListener("input", updateNegotiationFromFields);
+    input.addEventListener("change", updateNegotiationFromFields);
+  });
+  if (els.negotiationQuote) {
+    els.negotiationQuote.addEventListener("change", applyNegotiationQuoteSelection);
+  }
+  if (els.saveNegotiationPlan) {
+    els.saveNegotiationPlan.addEventListener("click", saveNegotiationFromFields);
+  }
+  if (els.resetNegotiationPlan) {
+    els.resetNegotiationPlan.addEventListener("click", resetNegotiationPlan);
+  }
+  if (els.copyNegotiationEmail) {
+    els.copyNegotiationEmail.addEventListener("click", copyNegotiationEmail);
+  }
+  if (els.copySavingsNote) {
+    els.copySavingsNote.addEventListener("click", copyNegotiationSavingsNote);
+  }
+  if (els.downloadNegotiationHtml) {
+    els.downloadNegotiationHtml.addEventListener("click", downloadNegotiationHtml);
+  }
+  if (els.exportNegotiationJson) {
+    els.exportNegotiationJson.addEventListener("click", exportNegotiationJson);
+  }
+  if (els.savingsQuote) {
+    els.savingsQuote.addEventListener("change", prefillSavingsFromQuote);
+  }
+  if (els.useNegotiationPlan) {
+    els.useNegotiationPlan.addEventListener("click", useNegotiationPlanForSavings);
+  }
+  if (els.saveSavingsRecord) {
+    els.saveSavingsRecord.addEventListener("click", saveSavingsRecordFromForm);
+  }
+  if (els.clearSavingsForm) {
+    els.clearSavingsForm.addEventListener("click", clearSavingsForm);
+  }
+  if (els.copySavingsRegister) {
+    els.copySavingsRegister.addEventListener("click", copySavingsRegisterReport);
+  }
+  if (els.exportSavingsCsv) {
+    els.exportSavingsCsv.addEventListener("click", exportSavingsCsv);
+  }
+  if (els.exportSavingsJson) {
+    els.exportSavingsJson.addEventListener("click", exportSavingsJson);
+  }
+  if (els.clearSavingsRecords) {
+    els.clearSavingsRecords.addEventListener("click", clearSavingsRecords);
+  }
+  if (els.savingsList) {
+    els.savingsList.addEventListener("click", (event) => {
+      const loadButton = event.target.closest("[data-load-savings]");
+      const copyButton = event.target.closest("[data-copy-savings]");
+      const removeButton = event.target.closest("[data-remove-savings]");
+
+      if (loadButton) {
+        loadSavingsRecordToForm(loadButton.dataset.loadSavings);
+      }
+
+      if (copyButton) {
+        copySingleSavingsRecord(copyButton.dataset.copySavings, copyButton);
+      }
+
+      if (removeButton) {
+        removeSavingsRecord(removeButton.dataset.removeSavings);
+      }
+    });
   }
   if (els.quoteList) {
     els.quoteList.addEventListener("click", (event) => {
@@ -884,6 +1304,7 @@ function render() {
   renderSupplierScorecard();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
+  renderSubstitutionApprovalPack();
   updateShortlistControls();
   els.resultCount.textContent = `${matches.length} ${matches.length === 1 ? "product" : "products"}`;
   els.resultSummary.textContent = summaryText(matches.length);
@@ -1407,7 +1828,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "3.7",
+    version: "4.3",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -4727,6 +5148,1952 @@ function alternateReviewHtml() {
 </html>`;
 }
 
+function substitutionApprovalInputs() {
+  return [
+    els.approvalBase,
+    els.approvalCandidate,
+    els.approvalDecision,
+    els.approvalReviewer,
+    els.approvalEquipment,
+    els.approvalNotes,
+    els.approvalCheckModel,
+    els.approvalCheckDatasheet,
+    els.approvalCheckInterface,
+    els.approvalCheckSafety,
+    els.approvalCheckSupplier
+  ].filter(Boolean);
+}
+
+function defaultSubstitutionApproval() {
+  const baseProductId = products[0]?.id || "";
+  const candidateProductId = products.find((product) => product.id !== baseProductId)?.id || baseProductId;
+  return {
+    baseProductId,
+    candidateProductId,
+    decision: "Engineering review required",
+    reviewer: "",
+    equipment: "",
+    notes: "",
+    checks: {
+      model: false,
+      datasheet: false,
+      interface: false,
+      safety: false,
+      supplier: false
+    }
+  };
+}
+
+function hydrateSubstitutionApprovalFields() {
+  if (!els.approvalForm) {
+    return;
+  }
+  const approval = sanitizeSubstitutionApproval(state.substitutionApproval || {});
+  els.approvalBase.value = approval.baseProductId;
+  els.approvalCandidate.value = approval.candidateProductId || suggestedApprovalCandidateId(approval.baseProductId);
+  els.approvalDecision.value = approval.decision;
+  els.approvalReviewer.value = approval.reviewer;
+  els.approvalEquipment.value = approval.equipment;
+  els.approvalNotes.value = approval.notes;
+  els.approvalCheckModel.checked = approval.checks.model;
+  els.approvalCheckDatasheet.checked = approval.checks.datasheet;
+  els.approvalCheckInterface.checked = approval.checks.interface;
+  els.approvalCheckSafety.checked = approval.checks.safety;
+  els.approvalCheckSupplier.checked = approval.checks.supplier;
+  state.substitutionApproval = substitutionApprovalFromFields();
+}
+
+function substitutionApprovalFromFields() {
+  return sanitizeSubstitutionApproval({
+    baseProductId: els.approvalBase?.value || "",
+    candidateProductId: els.approvalCandidate?.value || "",
+    decision: els.approvalDecision?.value || "Engineering review required",
+    reviewer: els.approvalReviewer?.value || "",
+    equipment: els.approvalEquipment?.value || "",
+    notes: els.approvalNotes?.value || "",
+    checks: {
+      model: Boolean(els.approvalCheckModel?.checked),
+      datasheet: Boolean(els.approvalCheckDatasheet?.checked),
+      interface: Boolean(els.approvalCheckInterface?.checked),
+      safety: Boolean(els.approvalCheckSafety?.checked),
+      supplier: Boolean(els.approvalCheckSupplier?.checked)
+    }
+  });
+}
+
+function updateSubstitutionApprovalFromFields() {
+  state.substitutionApproval = substitutionApprovalFromFields();
+  saveSubstitutionApproval();
+  renderSubstitutionApprovalPack();
+}
+
+function saveSubstitutionApprovalFromFields() {
+  updateSubstitutionApprovalFromFields();
+  if (els.saveApprovalPack) {
+    els.saveApprovalPack.textContent = "Approval pack saved";
+    setTimeout(() => {
+      els.saveApprovalPack.textContent = "Save approval pack";
+    }, 1200);
+  }
+}
+
+function resetSubstitutionApproval() {
+  state.substitutionApproval = defaultSubstitutionApproval();
+  saveSubstitutionApproval();
+  hydrateSubstitutionApprovalFields();
+  renderSubstitutionApprovalPack();
+}
+
+function syncApprovalCandidateToBase() {
+  if (!els.approvalBase || !els.approvalCandidate) {
+    return;
+  }
+  const nextCandidate = suggestedApprovalCandidateId(els.approvalBase.value);
+  if (nextCandidate) {
+    els.approvalCandidate.value = nextCandidate;
+  }
+  updateSubstitutionApprovalFromFields();
+}
+
+function suggestedApprovalCandidateId(baseProductId) {
+  const base = products.find((product) => product.id === baseProductId) || products[0];
+  if (!base) {
+    return "";
+  }
+  const reviewCards = alternateCandidateProducts(base).map((product) => scoreAlternateCandidate(base, product, state.alternateReview || defaultAlternateReview()));
+  const best = reviewCards.sort((a, b) => b.score - a.score)[0]?.product;
+  return best?.id || products.find((product) => product.id !== base.id && product.category === base.category)?.id || products.find((product) => product.id !== base.id)?.id || base.id;
+}
+
+function renderSubstitutionApprovalPack() {
+  if (!els.approvalStats || !els.approvalSummary || !els.approvalPreview) {
+    return;
+  }
+
+  const approval = substitutionApprovalData();
+  els.approvalSummary.textContent = approval.title;
+  els.approvalStats.innerHTML = [
+    approvalStatTemplate("Decision", approval.setup.decision, approval.statusLabel),
+    approvalStatTemplate("Approval score", approval.score, `${approval.completedChecks}/5 checks complete`),
+    approvalStatTemplate("Risk", approval.riskLabel, approval.openConditions.length ? `${approval.openConditions.length} open conditions` : "No visible open conditions"),
+    approvalStatTemplate("Reviewer", approval.setup.reviewer || "TBC", approval.setup.equipment || "Equipment TBC")
+  ].join("");
+
+  if (!approval.base || !approval.candidate) {
+    els.approvalPreview.innerHTML = '<div class="empty-state approval-empty">Select an original product and proposed substitute to build the approval pack.</div>';
+    return;
+  }
+
+  els.approvalPreview.innerHTML = `
+    <article class="approval-card ${escapeHtml(approval.statusClass)}">
+      <span>Substitution record</span>
+      <h3>${escapeHtml(approval.base.brand)} ${escapeHtml(approval.base.sku)} to ${escapeHtml(approval.candidate.brand)} ${escapeHtml(approval.candidate.sku)}</h3>
+      <p>${escapeHtml(approval.recommendation)}</p>
+      <div class="approval-pair">
+        <div>
+          <span>Original</span>
+          <strong>${escapeHtml(approval.base.name)}</strong>
+          <small>${escapeHtml(approval.base.family)} | ${escapeHtml(approval.base.lifecycle)}</small>
+        </div>
+        <div>
+          <span>Substitute</span>
+          <strong>${escapeHtml(approval.candidate.name)}</strong>
+          <small>${escapeHtml(approval.candidate.family)} | ${escapeHtml(approval.candidate.lifecycle)}</small>
+        </div>
+      </div>
+      <div class="approval-check-rows">
+        ${approval.checkRows.map(approvalCheckRowTemplate).join("")}
+      </div>
+    </article>
+    <article class="approval-warning">
+      <span>Open approval conditions</span>
+      <h3>${escapeHtml(approval.statusLabel)}</h3>
+      <p>${escapeHtml(approval.setup.notes || "No buyer conditions entered yet.")}</p>
+      <ul>${approval.openConditions.length ? approval.openConditions.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "<li>All minimum approval checks are marked complete. Keep supplier evidence attached to the buyer file.</li>"}</ul>
+    </article>
+  `;
+}
+
+function substitutionApprovalData() {
+  const setup = state.substitutionApproval || defaultSubstitutionApproval();
+  const base = products.find((product) => product.id === setup.baseProductId) || products[0] || null;
+  const candidate = products.find((product) => product.id === setup.candidateProductId) || null;
+  const checkRows = substitutionApprovalCheckRows(setup, base, candidate);
+  const completedChecks = checkRows.filter((row) => row.done).length;
+  const openConditions = substitutionApprovalOpenConditions(setup, base, candidate, checkRows);
+  const score = substitutionApprovalScore(setup, base, candidate, completedChecks);
+  const blocked = setup.decision === "Rejected substitute" || !base || !candidate || base.id === candidate.id;
+  const approved = setup.decision === "Approved substitute" && score >= 82 && completedChecks === 5 && !openConditions.length;
+  const statusClass = blocked ? "blocked" : approved ? "approved" : "review";
+  const statusLabel = blocked ? "Blocked or invalid" : approved ? "Approval ready" : "Engineering review open";
+  const riskLabel = substitutionApprovalRiskLabel(setup, base, candidate, completedChecks, openConditions);
+  const recommendation = substitutionApprovalRecommendation(setup, base, candidate, score, completedChecks, openConditions);
+  const title = base && candidate
+    ? `${base.brand} ${base.sku} substitute approval`
+    : "Substitution approval needs products";
+
+  return { setup, base, candidate, checkRows, completedChecks, openConditions, score, statusClass, statusLabel, riskLabel, recommendation, title };
+}
+
+function substitutionApprovalCheckRows(setup, base, candidate) {
+  return [
+    { key: "model", done: setup.checks.model, label: "Exact model, suffix, voltage, size, material, and configuration checked" },
+    { key: "datasheet", done: setup.checks.datasheet && Boolean(candidate?.datasheet), label: "Latest datasheet, certificate scope, and lifecycle evidence requested" },
+    { key: "interface", done: setup.checks.interface, label: "Mechanical, electrical, software, protocol, and mounting interface reviewed" },
+    { key: "safety", done: setup.checks.safety, label: "Safety, process, warranty, and installed-equipment compatibility reviewed" },
+    { key: "supplier", done: setup.checks.supplier && Boolean(candidate?.sources?.length), label: "OEM/distributor/source path, stock, lead time, and commercial terms confirmed" }
+  ];
+}
+
+function substitutionApprovalScore(setup, base, candidate, completedChecks) {
+  if (!base || !candidate || base.id === candidate.id) {
+    return 0;
+  }
+  const sourceOk = candidate.sources.some((source) => ["OEM", "Distributor", "MRO"].includes(source.type));
+  const certOverlap = candidate.certifications.filter((cert) => base.certifications.map(normalizeToken).includes(normalizeToken(cert)));
+  const productText = productSearchText(candidate);
+  const overlap = [...base.specs, ...base.applications, base.family].map(normalizeToken).filter((token) => token && productText.includes(token)).length;
+  let score = 20;
+  score += base.category === candidate.category ? 14 : -12;
+  score += base.family === candidate.family ? 10 : 0;
+  score += Math.min(overlap, 6) * 4;
+  score += Math.min(certOverlap.length, 3) * 4;
+  score += candidate.datasheet ? 8 : -6;
+  score += sourceOk ? 8 : -6;
+  score += completedChecks * 8;
+  if (setup.decision === "Approved substitute") {
+    score += 6;
+  }
+  if (setup.decision === "Rejected substitute") {
+    score -= 35;
+  }
+  if (setup.decision === "Trial order only") {
+    score -= 4;
+  }
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function substitutionApprovalOpenConditions(setup, base, candidate, checkRows) {
+  const conditions = [];
+  if (!base || !candidate) {
+    return ["Select both original and substitute product records."];
+  }
+  if (base.id === candidate.id) {
+    conditions.push("Original product and proposed substitute cannot be the same record.");
+  }
+  checkRows.filter((row) => !row.done).forEach((row) => conditions.push(row.label));
+  if (base.category !== candidate.category) {
+    conditions.push(`Category differs: ${base.category} vs ${candidate.category}.`);
+  }
+  if (base.family !== candidate.family) {
+    conditions.push("Family or series differs; require dimensional and functional review.");
+  }
+  if (!candidate.datasheet) {
+    conditions.push("Candidate datasheet signal is not available in the catalog record.");
+  }
+  if (!candidate.sources.some((source) => ["OEM", "Distributor", "MRO"].includes(source.type))) {
+    conditions.push("Candidate needs an OEM, distributor, or MRO source path.");
+  }
+  if (!setup.reviewer) {
+    conditions.push("Reviewer or responsible department is not recorded.");
+  }
+  if (!setup.equipment) {
+    conditions.push("Installed equipment or location is not recorded.");
+  }
+  if (setup.decision === "Approved substitute" && conditions.length) {
+    conditions.push("Approved substitute decision should wait until open conditions are closed.");
+  }
+  return [...new Set(conditions)].slice(0, 10);
+}
+
+function substitutionApprovalRiskLabel(setup, base, candidate, completedChecks, openConditions) {
+  if (setup.decision === "Rejected substitute" || !base || !candidate || base.id === candidate.id) {
+    return "Do not use";
+  }
+  if (setup.decision === "Approved substitute" && completedChecks === 5 && !openConditions.length) {
+    return "Controlled approval";
+  }
+  if (setup.decision === "Trial order only") {
+    return "Trial required";
+  }
+  if (completedChecks < 3 || openConditions.length > 5) {
+    return "High review";
+  }
+  return "Conditional";
+}
+
+function substitutionApprovalRecommendation(setup, base, candidate, score, completedChecks, openConditions) {
+  if (!base || !candidate) {
+    return "Select product records before preparing a substitution approval.";
+  }
+  if (base.id === candidate.id) {
+    return "Choose a different proposed substitute before approval.";
+  }
+  if (setup.decision === "Rejected substitute") {
+    return "Keep the substitute rejected and record the reason in buyer notes or supplier evidence.";
+  }
+  if (setup.decision === "Approved substitute" && score >= 82 && completedChecks === 5 && !openConditions.length) {
+    return "Approval pack is ready for buyer file attachment, subject to final supplier evidence and internal authorization.";
+  }
+  if (setup.decision === "Trial order only") {
+    return "Use a limited trial or maintenance review before releasing the substitute for regular purchasing.";
+  }
+  return "Keep the substitute in engineering review until all open checks, source evidence, compatibility items, and reviewer ownership are closed.";
+}
+
+function approvalStatTemplate(label, value, detail) {
+  return `
+    <article class="approval-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function approvalCheckRowTemplate(row) {
+  return `
+    <div class="approval-check-row ${row.done ? "complete" : ""}">
+      <i>${row.done ? "OK" : "!"}</i>
+      <strong>${escapeHtml(row.label)}</strong>
+    </div>
+  `;
+}
+
+function substitutionApprovalText() {
+  const approval = substitutionApprovalData();
+  const base = approval.base;
+  const candidate = approval.candidate;
+  const checkLines = approval.checkRows.map((row) => `- ${row.done ? "Complete" : "Open"}: ${row.label}`).join("\n");
+  const conditionLines = approval.openConditions.length
+    ? approval.openConditions.map((item) => `- ${item}`).join("\n")
+    : "- No visible open conditions from the approval form.";
+
+  return `InduScout substitution approval pack
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Reviewer/department: ${approval.setup.reviewer || "TBC"}
+Equipment/location: ${approval.setup.equipment || "TBC"}
+Decision status: ${approval.setup.decision}
+Approval score: ${approval.score}
+Risk label: ${approval.riskLabel}
+
+Original product:
+${base ? `${base.brand} ${base.sku} - ${base.name}` : "TBC"}
+Category: ${base ? base.category : "TBC"}
+Family: ${base ? base.family : "TBC"}
+Lifecycle: ${base ? base.lifecycle : "TBC"}
+
+Proposed substitute:
+${candidate ? `${candidate.brand} ${candidate.sku} - ${candidate.name}` : "TBC"}
+Category: ${candidate ? candidate.category : "TBC"}
+Family: ${candidate ? candidate.family : "TBC"}
+Lifecycle: ${candidate ? candidate.lifecycle : "TBC"}
+
+Recommendation:
+${approval.recommendation}
+
+Minimum substitution checks:
+${checkLines}
+
+Open conditions:
+${conditionLines}
+
+Buyer notes or approval conditions:
+${approval.setup.notes || "None recorded."}
+
+Final verification checklist:
+- Attach latest datasheet, certificate scope, lifecycle evidence, and source confirmation.
+- Confirm exact suffix, voltage, dimensions, material, protocol, firmware/revision, mounting, and connection.
+- Confirm installed-equipment compatibility with engineering, maintenance, OEM, or responsible reviewer.
+- Confirm warranty route, stock, lead time, price, payment terms, delivery terms, and supplier legitimacy.
+- Do not treat alternates as automatic substitutes without buyer and engineering approval.
+
+InduScout is a discovery and RFQ preparation aid. Final substitute approval remains with the buyer, engineering team, OEM, and supplier evidence.`;
+}
+
+function substitutionApprovalSnapshot() {
+  const approval = substitutionApprovalData();
+  return {
+    ...createSessionSnapshot(),
+    substitutionApprovalPack: {
+      generatedAt: new Date().toISOString(),
+      setup: approval.setup,
+      baseProduct: approval.base,
+      candidateProduct: approval.candidate,
+      score: approval.score,
+      riskLabel: approval.riskLabel,
+      statusLabel: approval.statusLabel,
+      openConditions: approval.openConditions,
+      checks: approval.checkRows,
+      generatedText: substitutionApprovalText()
+    }
+  };
+}
+
+async function copySubstitutionApprovalPack() {
+  updateProjectFromFields();
+  const text = substitutionApprovalText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyApprovalPack) {
+      els.copyApprovalPack.textContent = "Approval note copied";
+      setTimeout(() => {
+        els.copyApprovalPack.textContent = "Copy approval note";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy substitution approval pack", text);
+  }
+  renderSubstitutionApprovalPack();
+}
+
+function downloadSubstitutionApprovalHtml() {
+  updateProjectFromFields();
+  const approval = substitutionApprovalData();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const productSlug = safeFilenamePart(approval.base && approval.candidate ? `${approval.base.brand}-${approval.base.sku}-to-${approval.candidate.brand}-${approval.candidate.sku}` : "substitution-approval");
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Substitution-Approval-${productSlug}${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, substitutionApprovalHtml(), "text/html;charset=utf-8");
+  renderSubstitutionApprovalPack();
+}
+
+function exportSubstitutionApprovalJson() {
+  updateProjectFromFields();
+  const approval = substitutionApprovalData();
+  const productSlug = safeFilenamePart(approval.base && approval.candidate ? `${approval.base.brand}-${approval.base.sku}-to-${approval.candidate.brand}-${approval.candidate.sku}` : "substitution-approval");
+  const date = new Date().toISOString().slice(0, 10);
+  downloadFile(`InduScout-Substitution-Approval-${productSlug}-${date}.json`, JSON.stringify(substitutionApprovalSnapshot(), null, 2), "application/json;charset=utf-8");
+  renderSubstitutionApprovalPack();
+}
+
+function substitutionApprovalHtml() {
+  const approval = substitutionApprovalData();
+  const text = substitutionApprovalText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InduScout Substitution Approval</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout substitution approval</div>
+      <h1>${escapeHtml(approval.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this record to support buyer and engineering sign-off before substituting an industrial product.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>Decision</span><strong>${escapeHtml(approval.setup.decision)}</strong></div>
+      <div class="stat"><span>Score</span><strong>${escapeHtml(approval.score)}</strong></div>
+      <div class="stat"><span>Checks</span><strong>${escapeHtml(`${approval.completedChecks}/5`)}</strong></div>
+      <div class="stat"><span>Risk</span><strong>${escapeHtml(approval.riskLabel)}</strong></div>
+    </div>
+    <section>
+      <pre>${escapeHtml(text)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function landedCostInputs() {
+  return [
+    els.costProduct,
+    els.costSupplier,
+    els.costCurrency,
+    els.costUnitPrice,
+    els.costQuantity,
+    els.costFreight,
+    els.costDutyRate,
+    els.costTaxRate,
+    els.costHandling,
+    els.costBankCharges,
+    els.costFxBuffer,
+    els.costDeliveryTerms,
+    els.costCountry,
+    els.costNotes
+  ].filter(Boolean);
+}
+
+function defaultLandedCostScenario() {
+  return {
+    productId: products[0]?.id || "",
+    quoteId: "",
+    supplier: "",
+    currency: "USD",
+    unitPrice: "",
+    quantity: "1",
+    freight: "0",
+    dutyRate: "0",
+    taxRate: "0",
+    handling: "0",
+    bankCharges: "0",
+    fxBuffer: "0",
+    deliveryTerms: "",
+    country: "",
+    notes: ""
+  };
+}
+
+function hydrateLandedCostFields() {
+  if (!els.costForm) {
+    return;
+  }
+
+  const setup = sanitizeLandedCostScenario(state.landedCost || {});
+  populateCostProducts();
+  populateCostQuotes();
+  els.costProduct.value = setup.productId;
+  els.costQuote.value = setup.quoteId;
+  els.costSupplier.value = setup.supplier;
+  els.costCurrency.value = setup.currency;
+  els.costUnitPrice.value = setup.unitPrice;
+  els.costQuantity.value = setup.quantity;
+  els.costFreight.value = setup.freight;
+  els.costDutyRate.value = setup.dutyRate;
+  els.costTaxRate.value = setup.taxRate;
+  els.costHandling.value = setup.handling;
+  els.costBankCharges.value = setup.bankCharges;
+  els.costFxBuffer.value = setup.fxBuffer;
+  els.costDeliveryTerms.value = setup.deliveryTerms;
+  els.costCountry.value = setup.country;
+  els.costNotes.value = setup.notes;
+  state.landedCost = landedCostFromFields();
+}
+
+function landedCostFromFields() {
+  return sanitizeLandedCostScenario({
+    productId: els.costProduct?.value || "",
+    quoteId: els.costQuote?.value || "",
+    supplier: els.costSupplier?.value || "",
+    currency: els.costCurrency?.value || "USD",
+    unitPrice: els.costUnitPrice?.value || "",
+    quantity: els.costQuantity?.value || "",
+    freight: els.costFreight?.value || "",
+    dutyRate: els.costDutyRate?.value || "",
+    taxRate: els.costTaxRate?.value || "",
+    handling: els.costHandling?.value || "",
+    bankCharges: els.costBankCharges?.value || "",
+    fxBuffer: els.costFxBuffer?.value || "",
+    deliveryTerms: els.costDeliveryTerms?.value || "",
+    country: els.costCountry?.value || "",
+    notes: els.costNotes?.value || ""
+  });
+}
+
+function updateLandedCostFromFields() {
+  state.landedCost = landedCostFromFields();
+  saveLandedCostScenario();
+  renderLandedCostDesk();
+}
+
+function saveLandedCostFromFields() {
+  updateLandedCostFromFields();
+  if (els.saveCostScenario) {
+    els.saveCostScenario.textContent = "Scenario saved";
+    setTimeout(() => {
+      els.saveCostScenario.textContent = "Save scenario";
+    }, 1200);
+  }
+}
+
+function resetLandedCostScenario() {
+  state.landedCost = defaultLandedCostScenario();
+  saveLandedCostScenario();
+  hydrateLandedCostFields();
+  renderLandedCostDesk();
+}
+
+function applyCostQuoteSelection() {
+  if (!els.costQuote) {
+    return;
+  }
+
+  const quote = state.quotes.find((item) => item.id === els.costQuote.value);
+  if (quote) {
+    els.costProduct.value = quote.productId || els.costProduct.value;
+    els.costSupplier.value = quote.supplier || els.costSupplier.value;
+    els.costCurrency.value = quote.currency || els.costCurrency.value;
+    els.costUnitPrice.value = quote.unitPrice || els.costUnitPrice.value;
+    els.costQuantity.value = quote.quantity || els.costQuantity.value || "1";
+    els.costDeliveryTerms.value = quote.deliveryTerms || els.costDeliveryTerms.value;
+    els.costCountry.value = quote.deliveryCountry || projectValue("country", "") || els.costCountry.value;
+    els.costNotes.value = els.costNotes.value || quote.notes || "";
+  }
+
+  updateLandedCostFromFields();
+}
+
+function renderLandedCostDesk() {
+  if (!els.costStats || !els.costSummary || !els.costPreview) {
+    return;
+  }
+
+  const cost = landedCostData();
+  els.costSummary.textContent = cost.summary;
+  els.costStats.innerHTML = [
+    costStatTemplate("Landed total", formatMoney(cost.landedTotal, cost.currency), cost.hasCoreCost ? "Estimated delivered cost" : "Add unit price and quantity"),
+    costStatTemplate("Landed unit", cost.hasCoreCost ? formatMoney(cost.landedUnit, cost.currency) : "TBC", `${cost.quantity || "0"} unit basis`),
+    costStatTemplate("Add-on cost", formatMoney(cost.addOnTotal, cost.currency), `${formatCostPercent(cost.addOnPercent)} above merchandise`),
+    costStatTemplate("Review status", cost.statusLabel, cost.missing.length ? `${cost.missing.length} open inputs` : "Buyer review ready")
+  ].join("");
+
+  els.costPreview.innerHTML = `
+    <article class="cost-card ${escapeHtml(cost.statusClass)}">
+      <span>Cost estimate</span>
+      <h3>${escapeHtml(cost.title)}</h3>
+      <p>${escapeHtml(cost.recommendation)}</p>
+      <dl class="cost-facts">
+        <div><dt>Supplier</dt><dd>${escapeHtml(cost.supplier || "TBC")}</dd></div>
+        <div><dt>Source</dt><dd>${escapeHtml(cost.quote ? "Saved quote" : "Manual estimate")}</dd></div>
+        <div><dt>Delivery terms</dt><dd>${escapeHtml(cost.setup.deliveryTerms || "TBC")}</dd></div>
+        <div><dt>Delivery country</dt><dd>${escapeHtml(cost.setup.country || "TBC")}</dd></div>
+      </dl>
+    </article>
+    <article class="cost-breakdown">
+      <span>Breakdown</span>
+      <div class="cost-lines">
+        ${costLineTemplate("Merchandise", cost.merchandise, cost.currency)}
+        ${costLineTemplate("Freight / shipping", cost.freight, cost.currency)}
+        ${costLineTemplate(`Duty ${formatCostPercent(cost.dutyRate)}`, cost.duty, cost.currency)}
+        ${costLineTemplate(`Tax / VAT ${formatCostPercent(cost.taxRate)}`, cost.tax, cost.currency)}
+        ${costLineTemplate("Handling / clearance", cost.handling, cost.currency)}
+        ${costLineTemplate("Bank / payment charges", cost.bankCharges, cost.currency)}
+        ${costLineTemplate(`FX / contingency ${formatCostPercent(cost.fxBuffer)}`, cost.buffer, cost.currency)}
+      </div>
+      <strong>Total: ${escapeHtml(formatMoney(cost.landedTotal, cost.currency))}</strong>
+    </article>
+    <article class="cost-gaps">
+      <span>Buyer checks</span>
+      <ul>${cost.missing.length ? cost.missing.map(costGapTemplate).join("") : "<li>Core cost inputs are present. Confirm supplier quote, customs/tax basis, delivery terms, and finance charges before purchase.</li>"}</ul>
+      <p>${escapeHtml(cost.setup.notes || "No cost notes entered yet.")}</p>
+    </article>
+  `;
+}
+
+function landedCostData() {
+  const setup = sanitizeLandedCostScenario(state.landedCost || {});
+  const quote = setup.quoteId ? state.quotes.find((item) => item.id === setup.quoteId) || null : null;
+  const product = products.find((item) => item.id === setup.productId) || products.find((item) => item.id === quote?.productId) || products[0] || null;
+  const currency = setup.currency || quote?.currency || "USD";
+  const unitPrice = parseCostNumber(setup.unitPrice || quote?.unitPrice || "");
+  const quantity = parseCostNumber(setup.quantity || quote?.quantity || "1");
+  const freight = parseCostNumber(setup.freight);
+  const dutyRate = parseCostNumber(setup.dutyRate);
+  const taxRate = parseCostNumber(setup.taxRate);
+  const handling = parseCostNumber(setup.handling);
+  const bankCharges = parseCostNumber(setup.bankCharges);
+  const fxBuffer = parseCostNumber(setup.fxBuffer);
+  const merchandise = unitPrice * quantity;
+  const duty = Math.max(0, (merchandise + freight) * (dutyRate / 100));
+  const taxableBase = merchandise + freight + duty + handling;
+  const tax = Math.max(0, taxableBase * (taxRate / 100));
+  const bufferBase = merchandise + freight + duty + tax + handling + bankCharges;
+  const buffer = Math.max(0, bufferBase * (fxBuffer / 100));
+  const landedTotal = merchandise + freight + duty + tax + handling + bankCharges + buffer;
+  const landedUnit = quantity > 0 ? landedTotal / quantity : 0;
+  const addOnTotal = freight + duty + tax + handling + bankCharges + buffer;
+  const addOnPercent = merchandise > 0 ? (addOnTotal / merchandise) * 100 : 0;
+  const supplier = setup.supplier || quote?.supplier || product?.sources?.[0]?.name || "";
+  const missing = landedCostMissingInputs({ setup, quote, unitPrice, quantity, supplier, freight, dutyRate, taxRate });
+  const hasCoreCost = unitPrice > 0 && quantity > 0;
+  const statusClass = !hasCoreCost ? "blocked" : missing.length > 4 ? "review" : addOnPercent > 35 ? "watch" : "ready";
+  const statusLabel = statusClass === "blocked" ? "Cost blocked" : statusClass === "review" ? "Review inputs" : statusClass === "watch" ? "High landed uplift" : "Estimate ready";
+  const productName = product ? `${product.brand} ${product.sku}` : "Selected product";
+  const title = `${productName} landed cost`;
+  const summary = hasCoreCost
+    ? `${formatMoney(landedTotal, currency)} landed total | ${formatMoney(landedUnit, currency)} per unit`
+    : "Add price and quantity to calculate landed cost";
+  const recommendation = landedCostRecommendation({ statusClass, statusLabel, addOnPercent, missing, setup, quote });
+
+  return {
+    setup,
+    quote,
+    product,
+    supplier,
+    currency,
+    unitPrice,
+    quantity,
+    freight,
+    dutyRate,
+    taxRate,
+    handling,
+    bankCharges,
+    fxBuffer,
+    merchandise,
+    duty,
+    tax,
+    buffer,
+    landedTotal,
+    landedUnit,
+    addOnTotal,
+    addOnPercent,
+    missing,
+    hasCoreCost,
+    statusClass,
+    statusLabel,
+    title,
+    summary,
+    recommendation
+  };
+}
+
+function landedCostMissingInputs({ setup, quote, unitPrice, quantity, supplier, freight, dutyRate, taxRate }) {
+  const missing = [];
+  if (!unitPrice) {
+    missing.push("Add quoted unit price.");
+  }
+  if (!quantity) {
+    missing.push("Add buyer quantity.");
+  }
+  if (!supplier) {
+    missing.push("Add supplier name or link a saved quote.");
+  }
+  if (!setup.deliveryTerms) {
+    missing.push("Confirm delivery terms, such as EXW, FCA, DAP, or delivered.");
+  }
+  if (!setup.country) {
+    missing.push("Add delivery country for tax, duty, and logistics review.");
+  }
+  if (!quote) {
+    missing.push("Link a saved quote when possible so the cost estimate has evidence.");
+  }
+  if (!freight) {
+    missing.push("Confirm freight, courier, or shipping charge.");
+  }
+  if (!dutyRate && !taxRate) {
+    missing.push("Confirm duty and tax/VAT treatment for the delivery country.");
+  }
+  return missing.slice(0, 8);
+}
+
+function landedCostRecommendation({ statusClass, statusLabel, addOnPercent, missing, setup, quote }) {
+  if (statusClass === "blocked") {
+    return "Cost estimate is blocked until unit price and quantity are entered.";
+  }
+  if (addOnPercent > 35) {
+    return `Delivered cost uplift is ${formatCostPercent(addOnPercent)}. Review freight, customs, VAT, and buffer before comparing suppliers.`;
+  }
+  if (missing.length) {
+    return `${statusLabel}. Use this as a working estimate and close the open buyer checks before order approval.`;
+  }
+  if (quote) {
+    return "Ready as a buyer-side landed cost estimate from a saved quote, subject to final supplier, freight, tax, and customs validation.";
+  }
+  return "Ready as a manual landed cost estimate. Link a quote later for stronger evidence.";
+}
+
+function costStatTemplate(label, value, detail) {
+  return `
+    <article class="cost-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function costLineTemplate(label, value, currency) {
+  return `
+    <div>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(formatMoney(value, currency))}</strong>
+    </div>
+  `;
+}
+
+function costGapTemplate(item) {
+  return `<li>${escapeHtml(item)}</li>`;
+}
+
+function landedCostText() {
+  const cost = landedCostData();
+  const product = cost.product;
+  const sourceLine = cost.quote
+    ? `Saved quote: ${cost.quote.supplier} | ${quoteTotalLabel(cost.quote)} | lead ${cost.quote.leadTime || "TBC"}`
+    : "Saved quote: Not linked";
+  const missingLines = cost.missing.length
+    ? cost.missing.map((item) => `- ${item}`).join("\n")
+    : "- Core cost inputs are present. Confirm final supplier, freight, tax, duty, and payment terms before purchase.";
+
+  return `InduScout landed cost estimate
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Delivery country: ${cost.setup.country || projectValue("country", "TBC")}
+Target date: ${projectValue("targetDate", "TBC")}
+
+Product: ${product ? `${product.brand} ${product.sku} - ${product.name}` : "TBC"}
+Category: ${product ? product.category : "TBC"}
+Supplier: ${cost.supplier || "TBC"}
+${sourceLine}
+Delivery terms: ${cost.setup.deliveryTerms || "TBC"}
+
+Cost inputs:
+- Unit price: ${cost.currency} ${cost.setup.unitPrice || "TBC"}
+- Quantity: ${cost.setup.quantity || "TBC"}
+- Freight / shipping: ${cost.currency} ${cost.setup.freight || "0"}
+- Duty rate: ${formatCostPercent(cost.dutyRate)}
+- Tax / VAT rate: ${formatCostPercent(cost.taxRate)}
+- Handling / clearance: ${cost.currency} ${cost.setup.handling || "0"}
+- Bank / payment charges: ${cost.currency} ${cost.setup.bankCharges || "0"}
+- FX / contingency buffer: ${formatCostPercent(cost.fxBuffer)}
+
+Landed cost estimate:
+- Merchandise: ${formatMoney(cost.merchandise, cost.currency)}
+- Duty: ${formatMoney(cost.duty, cost.currency)}
+- Tax / VAT: ${formatMoney(cost.tax, cost.currency)}
+- Buyer-side add-ons: ${formatMoney(cost.addOnTotal, cost.currency)} (${formatCostPercent(cost.addOnPercent)} uplift)
+- Landed total: ${formatMoney(cost.landedTotal, cost.currency)}
+- Landed unit: ${cost.hasCoreCost ? formatMoney(cost.landedUnit, cost.currency) : "TBC"}
+
+Status:
+${cost.statusLabel}
+${cost.recommendation}
+
+Open buyer checks:
+${missingLines}
+
+Cost notes:
+${cost.setup.notes || "None recorded."}
+
+Verification checklist before order:
+- Confirm supplier quote, currency, stock, lead time, validity, and seller legitimacy.
+- Confirm Incoterms or delivery terms and which party pays freight, insurance, duty, VAT, and clearance.
+- Confirm country-specific customs tariff, VAT/GST, payment charges, and exchange-rate basis.
+- Confirm warranty path, certificate availability, datasheet revision, and exact part configuration.
+- Treat this as an estimate until finance, logistics, and supplier confirmations are closed.
+
+InduScout is a discovery and RFQ preparation aid. Final landed cost validation remains with the buyer, finance/logistics team, customs broker, and supplier.`;
+}
+
+function landedCostSnapshot() {
+  const cost = landedCostData();
+  return {
+    ...createSessionSnapshot(),
+    landedCostEstimate: {
+      generatedAt: new Date().toISOString(),
+      setup: cost.setup,
+      product: cost.product,
+      quote: cost.quote,
+      supplier: cost.supplier,
+      currency: cost.currency,
+      merchandise: cost.merchandise,
+      addOnTotal: cost.addOnTotal,
+      landedTotal: cost.landedTotal,
+      landedUnit: cost.landedUnit,
+      statusLabel: cost.statusLabel,
+      missingInputs: cost.missing,
+      generatedText: landedCostText()
+    }
+  };
+}
+
+async function copyLandedCostBrief() {
+  updateProjectFromFields();
+  const text = landedCostText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyCostBrief) {
+      els.copyCostBrief.textContent = "Cost brief copied";
+      setTimeout(() => {
+        els.copyCostBrief.textContent = "Copy cost brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy landed cost brief", text);
+  }
+  renderLandedCostDesk();
+}
+
+function downloadLandedCostHtml() {
+  updateProjectFromFields();
+  const cost = landedCostData();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const productSlug = safeFilenamePart(cost.product ? `${cost.product.brand}-${cost.product.sku}` : "landed-cost");
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Landed-Cost-${productSlug}${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, landedCostHtml(), "text/html;charset=utf-8");
+  renderLandedCostDesk();
+}
+
+function exportLandedCostJson() {
+  updateProjectFromFields();
+  const cost = landedCostData();
+  const productSlug = safeFilenamePart(cost.product ? `${cost.product.brand}-${cost.product.sku}` : "landed-cost");
+  const date = new Date().toISOString().slice(0, 10);
+  downloadFile(`InduScout-Landed-Cost-${productSlug}-${date}.json`, JSON.stringify(landedCostSnapshot(), null, 2), "application/json;charset=utf-8");
+  renderLandedCostDesk();
+}
+
+function landedCostHtml() {
+  const cost = landedCostData();
+  const text = landedCostText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InduScout Landed Cost Estimate</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout landed cost</div>
+      <h1>${escapeHtml(cost.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this as a buyer-side delivered-cost estimate before final order approval.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>Total</span><strong>${escapeHtml(formatMoney(cost.landedTotal, cost.currency))}</strong></div>
+      <div class="stat"><span>Unit</span><strong>${escapeHtml(cost.hasCoreCost ? formatMoney(cost.landedUnit, cost.currency) : "TBC")}</strong></div>
+      <div class="stat"><span>Uplift</span><strong>${escapeHtml(formatCostPercent(cost.addOnPercent))}</strong></div>
+      <div class="stat"><span>Status</span><strong>${escapeHtml(cost.statusLabel)}</strong></div>
+    </div>
+    <section>
+      <pre>${escapeHtml(text)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function parseCostNumber(value) {
+  const match = String(value || "").replace(/,/g, "").match(/\d+(\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+}
+
+function formatMoney(value, currency = "USD") {
+  const amount = Number.isFinite(value) ? value : 0;
+  return `${currency || "USD"} ${formatAmount(amount)}`;
+}
+
+function formatCostPercent(value) {
+  const number = Number.isFinite(value) ? value : 0;
+  return `${formatAmount(number)}%`;
+}
+
+function negotiationInputs() {
+  return [
+    els.negotiationProduct,
+    els.negotiationSupplier,
+    els.negotiationCurrency,
+    els.negotiationCurrentPrice,
+    els.negotiationQuantity,
+    els.negotiationTargetPrice,
+    els.negotiationDiscount,
+    els.negotiationLeadTime,
+    els.negotiationValidity,
+    els.negotiationLeverage,
+    els.negotiationReason,
+    els.negotiationNotes
+  ].filter(Boolean);
+}
+
+function defaultNegotiationPlan() {
+  return {
+    productId: products[0]?.id || "",
+    quoteId: "",
+    supplier: "",
+    currency: "USD",
+    currentPrice: "",
+    quantity: "1",
+    targetPrice: "",
+    discount: "10",
+    targetLeadTime: "",
+    validity: "Hold price for 30 days",
+    leverage: "Standard commercial review",
+    reason: "Align with buyer budget and comparable market options",
+    notes: ""
+  };
+}
+
+function hydrateNegotiationFields() {
+  if (!els.negotiationForm) {
+    return;
+  }
+
+  const plan = sanitizeNegotiationPlan(state.negotiationPlan || {});
+  populateNegotiationProducts();
+  populateNegotiationQuotes();
+  els.negotiationProduct.value = plan.productId;
+  els.negotiationQuote.value = plan.quoteId;
+  els.negotiationSupplier.value = plan.supplier;
+  els.negotiationCurrency.value = plan.currency;
+  els.negotiationCurrentPrice.value = plan.currentPrice;
+  els.negotiationQuantity.value = plan.quantity;
+  els.negotiationTargetPrice.value = plan.targetPrice;
+  els.negotiationDiscount.value = plan.discount;
+  els.negotiationLeadTime.value = plan.targetLeadTime;
+  els.negotiationValidity.value = plan.validity;
+  els.negotiationLeverage.value = plan.leverage;
+  els.negotiationReason.value = plan.reason;
+  els.negotiationNotes.value = plan.notes;
+  state.negotiationPlan = negotiationFromFields();
+}
+
+function negotiationFromFields() {
+  return sanitizeNegotiationPlan({
+    productId: els.negotiationProduct?.value || "",
+    quoteId: els.negotiationQuote?.value || "",
+    supplier: els.negotiationSupplier?.value || "",
+    currency: els.negotiationCurrency?.value || "USD",
+    currentPrice: els.negotiationCurrentPrice?.value || "",
+    quantity: els.negotiationQuantity?.value || "",
+    targetPrice: els.negotiationTargetPrice?.value || "",
+    discount: els.negotiationDiscount?.value || "",
+    targetLeadTime: els.negotiationLeadTime?.value || "",
+    validity: els.negotiationValidity?.value || "",
+    leverage: els.negotiationLeverage?.value || "Standard commercial review",
+    reason: els.negotiationReason?.value || "",
+    notes: els.negotiationNotes?.value || ""
+  });
+}
+
+function updateNegotiationFromFields() {
+  state.negotiationPlan = negotiationFromFields();
+  saveNegotiationPlan();
+  renderNegotiationDesk();
+}
+
+function saveNegotiationFromFields() {
+  updateNegotiationFromFields();
+  if (els.saveNegotiationPlan) {
+    els.saveNegotiationPlan.textContent = "Plan saved";
+    setTimeout(() => {
+      els.saveNegotiationPlan.textContent = "Save plan";
+    }, 1200);
+  }
+}
+
+function resetNegotiationPlan() {
+  state.negotiationPlan = defaultNegotiationPlan();
+  saveNegotiationPlan();
+  hydrateNegotiationFields();
+  renderNegotiationDesk();
+}
+
+function applyNegotiationQuoteSelection() {
+  if (!els.negotiationQuote) {
+    return;
+  }
+
+  const quote = state.quotes.find((item) => item.id === els.negotiationQuote.value);
+  if (quote) {
+    els.negotiationProduct.value = quote.productId || els.negotiationProduct.value;
+    els.negotiationSupplier.value = quote.supplier || els.negotiationSupplier.value;
+    els.negotiationCurrency.value = quote.currency || els.negotiationCurrency.value;
+    els.negotiationCurrentPrice.value = quote.unitPrice || els.negotiationCurrentPrice.value;
+    els.negotiationQuantity.value = quote.quantity || els.negotiationQuantity.value || "1";
+    els.negotiationLeadTime.value = quote.leadTime || els.negotiationLeadTime.value;
+    els.negotiationValidity.value = quote.validUntil ? `Extend or confirm validity beyond ${quote.validUntil}` : els.negotiationValidity.value;
+    els.negotiationNotes.value = els.negotiationNotes.value || quote.notes || "";
+  }
+
+  updateNegotiationFromFields();
+}
+
+function renderNegotiationDesk() {
+  if (!els.negotiationStats || !els.negotiationSummary || !els.negotiationPreview) {
+    return;
+  }
+
+  const plan = negotiationData();
+  els.negotiationSummary.textContent = plan.summary;
+  els.negotiationStats.innerHTML = [
+    negotiationStatTemplate("Current total", plan.hasCurrent ? formatMoney(plan.currentTotal, plan.currency) : "TBC", "Quote basis"),
+    negotiationStatTemplate("Target total", plan.hasTarget ? formatMoney(plan.targetTotal, plan.currency) : "TBC", "Buyer ask"),
+    negotiationStatTemplate("Savings", plan.hasSavings ? formatMoney(plan.savings, plan.currency) : "TBC", `${formatCostPercent(plan.savingsPercent)} potential reduction`),
+    negotiationStatTemplate("Status", plan.statusLabel, plan.openChecks.length ? `${plan.openChecks.length} open checks` : "Ready to copy")
+  ].join("");
+
+  els.negotiationPreview.innerHTML = `
+    <article class="negotiation-card ${escapeHtml(plan.statusClass)}">
+      <span>Negotiation plan</span>
+      <h3>${escapeHtml(plan.title)}</h3>
+      <p>${escapeHtml(plan.recommendation)}</p>
+      <dl class="negotiation-facts">
+        <div><dt>Supplier</dt><dd>${escapeHtml(plan.supplier || "TBC")}</dd></div>
+        <div><dt>Leverage</dt><dd>${escapeHtml(plan.setup.leverage || "TBC")}</dd></div>
+        <div><dt>Target lead time</dt><dd>${escapeHtml(plan.setup.targetLeadTime || "TBC")}</dd></div>
+        <div><dt>Validity ask</dt><dd>${escapeHtml(plan.setup.validity || "TBC")}</dd></div>
+      </dl>
+    </article>
+    <article class="negotiation-email">
+      <span>Commercial ask</span>
+      <h3>${escapeHtml(plan.askHeadline)}</h3>
+      <div class="negotiation-lines">
+        ${negotiationLineTemplate("Current unit", plan.hasCurrent ? formatMoney(plan.currentPrice, plan.currency) : "TBC")}
+        ${negotiationLineTemplate("Target unit", plan.hasTarget ? formatMoney(plan.targetPrice, plan.currency) : "TBC")}
+        ${negotiationLineTemplate("Requested discount", formatCostPercent(plan.requestedDiscount))}
+        ${negotiationLineTemplate("Quantity basis", plan.setup.quantity || "TBC")}
+      </div>
+    </article>
+    <article class="negotiation-checks">
+      <span>Buyer checks</span>
+      <ul>${plan.openChecks.length ? plan.openChecks.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "<li>Core negotiation inputs are ready. Keep quote evidence and approval limits attached to the buyer file.</li>"}</ul>
+      <p>${escapeHtml(plan.setup.notes || "No negotiation notes entered yet.")}</p>
+    </article>
+  `;
+}
+
+function negotiationData() {
+  const setup = sanitizeNegotiationPlan(state.negotiationPlan || {});
+  const quote = setup.quoteId ? state.quotes.find((item) => item.id === setup.quoteId) || null : null;
+  const product = products.find((item) => item.id === setup.productId) || products.find((item) => item.id === quote?.productId) || products[0] || null;
+  const currency = setup.currency || quote?.currency || "USD";
+  const currentPrice = parseCostNumber(setup.currentPrice || quote?.unitPrice || "");
+  const quantity = parseCostNumber(setup.quantity || quote?.quantity || "1");
+  const requestedDiscount = parseCostNumber(setup.discount);
+  const enteredTarget = parseCostNumber(setup.targetPrice);
+  const computedTarget = currentPrice > 0 && requestedDiscount > 0 ? currentPrice * (1 - requestedDiscount / 100) : 0;
+  const targetPrice = enteredTarget || computedTarget;
+  const currentTotal = currentPrice * quantity;
+  const targetTotal = targetPrice * quantity;
+  const savings = Math.max(0, currentTotal - targetTotal);
+  const savingsPercent = currentTotal > 0 ? (savings / currentTotal) * 100 : 0;
+  const supplier = setup.supplier || quote?.supplier || product?.sources?.[0]?.name || "";
+  const hasCurrent = currentPrice > 0 && quantity > 0;
+  const hasTarget = targetPrice > 0 && quantity > 0;
+  const hasSavings = hasCurrent && hasTarget && savings > 0;
+  const openChecks = negotiationOpenChecks({ setup, quote, currentPrice, targetPrice, quantity, supplier });
+  const statusClass = !hasCurrent || !hasTarget ? "blocked" : savingsPercent > 35 ? "review" : openChecks.length > 4 ? "review" : "ready";
+  const statusLabel = statusClass === "blocked" ? "Needs price target" : statusClass === "review" ? "Review ask" : "Ready to negotiate";
+  const productName = product ? `${product.brand} ${product.sku}` : "Selected product";
+  const title = `${productName} commercial negotiation`;
+  const askHeadline = hasTarget
+    ? `Ask ${supplier || "supplier"} for ${formatMoney(targetPrice, currency)} unit pricing`
+    : "Add a target price or discount";
+  const summary = hasSavings
+    ? `${formatMoney(savings, currency)} potential savings | ${formatCostPercent(savingsPercent)} reduction`
+    : "Add quote price, quantity, and target to estimate savings";
+  const recommendation = negotiationRecommendation({ statusClass, savingsPercent, openChecks, quote });
+
+  return {
+    setup,
+    quote,
+    product,
+    supplier,
+    currency,
+    currentPrice,
+    quantity,
+    requestedDiscount: enteredTarget && currentPrice > 0 ? Math.max(0, ((currentPrice - enteredTarget) / currentPrice) * 100) : requestedDiscount,
+    targetPrice,
+    currentTotal,
+    targetTotal,
+    savings,
+    savingsPercent,
+    hasCurrent,
+    hasTarget,
+    hasSavings,
+    openChecks,
+    statusClass,
+    statusLabel,
+    title,
+    askHeadline,
+    summary,
+    recommendation
+  };
+}
+
+function negotiationOpenChecks({ setup, quote, currentPrice, targetPrice, quantity, supplier }) {
+  const checks = [];
+  if (!currentPrice) {
+    checks.push("Add current quoted unit price.");
+  }
+  if (!quantity) {
+    checks.push("Add buyer quantity.");
+  }
+  if (!targetPrice) {
+    checks.push("Add target unit price or requested discount.");
+  }
+  if (!supplier) {
+    checks.push("Add supplier name or link a saved quote.");
+  }
+  if (!quote) {
+    checks.push("Link a saved quote when possible for stronger evidence.");
+  }
+  if (!setup.reason) {
+    checks.push("Add a concise negotiation reason.");
+  }
+  if (!setup.targetLeadTime) {
+    checks.push("Add target lead time or confirm current lead time is acceptable.");
+  }
+  if (!setup.validity) {
+    checks.push("Ask supplier to confirm quote validity.");
+  }
+  return checks.slice(0, 8);
+}
+
+function negotiationRecommendation({ statusClass, savingsPercent, openChecks, quote }) {
+  if (statusClass === "blocked") {
+    return "Negotiation is blocked until current price, quantity, and target price or discount are entered.";
+  }
+  if (savingsPercent > 35) {
+    return "This is an aggressive commercial ask. Use clear justification, competing evidence, or volume leverage before sending.";
+  }
+  if (openChecks.length) {
+    return "Use this as a draft counter-offer and close open buyer checks before sending to the supplier.";
+  }
+  if (quote) {
+    return "Ready to send as a supplier counter-offer based on the saved quote and buyer target.";
+  }
+  return "Ready as a manual negotiation draft. Linking a saved quote will strengthen the audit trail.";
+}
+
+function negotiationStatTemplate(label, value, detail) {
+  return `
+    <article class="negotiation-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function negotiationLineTemplate(label, value) {
+  return `
+    <div>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+    </div>
+  `;
+}
+
+function negotiationSupplierEmailText() {
+  const plan = negotiationData();
+  const product = plan.product;
+  return `Subject: Commercial review request - ${product ? `${product.brand} ${product.sku}` : "quoted item"}
+
+Dear ${plan.supplier || "Supplier"},
+
+Thank you for the quotation.
+
+We are reviewing the commercial position for the following item:
+
+Product: ${product ? `${product.brand} ${product.sku} - ${product.name}` : "TBC"}
+Project: ${projectValue("name", "TBC")}
+Delivery country: ${projectValue("country", "TBC")}
+Quantity basis: ${plan.setup.quantity || "TBC"}
+
+Current quoted unit price: ${plan.hasCurrent ? formatMoney(plan.currentPrice, plan.currency) : "TBC"}
+Target unit price requested: ${plan.hasTarget ? formatMoney(plan.targetPrice, plan.currency) : "TBC"}
+Estimated target total: ${plan.hasTarget ? formatMoney(plan.targetTotal, plan.currency) : "TBC"}
+Requested improvement: ${formatCostPercent(plan.requestedDiscount)}
+Target lead time: ${plan.setup.targetLeadTime || "Please confirm best available lead time"}
+Quote validity request: ${plan.setup.validity || "Please confirm quote validity"}
+
+Commercial reason:
+${plan.setup.reason || "Buyer commercial review before approval."}
+
+Buyer context:
+${plan.setup.leverage || "Standard commercial review"}
+
+Please confirm whether you can support the target pricing and lead time, or provide your best revised offer with:
+- Final unit price and currency.
+- Stock position and lead time.
+- Quote validity.
+- Delivery terms and freight scope.
+- Warranty path and certificate/datasheet availability.
+- Any MOQ, payment, or country-of-origin conditions.
+
+Buyer notes:
+${plan.setup.notes || "No additional notes."}
+
+Regards,
+${projectValue("buyer", "Buyer")}`;
+}
+
+function negotiationSavingsNoteText() {
+  const plan = negotiationData();
+  const product = plan.product;
+  const openChecks = plan.openChecks.length
+    ? plan.openChecks.map((item) => `- ${item}`).join("\n")
+    : "- Core negotiation inputs are present.";
+
+  return `InduScout negotiation and savings note
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+
+Product: ${product ? `${product.brand} ${product.sku} - ${product.name}` : "TBC"}
+Supplier: ${plan.supplier || "TBC"}
+Quote source: ${plan.quote ? "Saved quote linked" : "Manual estimate"}
+
+Commercial baseline:
+- Current unit price: ${plan.hasCurrent ? formatMoney(plan.currentPrice, plan.currency) : "TBC"}
+- Quantity: ${plan.setup.quantity || "TBC"}
+- Current total: ${plan.hasCurrent ? formatMoney(plan.currentTotal, plan.currency) : "TBC"}
+
+Negotiation target:
+- Target unit price: ${plan.hasTarget ? formatMoney(plan.targetPrice, plan.currency) : "TBC"}
+- Target total: ${plan.hasTarget ? formatMoney(plan.targetTotal, plan.currency) : "TBC"}
+- Potential savings: ${plan.hasSavings ? formatMoney(plan.savings, plan.currency) : "TBC"}
+- Potential reduction: ${formatCostPercent(plan.savingsPercent)}
+- Target lead time: ${plan.setup.targetLeadTime || "TBC"}
+- Validity request: ${plan.setup.validity || "TBC"}
+
+Buyer leverage:
+${plan.setup.leverage || "TBC"}
+
+Negotiation reason:
+${plan.setup.reason || "TBC"}
+
+Open checks:
+${openChecks}
+
+Buyer notes:
+${plan.setup.notes || "None recorded."}
+
+InduScout is a discovery and RFQ preparation aid. Final commercial negotiation, supplier acceptance, and savings recognition remain with the buyer and supplier.`;
+}
+
+function negotiationSnapshot() {
+  const plan = negotiationData();
+  return {
+    ...createSessionSnapshot(),
+    negotiationPack: {
+      generatedAt: new Date().toISOString(),
+      setup: plan.setup,
+      product: plan.product,
+      quote: plan.quote,
+      supplier: plan.supplier,
+      currency: plan.currency,
+      currentTotal: plan.currentTotal,
+      targetTotal: plan.targetTotal,
+      savings: plan.savings,
+      savingsPercent: plan.savingsPercent,
+      statusLabel: plan.statusLabel,
+      openChecks: plan.openChecks,
+      supplierEmail: negotiationSupplierEmailText(),
+      savingsNote: negotiationSavingsNoteText()
+    }
+  };
+}
+
+async function copyNegotiationEmail() {
+  updateProjectFromFields();
+  const text = negotiationSupplierEmailText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyNegotiationEmail) {
+      els.copyNegotiationEmail.textContent = "Email copied";
+      setTimeout(() => {
+        els.copyNegotiationEmail.textContent = "Copy supplier email";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy supplier negotiation email", text);
+  }
+  renderNegotiationDesk();
+}
+
+async function copyNegotiationSavingsNote() {
+  updateProjectFromFields();
+  const text = negotiationSavingsNoteText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copySavingsNote) {
+      els.copySavingsNote.textContent = "Savings note copied";
+      setTimeout(() => {
+        els.copySavingsNote.textContent = "Copy savings note";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy negotiation savings note", text);
+  }
+  renderNegotiationDesk();
+}
+
+function downloadNegotiationHtml() {
+  updateProjectFromFields();
+  const plan = negotiationData();
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  const productSlug = safeFilenamePart(plan.product ? `${plan.product.brand}-${plan.product.sku}` : "negotiation");
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `InduScout-Negotiation-${productSlug}${projectSlug ? `-${projectSlug}` : ""}-${date}.html`;
+  downloadFile(filename, negotiationHtml(), "text/html;charset=utf-8");
+  renderNegotiationDesk();
+}
+
+function exportNegotiationJson() {
+  updateProjectFromFields();
+  const plan = negotiationData();
+  const productSlug = safeFilenamePart(plan.product ? `${plan.product.brand}-${plan.product.sku}` : "negotiation");
+  const date = new Date().toISOString().slice(0, 10);
+  downloadFile(`InduScout-Negotiation-${productSlug}-${date}.json`, JSON.stringify(negotiationSnapshot(), null, 2), "application/json;charset=utf-8");
+  renderNegotiationDesk();
+}
+
+function negotiationHtml() {
+  const plan = negotiationData();
+  const text = negotiationSavingsNoteText();
+  const email = negotiationSupplierEmailText();
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InduScout Negotiation Pack</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #eef6f8; }
+    main { max-width: 980px; margin: 0 auto; padding: 32px; }
+    header, section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; padding: 20px; }
+    h1 { margin: 6px 0 10px; font-size: 32px; line-height: 1.05; }
+    p, pre { font-size: 13px; line-height: 1.55; }
+    pre { white-space: pre-wrap; font-family: Arial, Helvetica, sans-serif; margin: 0; }
+    .eyebrow { color: #00766f; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .stat { border: 1px solid #dbe7ef; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .stat strong { display: block; margin-top: 6px; font-size: 22px; }
+    button { background: #0f172a; color: #ffffff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; }
+    @media print { body { background: #ffffff; } main { padding: 0; } button { display: none; } header, section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">InduScout negotiation pack</div>
+      <h1>${escapeHtml(plan.title)}</h1>
+      <p>Prepared on ${escapeHtml(formatCopyDate())}. Use this pack to support supplier counter-offer review and buyer savings discussion.</p>
+      <button onclick="window.print()">Save as PDF</button>
+    </header>
+    <div class="stats">
+      <div class="stat"><span>Current</span><strong>${escapeHtml(plan.hasCurrent ? formatMoney(plan.currentTotal, plan.currency) : "TBC")}</strong></div>
+      <div class="stat"><span>Target</span><strong>${escapeHtml(plan.hasTarget ? formatMoney(plan.targetTotal, plan.currency) : "TBC")}</strong></div>
+      <div class="stat"><span>Savings</span><strong>${escapeHtml(plan.hasSavings ? formatMoney(plan.savings, plan.currency) : "TBC")}</strong></div>
+      <div class="stat"><span>Status</span><strong>${escapeHtml(plan.statusLabel)}</strong></div>
+    </div>
+    <section>
+      <h2>Buyer savings note</h2>
+      <pre>${escapeHtml(text)}</pre>
+    </section>
+    <section>
+      <h2>Supplier email</h2>
+      <pre>${escapeHtml(email)}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
+function selectedSavingsProduct() {
+  return products.find((product) => product.id === els.savingsProduct?.value) || products[0];
+}
+
+function savingsFieldValue(element, fallback = "") {
+  const value = String(element?.value || "").trim();
+  return value || fallback;
+}
+
+function defaultSavingsRecord() {
+  const product = products[0];
+  return {
+    id: "",
+    productId: product?.id || "",
+    quoteId: "",
+    supplier: "",
+    currency: "USD",
+    baselineUnit: "",
+    finalUnit: "",
+    quantity: "1",
+    status: "Target set",
+    owner: "",
+    evidenceUrl: "",
+    decisionDate: "",
+    notes: ""
+  };
+}
+
+function hydrateSavingsForm(record = {}) {
+  if (!els.savingsForm) {
+    return;
+  }
+
+  const data = { ...defaultSavingsRecord(), ...record };
+  const productId = data.productId && products.some((product) => product.id === data.productId) ? data.productId : products[0]?.id || "";
+  populateSavingsProducts();
+  populateSavingsQuotes();
+  els.savingsId.value = data.id || "";
+  els.savingsProduct.value = productId;
+  els.savingsQuote.value = data.quoteId && state.quotes.some((quote) => quote.id === data.quoteId) ? data.quoteId : "";
+  els.savingsSupplier.value = data.supplier || "";
+  els.savingsCurrency.value = data.currency || "USD";
+  els.savingsBaselineUnit.value = data.baselineUnit || "";
+  els.savingsFinalUnit.value = data.finalUnit || "";
+  els.savingsQuantity.value = data.quantity || "1";
+  els.savingsStatus.value = data.status || "Target set";
+  els.savingsOwner.value = data.owner || projectValue("buyer", "");
+  els.savingsEvidenceUrl.value = data.evidenceUrl || "";
+  els.savingsDate.value = data.decisionDate || "";
+  els.savingsNotes.value = data.notes || "";
+}
+
+function savingsFormSnapshot() {
+  updateProjectFromFields();
+  const product = selectedSavingsProduct();
+  const existing = state.savingsRecords.find((record) => record.id === els.savingsId?.value);
+  const supplier = savingsFieldValue(els.savingsSupplier, "Supplier TBC");
+  return sanitizeSavingsRecord({
+    id: savingsFieldValue(els.savingsId, `${Date.now()}-${safeFilenamePart(`${supplier}-${product?.sku || "savings"}`).toLowerCase() || "savings"}`),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    projectName: projectValue("name", ""),
+    buyer: projectValue("buyer", ""),
+    buyerContact: projectValue("contact", ""),
+    deliveryCountry: projectValue("country", ""),
+    targetDate: projectValue("targetDate", ""),
+    productId: product?.id || "",
+    quoteId: els.savingsQuote?.value || "",
+    brand: product?.brand || "",
+    sku: product?.sku || "",
+    productName: product?.name || "",
+    category: product?.category || "",
+    supplier,
+    currency: savingsFieldValue(els.savingsCurrency, "USD"),
+    baselineUnit: savingsFieldValue(els.savingsBaselineUnit, ""),
+    finalUnit: savingsFieldValue(els.savingsFinalUnit, ""),
+    quantity: savingsFieldValue(els.savingsQuantity, "1"),
+    status: savingsFieldValue(els.savingsStatus, "Target set"),
+    owner: savingsFieldValue(els.savingsOwner, projectValue("buyer", "")),
+    evidenceUrl: savingsFieldValue(els.savingsEvidenceUrl, ""),
+    decisionDate: savingsFieldValue(els.savingsDate, ""),
+    notes: savingsFieldValue(els.savingsNotes, "")
+  });
+}
+
+function prefillSavingsFromQuote() {
+  const quote = state.quotes.find((item) => item.id === els.savingsQuote?.value);
+  if (!quote) {
+    return;
+  }
+
+  els.savingsProduct.value = quote.productId || els.savingsProduct.value;
+  els.savingsSupplier.value = quote.supplier || els.savingsSupplier.value;
+  els.savingsCurrency.value = quote.currency || els.savingsCurrency.value;
+  els.savingsBaselineUnit.value = quote.unitPrice || els.savingsBaselineUnit.value;
+  els.savingsQuantity.value = quote.quantity || els.savingsQuantity.value || "1";
+  els.savingsEvidenceUrl.value = quote.sourceUrl || els.savingsEvidenceUrl.value;
+  els.savingsNotes.value = els.savingsNotes.value || quote.notes || "";
+}
+
+function useNegotiationPlanForSavings() {
+  if (!els.savingsForm) {
+    return;
+  }
+  const plan = negotiationData();
+  hydrateSavingsForm({
+    productId: plan.product?.id || plan.setup.productId,
+    quoteId: plan.setup.quoteId,
+    supplier: plan.supplier,
+    currency: plan.currency,
+    baselineUnit: plan.hasCurrent ? String(plan.currentPrice) : plan.setup.currentPrice,
+    finalUnit: plan.hasTarget ? String(plan.targetPrice) : plan.setup.targetPrice,
+    quantity: plan.setup.quantity || "1",
+    status: "Target set",
+    owner: projectValue("buyer", ""),
+    evidenceUrl: plan.quote?.sourceUrl || "",
+    decisionDate: new Date().toISOString().slice(0, 10),
+    notes: plan.setup.notes || plan.setup.reason || ""
+  });
+  renderSavingsRegister();
+}
+
+function saveSavingsRecordFromForm() {
+  if (!els.savingsForm) {
+    return;
+  }
+
+  const record = savingsFormSnapshot();
+  if (!record.supplier || record.supplier === "Supplier TBC") {
+    els.saveSavingsRecord.textContent = "Add supplier first";
+    setTimeout(() => {
+      els.saveSavingsRecord.textContent = "Save savings";
+    }, 1200);
+    return;
+  }
+
+  state.savingsRecords = [record, ...state.savingsRecords.filter((item) => item.id !== record.id)].slice(0, 120);
+  saveSavingsRecords();
+  hydrateSavingsForm(record);
+  renderSavingsRegister();
+  els.saveSavingsRecord.textContent = "Savings saved";
+  setTimeout(() => {
+    els.saveSavingsRecord.textContent = "Save savings";
+  }, 1200);
+}
+
+function clearSavingsForm() {
+  hydrateSavingsForm(defaultSavingsRecord());
+}
+
+function loadSavingsRecordToForm(id) {
+  const record = state.savingsRecords.find((item) => item.id === id);
+  if (!record) {
+    return;
+  }
+  hydrateSavingsForm(record);
+  els.savingsForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function removeSavingsRecord(id) {
+  state.savingsRecords = state.savingsRecords.filter((record) => record.id !== id);
+  saveSavingsRecords();
+  renderSavingsRegister();
+}
+
+function clearSavingsRecords() {
+  state.savingsRecords = [];
+  saveSavingsRecords();
+  renderSavingsRegister();
+}
+
+function renderSavingsRegister() {
+  if (!els.savingsSummary || !els.savingsList) {
+    return;
+  }
+
+  const summary = savingsSummaryData();
+  els.savingsSummary.innerHTML = [
+    savingsSummaryTemplate("Records", state.savingsRecords.length, `${summary.acceptedCount} accepted`),
+    savingsSummaryTemplate("Accepted savings", summary.acceptedLabel, "Recognized buyer value"),
+    savingsSummaryTemplate("Pipeline savings", summary.pipelineLabel, "Target or pending records"),
+    savingsSummaryTemplate("Largest saving", summary.largestLabel, summary.largestSupplier || "Add savings records"),
+    savingsSummaryTemplate("Open actions", summary.openActions, "Pending or target records")
+  ].join("");
+
+  if (els.savingsRegisterStatus) {
+    els.savingsRegisterStatus.textContent = state.savingsRecords.length
+      ? `${state.savingsRecords.length} saved ${state.savingsRecords.length === 1 ? "record" : "records"} in this browser`
+      : "Stored locally in this browser";
+  }
+
+  if (!state.savingsRecords.length) {
+    els.savingsList.innerHTML = `
+      <div class="empty-state quote-empty">
+        Save negotiated outcomes here after supplier replies. Use it to show accepted savings, pending targets, rejected asks, and buyer evidence.
+      </div>
+    `;
+    return;
+  }
+
+  els.savingsList.innerHTML = state.savingsRecords.map(savingsCardTemplate).join("");
+}
+
+function savingsSummaryData() {
+  const rows = state.savingsRecords.map((record) => ({ record, metrics: savingsMetrics(record) }));
+  const acceptedRows = rows.filter(({ record }) => ["Accepted", "Partially accepted"].includes(record.status));
+  const pipelineRows = rows.filter(({ record }) => ["Target set", "Supplier pending"].includes(record.status));
+  const acceptedTotals = sumSavingsByCurrency(acceptedRows);
+  const pipelineTotals = sumSavingsByCurrency(pipelineRows);
+  const largest = rows.filter(({ metrics }) => metrics.savings > 0).sort((a, b) => b.metrics.savings - a.metrics.savings)[0];
+  return {
+    acceptedCount: acceptedRows.length,
+    acceptedLabel: formatCurrencyTotals(acceptedTotals),
+    pipelineLabel: formatCurrencyTotals(pipelineTotals),
+    largestLabel: largest ? formatMoney(largest.metrics.savings, largest.record.currency) : "TBC",
+    largestSupplier: largest ? `${largest.record.supplier} - ${largest.record.brand} ${largest.record.sku}` : "",
+    openActions: pipelineRows.length
+  };
+}
+
+function sumSavingsByCurrency(rows) {
+  return rows.reduce((totals, { record, metrics }) => {
+    if (!metrics.savings) {
+      return totals;
+    }
+    totals[record.currency] = (totals[record.currency] || 0) + metrics.savings;
+    return totals;
+  }, {});
+}
+
+function formatCurrencyTotals(totals) {
+  const entries = Object.entries(totals);
+  return entries.length ? entries.map(([currency, value]) => `${currency} ${formatAmount(value)}`).join(" | ") : "TBC";
+}
+
+function savingsMetrics(record) {
+  const baselineUnit = parseCostNumber(record.baselineUnit);
+  const finalUnit = parseCostNumber(record.finalUnit);
+  const quantity = parseCostNumber(record.quantity || "1");
+  const hasBaseline = String(record.baselineUnit || "").trim() !== "" && baselineUnit > 0;
+  const hasFinal = String(record.finalUnit || "").trim() !== "" && finalUnit > 0;
+  const hasQuantity = String(record.quantity || "").trim() !== "" && quantity > 0;
+  const hasBaselineTotal = hasBaseline && hasQuantity;
+  const hasFinalTotal = hasFinal && hasQuantity;
+  const canCalculateSavings = hasBaselineTotal && hasFinalTotal;
+  const baselineTotal = hasBaselineTotal ? baselineUnit * quantity : 0;
+  const finalTotal = hasFinalTotal ? finalUnit * quantity : 0;
+  const savings = canCalculateSavings ? Math.max(0, baselineTotal - finalTotal) : 0;
+  const savingsPercent = canCalculateSavings && baselineTotal > 0 ? (savings / baselineTotal) * 100 : 0;
+  return { baselineUnit, finalUnit, quantity, baselineTotal, finalTotal, savings, savingsPercent, hasBaseline, hasFinal, hasQuantity, hasBaselineTotal, hasFinalTotal, canCalculateSavings };
+}
+
+function savingsMoneyLabel(value, currency, ready) {
+  return ready ? formatMoney(value, currency) : "TBC";
+}
+
+function savingsSummaryTemplate(label, value, detail) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function savingsCardTemplate(record) {
+  const metrics = savingsMetrics(record);
+  const statusClass = record.status.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const cardClass = record.status === "Accepted" || record.status === "Partially accepted"
+    ? "accepted"
+    : record.status === "Rejected"
+      ? "rejected"
+      : "pending";
+  return `
+    <article class="savings-card ${escapeHtml(cardClass)}">
+      <div class="savings-card-head">
+        <div>
+          <span>${escapeHtml(record.category || "Savings record")}</span>
+          <h3>${escapeHtml(record.brand)} ${escapeHtml(record.sku)} - ${escapeHtml(record.supplier)}</h3>
+          <p>${escapeHtml(record.productName)}</p>
+        </div>
+        <strong class="savings-status ${escapeHtml(statusClass)}">${escapeHtml(record.status)}</strong>
+      </div>
+      <dl class="savings-facts">
+        <div><dt>Baseline</dt><dd>${escapeHtml(savingsMoneyLabel(metrics.baselineTotal, record.currency, metrics.hasBaselineTotal))}</dd></div>
+        <div><dt>Final / target</dt><dd>${escapeHtml(savingsMoneyLabel(metrics.finalTotal, record.currency, metrics.hasFinalTotal))}</dd></div>
+        <div><dt>Savings</dt><dd>${escapeHtml(savingsMoneyLabel(metrics.savings, record.currency, metrics.canCalculateSavings))}</dd></div>
+        <div><dt>Reduction</dt><dd>${escapeHtml(metrics.canCalculateSavings ? formatCostPercent(metrics.savingsPercent) : "TBC")}</dd></div>
+        <div><dt>Quantity</dt><dd>${escapeHtml(record.quantity || "TBC")}</dd></div>
+      </dl>
+      <p>${escapeHtml(record.notes || "No savings notes added.")}</p>
+      <div class="savings-card-actions">
+        <button type="button" data-load-savings="${escapeHtml(record.id)}">Load</button>
+        <button type="button" data-copy-savings="${escapeHtml(record.id)}">Copy note</button>
+        <button type="button" data-remove-savings="${escapeHtml(record.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function savingsRecordText(record) {
+  const metrics = savingsMetrics(record);
+  return `InduScout savings record
+
+Project: ${record.projectName || projectValue("name", "TBC")}
+Buyer/company: ${record.buyer || projectValue("buyer", "TBC")}
+Owner: ${record.owner || "TBC"}
+Decision date: ${record.decisionDate || "TBC"}
+
+Product: ${record.brand} ${record.sku} - ${record.productName}
+Supplier: ${record.supplier}
+Status: ${record.status}
+Evidence: ${record.evidenceUrl || "TBC"}
+
+Baseline unit price: ${savingsMoneyLabel(metrics.baselineUnit, record.currency, metrics.hasBaseline)}
+Final / target unit price: ${savingsMoneyLabel(metrics.finalUnit, record.currency, metrics.hasFinal)}
+Quantity: ${record.quantity || "TBC"}
+Baseline total: ${savingsMoneyLabel(metrics.baselineTotal, record.currency, metrics.hasBaselineTotal)}
+Final / target total: ${savingsMoneyLabel(metrics.finalTotal, record.currency, metrics.hasFinalTotal)}
+Savings: ${savingsMoneyLabel(metrics.savings, record.currency, metrics.canCalculateSavings)}
+Reduction: ${metrics.canCalculateSavings ? formatCostPercent(metrics.savingsPercent) : "TBC"}
+
+Notes:
+${record.notes || "None recorded."}`;
+}
+
+function savingsRegisterReportText() {
+  const summary = savingsSummaryData();
+  const rows = state.savingsRecords.length
+    ? state.savingsRecords.map((record, index) => `${index + 1}. ${record.supplier} - ${record.brand} ${record.sku} - ${record.status} - ${savingsMetrics(record).savings ? formatMoney(savingsMetrics(record).savings, record.currency) : "Savings TBC"}`).join("\n")
+    : "No savings records saved yet.";
+
+  return `InduScout savings register
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+
+Records: ${state.savingsRecords.length}
+Accepted records: ${summary.acceptedCount}
+Accepted savings: ${summary.acceptedLabel}
+Pipeline savings: ${summary.pipelineLabel}
+Largest saving: ${summary.largestLabel}
+Open actions: ${summary.openActions}
+
+Savings records:
+${rows}
+
+Buyer reminder:
+Only recognize savings when supplier acceptance, final quote, delivery scope, payment terms, and buyer approval are documented.`;
+}
+
+async function copySavingsRegisterReport() {
+  const text = savingsRegisterReportText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copySavingsRegister) {
+      els.copySavingsRegister.textContent = "Savings report copied";
+      setTimeout(() => {
+        els.copySavingsRegister.textContent = "Copy savings report";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy savings register", text);
+  }
+}
+
+async function copySingleSavingsRecord(id, triggerButton) {
+  const record = state.savingsRecords.find((item) => item.id === id);
+  if (!record) {
+    return;
+  }
+  const text = savingsRecordText(record);
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = "Copied";
+      setTimeout(() => {
+        triggerButton.textContent = "Copy note";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy savings record", text);
+  }
+}
+
+function savingsExportTable() {
+  const headers = [
+    "Project Name",
+    "Buyer / Company",
+    "Buyer Contact",
+    "Delivery Country",
+    "Target Date",
+    "Product",
+    "Brand",
+    "SKU",
+    "Category",
+    "Supplier",
+    "Status",
+    "Currency",
+    "Baseline Unit",
+    "Final Unit",
+    "Quantity",
+    "Baseline Total",
+    "Final Total",
+    "Savings",
+    "Savings Percent",
+    "Owner",
+    "Evidence URL",
+    "Decision Date",
+    "Notes",
+    "Saved At"
+  ];
+  const rows = state.savingsRecords.map((record) => {
+    const metrics = savingsMetrics(record);
+    return [
+      record.projectName,
+      record.buyer,
+      record.buyerContact,
+      record.deliveryCountry,
+      record.targetDate,
+      record.productName,
+      record.brand,
+      record.sku,
+      record.category,
+      record.supplier,
+      record.status,
+      record.currency,
+      record.baselineUnit,
+      record.finalUnit,
+      record.quantity,
+      metrics.hasBaselineTotal ? formatAmount(metrics.baselineTotal) : "",
+      metrics.hasFinalTotal ? formatAmount(metrics.finalTotal) : "",
+      metrics.canCalculateSavings ? formatAmount(metrics.savings) : "",
+      metrics.canCalculateSavings ? formatCostPercent(metrics.savingsPercent) : "",
+      record.owner,
+      record.evidenceUrl,
+      record.decisionDate,
+      record.notes,
+      record.savedAt
+    ];
+  });
+  return { headers, rows };
+}
+
+function exportSavingsCsv() {
+  const table = savingsExportTable();
+  if (!table.rows.length) {
+    els.exportSavingsCsv.textContent = "Add savings first";
+    setTimeout(() => {
+      els.exportSavingsCsv.textContent = "Export CSV";
+    }, 1200);
+    return;
+  }
+  const csv = [table.headers, ...table.rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  downloadFile(
+    projectSlug
+      ? `InduScout-Savings-Register-${projectSlug}-${new Date().toISOString().slice(0, 10)}.csv`
+      : `InduScout-Savings-Register-${new Date().toISOString().slice(0, 10)}.csv`,
+    `\ufeff${csv}`,
+    "text/csv;charset=utf-8"
+  );
+}
+
+function exportSavingsJson() {
+  const summary = savingsSummaryData();
+  downloadFile(
+    `InduScout-Savings-Register-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), savingsRegister: { generatedAt: new Date().toISOString(), summary, records: state.savingsRecords, generatedText: savingsRegisterReportText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
 function selectedQuoteProduct() {
   return products.find((product) => product.id === els.quoteProduct?.value) || products[0];
 }
@@ -4879,6 +7246,11 @@ function renderQuoteTracker() {
     return;
   }
 
+  populateCostQuotes();
+  populateNegotiationQuotes();
+  populateSavingsQuotes();
+  renderLandedCostDesk();
+  renderNegotiationDesk();
   const total = state.quotes.length;
   const received = state.quotes.filter((quote) => ["Received", "Best option"].includes(quote.status)).length;
   const followUp = state.quotes.filter((quote) => quote.status === "Follow-up needed").length;
@@ -4913,6 +7285,9 @@ function renderQuoteTracker() {
     renderBuyerWorkspace();
     renderEvidenceReviewBoard();
     renderSupplierScorecard();
+    renderLandedCostDesk();
+    renderNegotiationDesk();
+    renderSavingsRegister();
     return;
   }
 
@@ -4920,6 +7295,9 @@ function renderQuoteTracker() {
   renderBuyerWorkspace();
   renderEvidenceReviewBoard();
   renderSupplierScorecard();
+  renderLandedCostDesk();
+  renderNegotiationDesk();
+  renderSavingsRegister();
 }
 
 function quoteDecisionPanel(decision) {
@@ -6451,13 +8829,25 @@ function createSessionSnapshot() {
   if (els.alternateForm) {
     state.alternateReview = alternateReviewFromFields();
   }
+  if (els.approvalForm) {
+    state.substitutionApproval = substitutionApprovalFromFields();
+  }
+  if (els.costForm) {
+    state.landedCost = landedCostFromFields();
+  }
+  if (els.negotiationForm) {
+    state.negotiationPlan = negotiationFromFields();
+  }
   return {
     app: "InduScout",
-    version: "3.8",
+    version: "4.3",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
     alternateReview: state.alternateReview,
+    substitutionApproval: state.substitutionApproval,
+    landedCost: state.landedCost,
+    negotiationPlan: state.negotiationPlan,
     filters: {
       query: state.query,
       category: state.category,
@@ -6476,6 +8866,7 @@ function createSessionSnapshot() {
     productRequests: state.productRequests,
     sourceLeads: state.sourceLeads,
     quotes: state.quotes,
+    savingsRecords: state.savingsRecords,
     supplierReplies: state.supplierReplies
   };
 }
@@ -6502,17 +8893,26 @@ function applySession(session) {
     ? session.sourceLeads.map(sanitizeSourceLead).filter(Boolean).slice(0, 120)
     : state.sourceLeads;
   state.quotes = Array.isArray(session.quotes) ? session.quotes.map(sanitizeQuoteRecord).filter(Boolean).slice(0, 80) : state.quotes;
+  state.savingsRecords = Array.isArray(session.savingsRecords)
+    ? session.savingsRecords.map(sanitizeSavingsRecord).filter(Boolean).slice(0, 120)
+    : state.savingsRecords;
   state.supplierReplies = Array.isArray(session.supplierReplies)
     ? session.supplierReplies.map(sanitizeSupplierReply).filter(Boolean).slice(0, 120)
     : state.supplierReplies;
   state.project = sanitizeProjectProfile(session.project || {});
   state.specRequirements = sanitizeSpecRequirements(session.specRequirements || {});
   state.alternateReview = sanitizeAlternateReview(session.alternateReview || {});
+  state.substitutionApproval = sanitizeSubstitutionApproval(session.substitutionApproval || {});
+  state.landedCost = sanitizeLandedCostScenario(session.landedCost || {});
+  state.negotiationPlan = sanitizeNegotiationPlan(session.negotiationPlan || {});
 
   setQuery(state.query);
   hydrateProjectFields();
   hydrateSpecRequirementFields();
   hydrateAlternateReviewFields();
+  hydrateSubstitutionApprovalFields();
+  hydrateLandedCostFields();
+  hydrateNegotiationFields();
   els.category.value = state.category;
   els.region.value = state.region;
   els.sourceType.value = state.sourceType;
@@ -6526,17 +8926,25 @@ function applySession(session) {
   saveProductRequests();
   saveSourceLeads();
   saveQuoteRecords();
+  saveSavingsRecords();
   saveSupplierReplies();
   saveProjectProfile();
   saveSpecRequirements();
   saveAlternateReview();
+  saveSubstitutionApproval();
+  saveLandedCostScenario();
+  saveNegotiationPlan();
   renderProjectStatus();
   renderProductRequests();
   renderSourceIntake();
   renderCompare();
   renderSpecMatchDesk();
   renderAlternateDesk();
+  renderSubstitutionApprovalPack();
   renderQuoteTracker();
+  renderLandedCostDesk();
+  renderNegotiationDesk();
+  renderSavingsRegister();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();
@@ -6599,7 +9007,7 @@ function importSessionFile(event) {
 function setSessionStatus(message) {
   els.sessionStatus.textContent = message;
   setTimeout(() => {
-    els.sessionStatus.textContent = "Save shortlist, filters, compare list, source intake, quote tracker, supplier inbox, and notes locally.";
+    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, landed cost, negotiation, savings, supplier inbox, and notes locally.";
   }, 1800);
 }
 
@@ -6705,6 +9113,10 @@ What stays local:
 - Project context
 - Spec match requirement profile
 - Alternate and obsolescence review setup
+- Substitution approval pack setup
+- Landed cost scenario inputs
+- Negotiation plan inputs
+- Savings register records
 - Shortlists and compare selections
 - Quote tracker records
 - Supplier inbox replies
@@ -6712,8 +9124,8 @@ What stays local:
 - Saved session data
 
 How data leaves the browser:
-- The user exports RFQ packs, CSV, XLSX, source intake registers, workspace snapshots, evidence review JSON, decision memo HTML, PO handover HTML, supplier compliance HTML, buyer file HTML/JSON, supplier scorecard HTML/JSON, spec match matrix HTML/JSON, alternate review HTML/JSON, or session JSON files.
-- The user copies RFQ, supplier email, supplier confirmation email, supplier due-diligence email, buyer reply, project brief, procurement brief, source review packet, evidence review report, decision memo, award handover note, compliance pack, buyer file index, supplier scorecard, spec match matrix, alternate review note, or data update text.
+- The user exports RFQ packs, CSV, XLSX, source intake registers, savings registers, workspace snapshots, evidence review JSON, decision memo HTML, PO handover HTML, supplier compliance HTML, buyer file HTML/JSON, supplier scorecard HTML/JSON, spec match matrix HTML/JSON, alternate review HTML/JSON, substitution approval HTML/JSON, landed cost HTML/JSON, negotiation HTML/JSON, savings JSON, or session JSON files.
+- The user copies RFQ, supplier email, supplier counter-offer email, supplier confirmation email, supplier due-diligence email, buyer reply, project brief, procurement brief, source review packet, evidence review report, decision memo, award handover note, compliance pack, buyer file index, supplier scorecard, spec match matrix, alternate review note, substitution approval note, landed cost brief, negotiation savings note, savings register notes, or data update text.
 - The user manually shares downloaded files or copied text.
 
 What the beta does not currently use:
@@ -8169,6 +10581,54 @@ function saveAlternateReview() {
   }
 }
 
+function loadSubstitutionApproval() {
+  try {
+    return sanitizeSubstitutionApproval(JSON.parse(window.localStorage.getItem("induscoutSubstitutionApproval") || "{}"));
+  } catch {
+    return defaultSubstitutionApproval();
+  }
+}
+
+function saveSubstitutionApproval() {
+  try {
+    window.localStorage.setItem("induscoutSubstitutionApproval", JSON.stringify(state.substitutionApproval));
+  } catch {
+    // Substitution approval setup is a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
+function loadLandedCostScenario() {
+  try {
+    return sanitizeLandedCostScenario(JSON.parse(window.localStorage.getItem("induscoutLandedCostScenario") || "{}"));
+  } catch {
+    return defaultLandedCostScenario();
+  }
+}
+
+function saveLandedCostScenario() {
+  try {
+    window.localStorage.setItem("induscoutLandedCostScenario", JSON.stringify(state.landedCost));
+  } catch {
+    // Landed cost scenarios are a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
+function loadNegotiationPlan() {
+  try {
+    return sanitizeNegotiationPlan(JSON.parse(window.localStorage.getItem("induscoutNegotiationPlan") || "{}"));
+  } catch {
+    return defaultNegotiationPlan();
+  }
+}
+
+function saveNegotiationPlan() {
+  try {
+    window.localStorage.setItem("induscoutNegotiationPlan", JSON.stringify(state.negotiationPlan));
+  } catch {
+    // Negotiation plans are a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
 function sanitizeAlternateReview(record) {
   const source = record && typeof record === "object" && !Array.isArray(record) ? record : {};
   const productId = products.some((product) => product.id === source.productId) ? source.productId : products[0]?.id || "";
@@ -8178,6 +10638,84 @@ function sanitizeAlternateReview(record) {
     criticality,
     equipment: cleanText(source.equipment || "", 220),
     constraint: cleanText(source.constraint || "", 260)
+  };
+}
+
+function sanitizeSubstitutionApproval(record) {
+  const source = record && typeof record === "object" && !Array.isArray(record) ? record : {};
+  const fallback = defaultSubstitutionApproval();
+  const baseProductId = products.some((product) => product.id === source.baseProductId) ? source.baseProductId : fallback.baseProductId;
+  const candidateProductId = products.some((product) => product.id === source.candidateProductId) ? source.candidateProductId : fallback.candidateProductId;
+  const decision = APPROVAL_DECISIONS.includes(source.decision) ? source.decision : "Engineering review required";
+  const checks = source.checks && typeof source.checks === "object" && !Array.isArray(source.checks) ? source.checks : {};
+  return {
+    baseProductId,
+    candidateProductId,
+    decision,
+    reviewer: cleanText(source.reviewer || "", 180),
+    equipment: cleanText(source.equipment || "", 220),
+    notes: cleanText(source.notes || "", 1600),
+    checks: {
+      model: Boolean(checks.model),
+      datasheet: Boolean(checks.datasheet),
+      interface: Boolean(checks.interface),
+      safety: Boolean(checks.safety),
+      supplier: Boolean(checks.supplier)
+    }
+  };
+}
+
+function sanitizeLandedCostScenario(record) {
+  const source = record && typeof record === "object" && !Array.isArray(record) ? record : {};
+  const fallback = defaultLandedCostScenario();
+  const productId = products.some((product) => product.id === source.productId) ? source.productId : fallback.productId;
+  const quoteId = cleanText(source.quoteId || "", 90);
+  const currency = ["USD", "EUR", "GBP", "AED", "INR", "Other"].includes(source.currency) ? source.currency : "USD";
+  return {
+    productId,
+    quoteId,
+    supplier: cleanText(source.supplier || "", 180),
+    currency,
+    unitPrice: cleanText(source.unitPrice || "", 60),
+    quantity: cleanText(source.quantity || fallback.quantity, 80),
+    freight: cleanText(source.freight || "0", 60),
+    dutyRate: cleanText(source.dutyRate || "0", 30),
+    taxRate: cleanText(source.taxRate || "0", 30),
+    handling: cleanText(source.handling || "0", 60),
+    bankCharges: cleanText(source.bankCharges || "0", 60),
+    fxBuffer: cleanText(source.fxBuffer || "0", 30),
+    deliveryTerms: cleanText(source.deliveryTerms || "", 180),
+    country: cleanText(source.country || "", 120),
+    notes: cleanText(source.notes || "", 1800)
+  };
+}
+
+function sanitizeNegotiationPlan(record) {
+  const source = record && typeof record === "object" && !Array.isArray(record) ? record : {};
+  const fallback = defaultNegotiationPlan();
+  const productId = products.some((product) => product.id === source.productId) ? source.productId : fallback.productId;
+  const leverageOptions = [
+    "Repeat order potential",
+    "Competing quote available",
+    "Bundled order opportunity",
+    "Project urgency",
+    "Budget approval limit",
+    "Standard commercial review"
+  ];
+  return {
+    productId,
+    quoteId: cleanText(source.quoteId || "", 90),
+    supplier: cleanText(source.supplier || "", 180),
+    currency: ["USD", "EUR", "GBP", "AED", "INR", "Other"].includes(source.currency) ? source.currency : "USD",
+    currentPrice: cleanText(source.currentPrice || "", 60),
+    quantity: cleanText(source.quantity || fallback.quantity, 80),
+    targetPrice: cleanText(source.targetPrice || "", 60),
+    discount: cleanText(source.discount || fallback.discount, 30),
+    targetLeadTime: cleanText(source.targetLeadTime || "", 140),
+    validity: cleanText(source.validity || fallback.validity, 180),
+    leverage: leverageOptions.includes(source.leverage) ? source.leverage : fallback.leverage,
+    reason: cleanText(source.reason || fallback.reason, 240),
+    notes: cleanText(source.notes || "", 1800)
   };
 }
 
@@ -8254,6 +10792,23 @@ function saveQuoteRecords() {
     window.localStorage.setItem("induscoutQuoteRecords", JSON.stringify(state.quotes));
   } catch {
     // Quote tracking is a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
+function loadSavingsRecords() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutSavingsRecords") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizeSavingsRecord).filter(Boolean).slice(0, 120) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSavingsRecords() {
+  try {
+    window.localStorage.setItem("induscoutSavingsRecords", JSON.stringify(state.savingsRecords));
+  } catch {
+    // Savings tracking is a convenience only; copy/export actions still work if storage is blocked.
   }
 }
 
@@ -8370,6 +10925,53 @@ function sanitizeQuoteRecord(record) {
     sourceUrl: safeExternalUrl(record.sourceUrl || product?.sources[0]?.url || "", ""),
     notes: cleanText(record.notes || "", 1800)
   };
+}
+
+function sanitizeSavingsRecord(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const product = products.find((item) => item.id === record.productId) || products.find((item) => item.sku === record.sku) || products[0];
+  const allowedStatuses = ["Target set", "Supplier pending", "Partially accepted", "Accepted", "Rejected"];
+  const allowedCurrencies = ["USD", "EUR", "GBP", "AED", "INR", "Other"];
+  return {
+    id: cleanText(record.id || `${Date.now()}-${safeFilenamePart(record.supplier || product?.sku || "savings")}`, 90),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(record.updatedAt || record.savedAt || new Date().toISOString(), 40),
+    projectName: cleanText(record.projectName || "", 180),
+    buyer: cleanText(record.buyer || "", 180),
+    buyerContact: cleanText(record.buyerContact || "", 180),
+    deliveryCountry: cleanText(record.deliveryCountry || "", 120),
+    targetDate: cleanText(record.targetDate || "", 40),
+    productId: product?.id || cleanText(record.productId || "", 90),
+    quoteId: cleanText(record.quoteId || "", 90),
+    brand: cleanText(record.brand || product?.brand || "", 120),
+    sku: cleanText(record.sku || product?.sku || "", 120),
+    productName: cleanText(record.productName || product?.name || "", 180),
+    category: cleanText(record.category || product?.category || "", 120),
+    supplier: cleanText(record.supplier || "Supplier TBC", 180),
+    currency: allowedCurrencies.includes(record.currency) ? record.currency : "USD",
+    baselineUnit: cleanText(record.baselineUnit || "", 60),
+    finalUnit: cleanText(record.finalUnit || "", 60),
+    quantity: cleanText(record.quantity || "1", 80),
+    status: allowedStatuses.includes(record.status) ? record.status : "Target set",
+    owner: cleanText(record.owner || "", 180),
+    evidenceUrl: cleanEvidenceReference(record.evidenceUrl || ""),
+    decisionDate: cleanText(record.decisionDate || "", 40),
+    notes: cleanText(record.notes || "", 1800)
+  };
+}
+
+function cleanEvidenceReference(value) {
+  const raw = cleanText(value || "", 260).trim();
+  if (!raw) {
+    return "";
+  }
+  if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
+    return cleanText(safeExternalUrl(raw, ""), 260);
+  }
+  return raw;
 }
 
 function sanitizeSupplierReply(record) {

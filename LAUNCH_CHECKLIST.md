@@ -1,4 +1,4 @@
-# InduScout v3.8 Launch Checklist
+# InduScout v4.3 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -13,6 +13,7 @@ Use this checklist after each public GitHub Pages upload.
 
 - Open `https://dhirajnyse.github.io/induscout/`.
 - Confirm the hero counters show 12 categories, 84 product records, and 252 source links.
+- Confirm the top navigation stays on one professional row on desktop and the secondary sections open from the More menu.
 - Open Finder and search for `Danfoss FC 51`.
 - Hard refresh once after upload and confirm Finder still renders products; v2.4 keeps the cache-safety guard for GitHub Pages mixed HTML/JavaScript loads.
 - Confirm the Finder shows the buyer verification reminder above search.
@@ -52,6 +53,18 @@ Use this checklist after each public GitHub Pages upload.
 - Confirm Quote Decision Scoring shows best current score, lowest price, fastest lead, decision badges, and review flags.
 - Save a second quote with a different price or lead time and confirm the decision guidance changes.
 - Export the quote tracker as CSV and XLSX.
+- Open Cost, select a saved quote, confirm product, supplier, price, quantity, delivery terms, and country populate.
+- Add freight, duty, tax/VAT, handling, bank charges, and FX buffer, then confirm landed total, landed unit, uplift, and buyer checks update.
+- Copy the landed cost brief, download the Landed Cost HTML, export the Landed Cost JSON, and confirm each includes project context and cost assumptions.
+- Open Negotiate, select a saved quote, confirm product, supplier, price, quantity, and lead-time context populate.
+- Add a target unit price or requested discount, buyer leverage, target lead time, validity request, and notes.
+- Confirm current total, target total, potential savings, reduction percent, and buyer checks update.
+- Copy the supplier counter-offer email, copy the savings note, download the Negotiation HTML, and export the Negotiation JSON.
+- Open Savings, click `Use negotiation plan`, and confirm product, supplier, baseline price, target price, quantity, and notes prefill.
+- Save one accepted savings record and confirm the Savings Register KPI cards update accepted savings, largest saving, and record count.
+- Save one target or supplier-pending savings record and confirm pipeline savings and open actions update.
+- Copy the savings report, export Savings CSV, export Savings JSON, and confirm project context, supplier, evidence, status, totals, and notes are included.
+- Export a session JSON, import it, and confirm saved savings records are restored.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.
@@ -68,6 +81,12 @@ Use this checklist after each public GitHub Pages upload.
 - Open Alternates, choose a base product, select replacement criticality, add installed equipment/location, and add a known constraint.
 - Confirm alternate candidates render with engineering fit score, positive signals, substitution checks, and conservative next actions.
 - Copy the alternate review note, download the Alternate Review HTML, and export the Alternate Review JSON.
+- Open Approval, select an original product and proposed substitute, choose decision status, add reviewer/equipment context, and tick approval checks.
+- Confirm the approval score, risk label, open approval conditions, and checklist rows update.
+- Copy the substitution approval note, download the Substitution Approval HTML, and export the Substitution Approval JSON.
+- Export a session JSON, import it, and confirm the substitution approval setup is restored.
+- Export a session JSON, import it, and confirm the landed cost scenario is restored.
+- Export a session JSON, import it, and confirm the negotiation plan is restored.
 - Export a session JSON, import it, and confirm the alternate review setup is restored.
 - Export a CSV/XLSX after entering a note beginning with `=`, `+`, `-`, or `@`, then confirm the exported spreadsheet treats it as text.
 - Try importing a non-InduScout JSON file and confirm the app rejects it without breaking Finder.
