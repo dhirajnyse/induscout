@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=4.9">
+    <link rel="stylesheet" href="styles.css?v=5.0">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -67,7 +67,8 @@
         <a href="#learning">Learning</a>
         <a href="#playbooks">Playbooks</a>
         <a href="#signals">Signals</a>
-        <a class="version-tab" href="#version">v4.9</a>
+        <a href="#governance">Governance</a>
+        <a class="version-tab" href="#version">v5.0</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -250,7 +251,7 @@
             <div class="session-tools" aria-label="Session tools">
               <div>
                 <strong>Session desk</strong>
-                <span id="sessionStatus">Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, supplier inbox, and notes locally.</span>
+                <span id="sessionStatus">Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, governance policy, supplier inbox, and notes locally.</span>
               </div>
               <div class="session-actions">
                 <button class="ghost-button compact" id="saveSession" type="button">Save session</button>
@@ -1238,6 +1239,63 @@
         </div>
       </section>
 
+      <section class="governance-band" id="governance" aria-labelledby="governance-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">AI Governance</p>
+            <h2 id="governance-title">Control the learning loop before scale</h2>
+          </div>
+          <p>Turn buyer outcomes into better recommendations with clear boundaries: local memory first, tenant-safe learning next, and network learning only when it is anonymized, permissioned, and auditable.</p>
+        </div>
+        <div class="governance-console">
+          <div class="governance-summary" id="governanceSummary"></div>
+          <form class="governance-form" id="governanceForm">
+            <div class="governance-form-head">
+              <div>
+                <strong>Learning policy simulator</strong>
+                <span>Choose the guardrails InduScout should apply before any SaaS or network learning path.</span>
+              </div>
+              <div class="governance-actions">
+                <button type="button" id="copyGovernanceBrief">Copy governance brief</button>
+                <button class="ghost-button compact" type="button" id="exportGovernanceJson">Export JSON</button>
+              </div>
+            </div>
+            <div class="governance-grid">
+              <label>Learning boundary
+                <select id="governanceBoundary">
+                  <option>Local browser only</option>
+                  <option>Tenant-only learning</option>
+                  <option>Opt-in anonymized network</option>
+                </select>
+              </label>
+              <label>Evidence threshold
+                <select id="governanceEvidence">
+                  <option>Buyer reviewed</option>
+                  <option>Verified source + outcome</option>
+                  <option>Audit-ready only</option>
+                </select>
+              </label>
+              <label>Commercial data rule
+                <select id="governanceCommercial">
+                  <option>Never share raw commercial terms</option>
+                  <option>Tenant aggregate only</option>
+                  <option>Anonymized benchmark bands</option>
+                </select>
+              </label>
+              <label>Personal data rule
+                <select id="governancePersonal">
+                  <option>Strip contacts and buyer notes</option>
+                  <option>Tenant-only authorized users</option>
+                  <option>Block from learning datasets</option>
+                </select>
+              </label>
+            </div>
+          </form>
+          <div class="governance-matrix" id="governanceMatrix"></div>
+          <div class="governance-recommendations" id="governanceRecommendations"></div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -1764,18 +1822,18 @@
           <div class="version-status">
             <article class="current">
               <span>Current live build</span>
-              <strong>v4.9</strong>
-              <p>Version tab plus build-phase tracker, on top of v4.8 reinforcement signals and v4.7 AI playbooks.</p>
+              <strong>v5.0</strong>
+              <p>AI governance center, policy simulator, learning-signal boundaries, and SaaS readiness scoring.</p>
             </article>
             <article>
               <span>Release mode</span>
               <strong>Public beta</strong>
-              <p>Static GitHub Pages, local browser storage, buyer-controlled exports, and no backend training yet.</p>
+              <p>Static GitHub Pages, local browser storage, buyer-controlled exports, and governed learning design before backend training.</p>
             </article>
             <article>
               <span>Next major gate</span>
-              <strong>v5.0</strong>
-              <p>Prepare SaaS foundations: accounts, tenant-safe data model, API design, audit trail, and governed learning policy.</p>
+              <strong>v5.1</strong>
+              <p>Move from policy design into SaaS foundations: accounts, tenant-safe APIs, audit logs, and admin approval flows.</p>
             </article>
           </div>
           <div class="phase-grid">
@@ -1792,7 +1850,7 @@
             <article class="phase-card current">
               <span>Phase 3 / Current</span>
               <h3>Closed-loop intelligence</h3>
-              <p>Learning records, AI Playbook Lab, reinforcement signals, and local scoring guidance that improve the buyer workspace over time.</p>
+              <p>Learning records, AI Playbook Lab, reinforcement signals, governance controls, and local scoring guidance that improve the buyer workspace over time.</p>
             </article>
             <article class="phase-card next">
               <span>Phase 4 / Next</span>
@@ -1808,7 +1866,7 @@
           <div class="release-ledger">
             <div>
               <strong>Recent release trail</strong>
-              <span>v4.7 AI Playbook Lab -> v4.8 Reinforcement Signals -> v4.9 Version & Build Phases</span>
+              <span>v4.8 Reinforcement Signals -> v4.9 Version & Build Phases -> v5.0 AI Governance</span>
             </div>
             <a href="#roadmap">Open roadmap</a>
           </div>
@@ -1985,8 +2043,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=4.9"></script>
-    <script src="back-to-top.js?v=4.9"></script>
-    <script src="app.js?v=4.9"></script>
+    <script src="catalog.js?v=5.0"></script>
+    <script src="back-to-top.js?v=5.0"></script>
+    <script src="app.js?v=5.0"></script>
   </body>
 </html>

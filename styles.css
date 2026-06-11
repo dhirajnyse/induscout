@@ -521,6 +521,7 @@ h1 {
 .learning-band,
 .playbook-band,
 .reinforcement-band,
+.governance-band,
 .inbox-band,
 .scorecard-band,
 .quality-band,
@@ -3123,6 +3124,213 @@ input[type="checkbox"] {
   color: var(--ink);
   font-weight: 900;
   overflow-wrap: anywhere;
+}
+
+.governance-band {
+  background: #f8fafc;
+  border-bottom: 1px solid var(--line);
+}
+
+.governance-console {
+  display: grid;
+  gap: 18px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.governance-summary,
+.governance-grid,
+.governance-matrix,
+.governance-recommendations {
+  display: grid;
+  gap: 14px;
+}
+
+.governance-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.governance-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 18px;
+}
+
+.governance-matrix {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.governance-recommendations {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.governance-summary article,
+.governance-form,
+.governance-card,
+.governance-recommendation {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 38px rgba(15, 23, 42, 0.06);
+}
+
+.governance-summary article {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 16px;
+}
+
+.governance-summary span,
+.governance-form-head span,
+.governance-card span,
+.governance-recommendation span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.governance-summary article > span,
+.governance-card > span,
+.governance-recommendation > span {
+  color: var(--teal);
+}
+
+.governance-summary strong {
+  font-size: 1.5rem;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.governance-summary small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.governance-form {
+  overflow: hidden;
+}
+
+.governance-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+
+.governance-form-head > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.governance-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.governance-actions button:first-child {
+  min-height: 38px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+.governance-grid label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.governance-grid select {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+.governance-card,
+.governance-recommendation {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-left: 5px solid var(--teal);
+}
+
+.governance-card.safe {
+  border-left-color: var(--green);
+}
+
+.governance-card.tenant {
+  border-left-color: #0ea5e9;
+}
+
+.governance-card.review {
+  border-left-color: var(--amber);
+}
+
+.governance-card.blocked {
+  border-left-color: #ef4444;
+}
+
+.governance-card h3,
+.governance-recommendation h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.governance-card p,
+.governance-recommendation p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.governance-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.governance-card div {
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.governance-card dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.governance-card dd {
+  margin: 3px 0 0;
+  color: var(--ink);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.governance-recommendation {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfb 100%);
+  border-left-color: var(--ink);
 }
 
 .inbox-band {
@@ -7745,6 +7953,9 @@ footer a {
   .signal-summary,
   .signal-grid,
   .signal-facts,
+  .governance-summary,
+  .governance-grid,
+  .governance-matrix,
   .quality-stats,
   .inbox-summary,
   .scorecard-facts,
@@ -7776,6 +7987,10 @@ footer a {
   }
 
   .release-ledger {
+    grid-template-columns: 1fr;
+  }
+
+  .governance-recommendations {
     grid-template-columns: 1fr;
   }
 
@@ -7978,7 +8193,8 @@ footer a {
   .savings-card-head,
   .signal-form-head,
   .signal-register-head,
-  .signal-card-head {
+  .signal-card-head,
+  .governance-form-head {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -8003,6 +8219,7 @@ footer a {
   .signal-actions,
   .signal-export-actions,
   .signal-card-actions,
+  .governance-actions,
   .quote-actions,
   .quote-export-actions,
   .quote-card-actions,
@@ -8066,6 +8283,10 @@ footer a {
   .saved-request-card > div:last-child,
   .saved-request-card button {
     width: 100%;
+  }
+
+  .governance-card dl {
+    grid-template-columns: 1fr;
   }
 
   .saved-request-card {
@@ -8133,6 +8354,10 @@ footer a {
   .signal-summary,
   .signal-grid,
   .signal-facts,
+  .governance-summary,
+  .governance-grid,
+  .governance-matrix,
+  .governance-recommendations,
   .request-grid,
   .quote-grid,
   .quote-summary,

@@ -36,6 +36,7 @@ const state = {
   playbookConfig: loadPlaybookConfig(),
   playbookRules: loadPlaybookRules(),
   reinforcementSignals: loadReinforcementSignals(),
+  governancePolicy: loadGovernancePolicy(),
   activeProductId: null
 };
 
@@ -328,6 +329,16 @@ const els = {
   signalRegisterStatus: document.querySelector("#signalRegisterStatus"),
   signalRecommendations: document.querySelector("#signalRecommendations"),
   signalList: document.querySelector("#signalList"),
+  governanceSummary: document.querySelector("#governanceSummary"),
+  governanceForm: document.querySelector("#governanceForm"),
+  governanceBoundary: document.querySelector("#governanceBoundary"),
+  governanceEvidence: document.querySelector("#governanceEvidence"),
+  governanceCommercial: document.querySelector("#governanceCommercial"),
+  governancePersonal: document.querySelector("#governancePersonal"),
+  copyGovernanceBrief: document.querySelector("#copyGovernanceBrief"),
+  exportGovernanceJson: document.querySelector("#exportGovernanceJson"),
+  governanceMatrix: document.querySelector("#governanceMatrix"),
+  governanceRecommendations: document.querySelector("#governanceRecommendations"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -432,6 +443,7 @@ function init() {
   hydrateLearningForm();
   hydratePlaybookControls();
   hydrateSignalForm();
+  hydrateGovernanceControls();
   renderCategories();
   renderSources();
   renderSourceDirectory();
@@ -456,6 +468,7 @@ function init() {
   renderLearningLoop();
   renderPlaybookLab();
   renderReinforcementLab();
+  renderGovernanceCenter();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1200,6 +1213,19 @@ function wireEvents() {
       }
     });
   }
+  governanceControlInputs().forEach((input) => {
+    input.addEventListener("change", () => {
+      state.governancePolicy = governancePolicyFromFields();
+      saveGovernancePolicy();
+      renderGovernanceCenter();
+    });
+  });
+  if (els.copyGovernanceBrief) {
+    els.copyGovernanceBrief.addEventListener("click", copyGovernanceBrief);
+  }
+  if (els.exportGovernanceJson) {
+    els.exportGovernanceJson.addEventListener("click", exportGovernanceJson);
+  }
   if (els.quoteList) {
     els.quoteList.addEventListener("click", (event) => {
       const loadButton = event.target.closest("[data-load-quote]");
@@ -1501,6 +1527,7 @@ function render() {
   renderComplianceGate();
   renderBuyerFile();
   renderSupplierScorecard();
+  renderGovernanceCenter();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2027,7 +2054,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "4.9",
+    version: "5.0",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -3726,6 +3753,7 @@ function saveSourceLead() {
   saveSourceLeads();
   hydrateSourceLeadForm(lead);
   renderSourceIntake();
+  renderGovernanceCenter();
   els.saveSourceLead.textContent = "Source lead saved";
   setTimeout(() => {
     els.saveSourceLead.textContent = "Save source lead";
@@ -3745,6 +3773,7 @@ function removeSourceLead(id) {
   state.sourceLeads = state.sourceLeads.filter((lead) => lead.id !== id);
   saveSourceLeads();
   renderSourceIntake();
+  renderGovernanceCenter();
 }
 
 function clearSourceLeadForm() {
@@ -3756,6 +3785,7 @@ function clearSourceLeads() {
   saveSourceLeads();
   clearSourceLeadForm();
   renderSourceIntake();
+  renderGovernanceCenter();
 }
 
 async function copyCurrentSourceLead() {
@@ -6959,6 +6989,7 @@ function saveSavingsRecordFromForm() {
   hydrateSavingsForm(record);
   renderSavingsRegister();
   renderPlaybookLab();
+  renderGovernanceCenter();
   els.saveSavingsRecord.textContent = "Savings saved";
   setTimeout(() => {
     els.saveSavingsRecord.textContent = "Save savings";
@@ -6983,6 +7014,7 @@ function removeSavingsRecord(id) {
   saveSavingsRecords();
   renderSavingsRegister();
   renderPlaybookLab();
+  renderGovernanceCenter();
 }
 
 function clearSavingsRecords() {
@@ -6990,6 +7022,7 @@ function clearSavingsRecords() {
   saveSavingsRecords();
   renderSavingsRegister();
   renderPlaybookLab();
+  renderGovernanceCenter();
 }
 
 function renderSavingsRegister() {
@@ -7445,6 +7478,7 @@ function saveLearningRecordFromForm() {
   hydrateLearningForm(record);
   renderLearningLoop();
   renderPlaybookLab();
+  renderGovernanceCenter();
   els.saveLearningRecord.textContent = "Learning saved";
   setTimeout(() => {
     els.saveLearningRecord.textContent = "Save learning";
@@ -7469,6 +7503,7 @@ function removeLearningRecord(id) {
   saveLearningRecords();
   renderLearningLoop();
   renderPlaybookLab();
+  renderGovernanceCenter();
 }
 
 function clearLearningRecords() {
@@ -7476,6 +7511,7 @@ function clearLearningRecords() {
   saveLearningRecords();
   renderLearningLoop();
   renderPlaybookLab();
+  renderGovernanceCenter();
 }
 
 function renderLearningLoop() {
@@ -8411,6 +8447,7 @@ function saveSignalRecordFromForm() {
   hydrateSignalForm(record);
   renderReinforcementLab();
   renderPlaybookLab();
+  renderGovernanceCenter();
   els.saveSignalRecord.textContent = "Signal saved";
   setTimeout(() => {
     els.saveSignalRecord.textContent = "Save signal";
@@ -8435,6 +8472,7 @@ function removeSignalRecord(id) {
   saveReinforcementSignals();
   renderReinforcementLab();
   renderPlaybookLab();
+  renderGovernanceCenter();
 }
 
 function clearSignalRecords() {
@@ -8442,6 +8480,7 @@ function clearSignalRecords() {
   saveReinforcementSignals();
   renderReinforcementLab();
   renderPlaybookLab();
+  renderGovernanceCenter();
 }
 
 function renderReinforcementLab() {
@@ -8780,6 +8819,312 @@ function exportSignalJson() {
   );
 }
 
+function governanceControlInputs() {
+  return [els.governanceBoundary, els.governanceEvidence, els.governanceCommercial, els.governancePersonal].filter(Boolean);
+}
+
+function hydrateGovernanceControls(policy = state.governancePolicy) {
+  if (!els.governanceForm) {
+    return;
+  }
+  const sanitized = sanitizeGovernancePolicy(policy || {});
+  els.governanceBoundary.value = sanitized.boundary;
+  els.governanceEvidence.value = sanitized.evidence;
+  els.governanceCommercial.value = sanitized.commercial;
+  els.governancePersonal.value = sanitized.personal;
+}
+
+function governancePolicyFromFields() {
+  return sanitizeGovernancePolicy({
+    boundary: els.governanceBoundary?.value,
+    evidence: els.governanceEvidence?.value,
+    commercial: els.governanceCommercial?.value,
+    personal: els.governancePersonal?.value
+  });
+}
+
+function governanceSignalCounts() {
+  return {
+    outcomes: state.learningRecords.length,
+    reinforcement: state.reinforcementSignals.length,
+    quotes: state.quotes.length,
+    supplierReplies: state.supplierReplies.length,
+    savings: state.savingsRecords.length,
+    sourceLeads: state.sourceLeads.length,
+    productRequests: state.productRequests.length,
+    productNotes: Object.values(state.notes).filter((note) => String(note).trim()).length
+  };
+}
+
+function governanceReadinessScore(counts, policy = state.governancePolicy) {
+  const boundaryPoints = {
+    "Local browser only": 6,
+    "Tenant-only learning": 13,
+    "Opt-in anonymized network": 18
+  };
+  const evidencePoints = {
+    "Buyer reviewed": 6,
+    "Verified source + outcome": 12,
+    "Audit-ready only": 16
+  };
+  const commercialPoints = {
+    "Never share raw commercial terms": 12,
+    "Tenant aggregate only": 10,
+    "Anonymized benchmark bands": 14
+  };
+  const personalPoints = {
+    "Strip contacts and buyer notes": 14,
+    "Tenant-only authorized users": 10,
+    "Block from learning datasets": 16
+  };
+  const signalPoints = Math.min(24, counts.outcomes * 3 + counts.reinforcement * 2 + counts.savings * 2 + counts.supplierReplies + counts.quotes);
+  return Math.min(96, 24 + signalPoints + (boundaryPoints[policy.boundary] || 6) + (evidencePoints[policy.evidence] || 6) + (commercialPoints[policy.commercial] || 10) + (personalPoints[policy.personal] || 14));
+}
+
+function governanceReadinessLabel(score) {
+  if (score >= 84) {
+    return "SaaS-ready policy";
+  }
+  if (score >= 68) {
+    return "Strong beta guardrails";
+  }
+  if (score >= 52) {
+    return "Needs evidence depth";
+  }
+  return "Local-only starter";
+}
+
+function governanceNetworkCandidateCount(counts, policy = state.governancePolicy) {
+  if (policy.boundary !== "Opt-in anonymized network") {
+    return 0;
+  }
+  const rawCandidates = counts.reinforcement + counts.outcomes + counts.savings + counts.supplierReplies;
+  const evidenceMultiplier = policy.evidence === "Audit-ready only" ? 0.55 : policy.evidence === "Verified source + outcome" ? 0.75 : 0.45;
+  return Math.max(0, Math.round(rawCandidates * evidenceMultiplier));
+}
+
+function governanceData() {
+  const policy = state.governancePolicy;
+  const counts = governanceSignalCounts();
+  const readinessScore = governanceReadinessScore(counts, policy);
+  const sensitiveCount = counts.productNotes + state.quotes.filter((quote) => quote.notes).length + state.supplierReplies.filter((reply) => reply.message || reply.notes).length + (state.project.contact ? 1 : 0);
+  const networkCandidates = governanceNetworkCandidateCount(counts, policy);
+  const totalSignals = counts.outcomes + counts.reinforcement + counts.quotes + counts.supplierReplies + counts.savings + counts.sourceLeads + counts.productRequests;
+  return {
+    policy,
+    counts,
+    readinessScore,
+    readinessLabel: governanceReadinessLabel(readinessScore),
+    totalSignals,
+    sensitiveCount,
+    networkCandidates,
+    boundaryLabel: policy.boundary === "Opt-in anonymized network" ? "Opt-in network" : policy.boundary === "Tenant-only learning" ? "Tenant-safe" : "Local only"
+  };
+}
+
+function governanceMatrixItems(data = governanceData()) {
+  const { counts, policy, networkCandidates, sensitiveCount } = data;
+  return [
+    {
+      title: "Catalog metadata",
+      scope: policy.boundary === "Local browser only" ? "Local scoring" : "Network-ready",
+      className: "safe",
+      count: products.length,
+      risk: "Low",
+      action: "Use product category, public specs, source type, and confidence tags as safe recommendation inputs."
+    },
+    {
+      title: "Verified source signals",
+      scope: policy.evidence === "Buyer reviewed" ? "Review first" : "Learning candidate",
+      className: policy.evidence === "Buyer reviewed" ? "review" : "safe",
+      count: counts.sourceLeads + sourceDirectory.length,
+      risk: "Low to medium",
+      action: "Prefer OEM, authorized distributor, datasheet, and certificate evidence before increasing confidence."
+    },
+    {
+      title: "Outcome and reinforcement labels",
+      scope: networkCandidates ? "Anonymized aggregate" : "Local or tenant only",
+      className: networkCandidates ? "safe" : "tenant",
+      count: counts.outcomes + counts.reinforcement,
+      risk: "Medium",
+      action: "Strip buyer notes, project names, contacts, prices, and supplier-specific confidential details."
+    },
+    {
+      title: "Quotes, prices, and payment terms",
+      scope: policy.commercial === "Anonymized benchmark bands" ? "Benchmark bands only" : "Raw data blocked",
+      className: policy.commercial === "Never share raw commercial terms" ? "blocked" : "review",
+      count: counts.quotes,
+      risk: "High",
+      action: "Never share raw commercial terms across organizations; use tenant analytics or anonymized bands only."
+    },
+    {
+      title: "Buyer notes and contacts",
+      scope: policy.personal === "Block from learning datasets" ? "Blocked" : "Tenant controlled",
+      className: policy.personal === "Block from learning datasets" ? "blocked" : "tenant",
+      count: sensitiveCount,
+      risk: "High",
+      action: "Keep contact details, private notes, tender context, and internal references out of network learning."
+    },
+    {
+      title: "Supplier performance trail",
+      scope: counts.supplierReplies || counts.savings ? "Governed review queue" : "Awaiting data",
+      className: counts.supplierReplies || counts.savings ? "review" : "tenant",
+      count: counts.supplierReplies + counts.savings,
+      risk: "Medium",
+      action: "Use supplier outcomes for local scorecards first; require admin review before broader model influence."
+    }
+  ];
+}
+
+function governanceRecommendations(data = governanceData()) {
+  const recommendations = [];
+  if (data.totalSignals < 6) {
+    recommendations.push({
+      type: "Signal depth",
+      title: "Capture more closed-loop evidence",
+      detail: "Save more quote outcomes, learning records, supplier replies, savings records, and reinforcement signals before trusting automated weighting."
+    });
+  } else {
+    recommendations.push({
+      type: "Signal depth",
+      title: "Start using outcome-weighted recommendations",
+      detail: "There is enough local activity to let playbooks and reinforcement signals influence buyer-side ranking, with human review still required."
+    });
+  }
+  if (data.sensitiveCount) {
+    recommendations.push({
+      type: "Privacy guardrail",
+      title: "Keep raw buyer context out of network learning",
+      detail: `${data.sensitiveCount} local records may include notes, contacts, or message content. These should stay local or tenant-only unless explicitly scrubbed.`
+    });
+  }
+  if (data.policy.boundary === "Opt-in anonymized network") {
+    recommendations.push({
+      type: "Network learning",
+      title: "Use consent plus anonymization before cross-organization learning",
+      detail: `${data.networkCandidates} current signals could become network-learning candidates after aggregation, de-identification, and customer approval.`
+    });
+  } else {
+    recommendations.push({
+      type: "Boundary",
+      title: "Keep the beta local until SaaS controls exist",
+      detail: "This public beta should demonstrate intelligence locally while the production platform adds accounts, permissions, audit logs, deletion, and tenant isolation."
+    });
+  }
+  recommendations.push({
+    type: "Next build",
+    title: "Prepare admin approval workflow",
+    detail: "The next SaaS step is a review queue where an organization admin decides which anonymized signals are allowed to improve shared recommendations."
+  });
+  return recommendations.slice(0, 4);
+}
+
+function renderGovernanceCenter() {
+  if (!els.governanceSummary || !els.governanceMatrix || !els.governanceRecommendations) {
+    return;
+  }
+  const data = governanceData();
+  els.governanceSummary.innerHTML = [
+    governanceSummaryTemplate("Readiness", `${data.readinessScore}%`, data.readinessLabel),
+    governanceSummaryTemplate("Learning boundary", data.boundaryLabel, data.policy.evidence),
+    governanceSummaryTemplate("Signals mapped", data.totalSignals, `${data.counts.reinforcement} reinforcement / ${data.counts.outcomes} outcomes`),
+    governanceSummaryTemplate("Network candidates", data.networkCandidates, data.networkCandidates ? "Only after consent and anonymization" : "Blocked until policy allows it")
+  ].join("");
+  els.governanceMatrix.innerHTML = governanceMatrixItems(data).map(governanceMatrixTemplate).join("");
+  els.governanceRecommendations.innerHTML = governanceRecommendations(data).map(governanceRecommendationTemplate).join("");
+}
+
+function governanceSummaryTemplate(label, value, detail) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function governanceMatrixTemplate(item) {
+  return `
+    <article class="governance-card ${escapeHtml(item.className)}">
+      <span>${escapeHtml(item.scope)}</span>
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${escapeHtml(item.action)}</p>
+      <dl>
+        <div><dt>Records</dt><dd>${escapeHtml(String(item.count))}</dd></div>
+        <div><dt>Risk</dt><dd>${escapeHtml(item.risk)}</dd></div>
+      </dl>
+    </article>
+  `;
+}
+
+function governanceRecommendationTemplate(item) {
+  return `
+    <article class="governance-recommendation">
+      <span>${escapeHtml(item.type)}</span>
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${escapeHtml(item.detail)}</p>
+    </article>
+  `;
+}
+
+function governanceBriefText() {
+  const data = governanceData();
+  const matrix = governanceMatrixItems(data).map((item) => `- ${item.title}: ${item.scope}; risk ${item.risk}; action: ${item.action}`).join("\n");
+  const recommendations = governanceRecommendations(data).map((item, index) => `${index + 1}. ${item.title} - ${item.detail}`).join("\n");
+
+  return `InduScout AI governance and learning-loop brief
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+
+Current policy:
+- Learning boundary: ${data.policy.boundary}
+- Evidence threshold: ${data.policy.evidence}
+- Commercial data rule: ${data.policy.commercial}
+- Personal data rule: ${data.policy.personal}
+
+Readiness:
+- Governance readiness: ${data.readinessScore}% (${data.readinessLabel})
+- Total local learning signals mapped: ${data.totalSignals}
+- Network-learning candidates: ${data.networkCandidates}
+- Sensitive local records to keep protected: ${data.sensitiveCount}
+
+Signal boundary matrix:
+${matrix}
+
+Recommended next controls:
+${recommendations}
+
+Principle:
+InduScout should learn from buyer outcomes, but raw buyer notes, contacts, commercial terms, tender context, and confidential supplier evidence should not be used across organizations. Future network learning must be opt-in, anonymized or aggregated, tenant-isolated, auditable, and reversible by policy.`;
+}
+
+async function copyGovernanceBrief() {
+  const text = governanceBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyGovernanceBrief) {
+      els.copyGovernanceBrief.textContent = "Governance brief copied";
+      setTimeout(() => {
+        els.copyGovernanceBrief.textContent = "Copy governance brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy governance brief", text);
+  }
+}
+
+function exportGovernanceJson() {
+  const data = governanceData();
+  downloadFile(
+    `InduScout-AI-Governance-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), governance: { generatedAt: new Date().toISOString(), data, matrix: governanceMatrixItems(data), recommendations: governanceRecommendations(data), generatedText: governanceBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
 function selectedQuoteProduct() {
   return products.find((product) => product.id === els.quoteProduct?.value) || products[0];
 }
@@ -8892,6 +9237,7 @@ function saveQuoteFromForm() {
   renderPlaybookLab();
   populateReplyItems();
   renderSupplierInbox();
+  renderGovernanceCenter();
   els.saveQuote.textContent = "Quote saved";
   setTimeout(() => {
     els.saveQuote.textContent = "Save quote";
@@ -8909,6 +9255,7 @@ function clearQuoteRecords() {
   renderPlaybookLab();
   populateReplyItems();
   renderSupplierInbox();
+  renderGovernanceCenter();
 }
 
 function loadQuoteToForm(id) {
@@ -8928,6 +9275,7 @@ function removeQuoteRecord(id) {
   renderPlaybookLab();
   populateReplyItems();
   renderSupplierInbox();
+  renderGovernanceCenter();
 }
 
 function renderQuoteTracker() {
@@ -9601,6 +9949,7 @@ function saveSupplierReply() {
   hydrateSupplierReplyForm(reply);
   renderSupplierInbox();
   renderPlaybookLab();
+  renderGovernanceCenter();
   els.saveReply.textContent = "Reply saved";
   setTimeout(() => {
     els.saveReply.textContent = "Save reply";
@@ -9618,6 +9967,7 @@ function clearSupplierReplies() {
   clearSupplierReplyForm();
   renderSupplierInbox();
   renderPlaybookLab();
+  renderGovernanceCenter();
 }
 
 function loadSupplierReply(id) {
@@ -9635,6 +9985,7 @@ function removeSupplierReply(id) {
   saveSupplierReplies();
   renderSupplierInbox();
   renderPlaybookLab();
+  renderGovernanceCenter();
 }
 
 function renderSupplierInbox() {
@@ -10534,7 +10885,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "4.9",
+    version: "5.0",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -10565,6 +10916,7 @@ function createSessionSnapshot() {
     learningRecords: state.learningRecords,
     playbookRules: state.playbookRules,
     reinforcementSignals: state.reinforcementSignals,
+    governancePolicy: state.governancePolicy,
     supplierReplies: state.supplierReplies
   };
 }
@@ -10603,6 +10955,7 @@ function applySession(session) {
   state.reinforcementSignals = Array.isArray(session.reinforcementSignals)
     ? session.reinforcementSignals.map(sanitizeReinforcementSignal).filter(Boolean).slice(0, 220)
     : state.reinforcementSignals;
+  state.governancePolicy = sanitizeGovernancePolicy(session.governancePolicy || state.governancePolicy);
   state.supplierReplies = Array.isArray(session.supplierReplies)
     ? session.supplierReplies.map(sanitizeSupplierReply).filter(Boolean).slice(0, 120)
     : state.supplierReplies;
@@ -10624,6 +10977,7 @@ function applySession(session) {
   hydrateLearningForm();
   hydratePlaybookControls();
   hydrateSignalForm();
+  hydrateGovernanceControls();
   els.category.value = state.category;
   els.region.value = state.region;
   els.sourceType.value = state.sourceType;
@@ -10642,6 +10996,7 @@ function applySession(session) {
   savePlaybookConfig();
   savePlaybookRules();
   saveReinforcementSignals();
+  saveGovernancePolicy();
   saveSupplierReplies();
   saveProjectProfile();
   saveSpecRequirements();
@@ -10663,6 +11018,7 @@ function applySession(session) {
   renderLearningLoop();
   renderPlaybookLab();
   renderReinforcementLab();
+  renderGovernanceCenter();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();
@@ -10725,7 +11081,7 @@ function importSessionFile(event) {
 function setSessionStatus(message) {
   els.sessionStatus.textContent = message;
   setTimeout(() => {
-    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, supplier inbox, and notes locally.";
+    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, governance policy, supplier inbox, and notes locally.";
   }, 1800);
 }
 
@@ -12597,6 +12953,31 @@ function saveReinforcementSignals() {
   }
 }
 
+function defaultGovernancePolicy() {
+  return {
+    boundary: "Local browser only",
+    evidence: "Verified source + outcome",
+    commercial: "Never share raw commercial terms",
+    personal: "Strip contacts and buyer notes"
+  };
+}
+
+function loadGovernancePolicy() {
+  try {
+    return sanitizeGovernancePolicy(JSON.parse(window.localStorage.getItem("induscoutGovernancePolicy") || "{}"));
+  } catch {
+    return defaultGovernancePolicy();
+  }
+}
+
+function saveGovernancePolicy() {
+  try {
+    window.localStorage.setItem("induscoutGovernancePolicy", JSON.stringify(state.governancePolicy));
+  } catch {
+    // Governance policy is a convenience only; summaries still render with default guardrails.
+  }
+}
+
 function sanitizeNotes(notes, validProductIds = new Set(products.map((product) => product.id))) {
   if (!notes || typeof notes !== "object" || Array.isArray(notes)) {
     return {};
@@ -12838,6 +13219,24 @@ function sanitizePlaybookRule(rule) {
     goal: config.goal,
     evidenceMode: config.evidence,
     learningBoundary: config.scope
+  };
+}
+
+function sanitizeGovernancePolicy(policy) {
+  const defaults = defaultGovernancePolicy();
+  if (!policy || typeof policy !== "object" || Array.isArray(policy)) {
+    return defaults;
+  }
+
+  const allowedBoundaries = ["Local browser only", "Tenant-only learning", "Opt-in anonymized network"];
+  const allowedEvidence = ["Buyer reviewed", "Verified source + outcome", "Audit-ready only"];
+  const allowedCommercial = ["Never share raw commercial terms", "Tenant aggregate only", "Anonymized benchmark bands"];
+  const allowedPersonal = ["Strip contacts and buyer notes", "Tenant-only authorized users", "Block from learning datasets"];
+  return {
+    boundary: allowedBoundaries.includes(policy.boundary) ? policy.boundary : defaults.boundary,
+    evidence: allowedEvidence.includes(policy.evidence) ? policy.evidence : defaults.evidence,
+    commercial: allowedCommercial.includes(policy.commercial) ? policy.commercial : defaults.commercial,
+    personal: allowedPersonal.includes(policy.personal) ? policy.personal : defaults.personal
   };
 }
 
