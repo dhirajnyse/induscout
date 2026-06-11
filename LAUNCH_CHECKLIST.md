@@ -1,4 +1,4 @@
-# InduScout v4.8 Launch Checklist
+# InduScout v4.9 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -78,6 +78,8 @@ Use this checklist after each public GitHub Pages upload.
 - Click `Use current context`, save one feedback signal, and confirm the signal list, net score, positive rate, and Playbook generated rules update.
 - Copy the signal report, export Signal CSV, export Signal JSON, and confirm feedback, outcome, impact, evidence, confidence, score, project context, and governance note are included.
 - Export a session JSON, import it, and confirm saved reinforcement signals are restored.
+- Click the top `v4.9` tab and confirm the Version & Build Phases section opens.
+- Confirm the Build Phases tracker shows current live build, release mode, v5.0 next gate, completed phases, current closed-loop intelligence, governed SaaS foundation, and future network learning layer.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.

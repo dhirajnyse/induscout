@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v4.8 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v4.8 adds a Reinforcement Signals Lab so buyer feedback on recommendations, source paths, supplier behavior, and outcomes can shape local sourcing weights without sending data to a backend.
+This v4.9 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v4.9 adds a visible Version tab and Build Phases tracker so buyers and collaborators can see what is live, what is experimental, and what must mature before SaaS launch.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -54,6 +54,7 @@ This v4.8 public beta is still static and lightweight, but it already demonstrat
 - Closed-Loop Learning Desk with outcome records, supplier lessons, cycle-time and value signals, proven-pattern summaries, copyable learning reports, CSV export, and JSON export.
 - AI Playbook Lab with buyer objective controls, evidence strictness, local/network-ready learning boundary, ranked generated rules, promoted organization playbooks, copyable playbook brief, and JSON export.
 - Reinforcement Signals Lab with buyer feedback capture, positive/negative weighting, module and impact scoring, generated weight-change recommendations, copyable signal report, CSV export, JSON export, and playbook influence.
+- Version tab and Build Phases tracker with current live build, public beta mode, next major gate, completed phases, current closed-loop intelligence phase, governed SaaS foundation, and future network learning path.
 - Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
 - Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.
 - Security baseline with session import size checks, sanitized imported records, safe external-link handling, spreadsheet formula-injection protection, and safer downloaded filenames.

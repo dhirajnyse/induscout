@@ -2027,7 +2027,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "4.8",
+    version: "4.9",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -10534,7 +10534,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "4.8",
+    version: "4.9",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
