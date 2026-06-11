@@ -18,6 +18,7 @@ The following information is stored locally in the user's browser when the user 
 - Savings register records.
 - Closed-loop learning records.
 - AI playbook settings and promoted playbook rules.
+- Reinforcement feedback signals.
 - Shortlist and compare selections.
 - Quote tracker records.
 - Supplier inbox replies.
@@ -50,8 +51,9 @@ InduScout can generate:
 - Savings register CSV and JSON exports.
 - Learning loop CSV and JSON exports.
 - AI Playbook Lab JSON exports.
+- Reinforcement Signals CSV and JSON exports.
 - Session JSON files.
-- Copyable RFQ, supplier email, supplier counter-offer email, supplier confirmation email, supplier due-diligence email, buyer reply, procurement brief, project brief, source review packet, evidence review report, decision memo, award handover note, compliance pack, buyer file index, supplier scorecard, spec match matrix, alternate review note, substitution approval note, landed cost brief, negotiation savings note, savings register report, learning report, playbook brief, and product update text.
+- Copyable RFQ, supplier email, supplier counter-offer email, supplier confirmation email, supplier due-diligence email, buyer reply, procurement brief, project brief, source review packet, evidence review report, decision memo, award handover note, compliance pack, buyer file index, supplier scorecard, spec match matrix, alternate review note, substitution approval note, landed cost brief, negotiation savings note, savings register report, learning report, playbook brief, reinforcement signal report, and product update text.
 
 Users are responsible for deciding where exported files and copied text are stored or shared.
 

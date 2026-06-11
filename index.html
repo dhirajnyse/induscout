@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=4.7">
+    <link rel="stylesheet" href="styles.css?v=4.8">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -66,6 +66,7 @@
         <a href="#savings">Savings</a>
         <a href="#learning">Learning</a>
         <a href="#playbooks">Playbooks</a>
+        <a href="#signals">Signals</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -248,7 +249,7 @@
             <div class="session-tools" aria-label="Session tools">
               <div>
                 <strong>Session desk</strong>
-                <span id="sessionStatus">Save project, filters, shortlist, spec, alternate, approval, quote, landed cost, negotiation, savings, supplier inbox, and notes locally.</span>
+                <span id="sessionStatus">Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, supplier inbox, and notes locally.</span>
               </div>
               <div class="session-actions">
                 <button class="ghost-button compact" id="saveSession" type="button">Save session</button>
@@ -1123,6 +1124,119 @@
         </div>
       </section>
 
+      <section class="reinforcement-band" id="signals" aria-labelledby="signals-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Reinforcement Signals</p>
+            <h2 id="signals-title">Teach the sourcing desk what worked</h2>
+          </div>
+          <p>Capture buyer feedback on search matches, playbook recommendations, supplier responses, savings decisions, and RFQ outcomes so future sourcing rules can be weighted by proven local behavior.</p>
+        </div>
+        <div class="reinforcement-console">
+          <div class="signal-summary" id="signalSummary"></div>
+          <form class="signal-form" id="signalForm">
+            <input id="signalId" type="hidden">
+            <div class="signal-form-head">
+              <div>
+                <strong>Feedback signal</strong>
+                <span>Save a local training-style signal without sending buyer data outside this browser.</span>
+              </div>
+              <div class="signal-actions">
+                <button type="button" id="saveSignalRecord">Save signal</button>
+                <button class="ghost-button compact" type="button" id="prefillSignalContext">Use current context</button>
+                <button class="ghost-button compact" type="button" id="clearSignalForm">Clear form</button>
+              </div>
+            </div>
+            <div class="signal-grid">
+              <label>Product
+                <select id="signalProduct"></select>
+              </label>
+              <label>Where did the signal come from?
+                <select id="signalModule">
+                  <option>Finder</option>
+                  <option>Compare</option>
+                  <option>RFQ builder</option>
+                  <option>Quotes</option>
+                  <option>Negotiation</option>
+                  <option>Savings</option>
+                  <option>Learning</option>
+                  <option>Playbooks</option>
+                  <option>Supplier inbox</option>
+                </select>
+              </label>
+              <label>Buyer feedback
+                <select id="signalFeedback">
+                  <option>Promote recommendation</option>
+                  <option>Keep neutral</option>
+                  <option>Penalize recommendation</option>
+                </select>
+              </label>
+              <label>Observed outcome
+                <select id="signalOutcome">
+                  <option>Better match</option>
+                  <option>Faster supplier</option>
+                  <option>Lower landed cost</option>
+                  <option>Risk avoided</option>
+                  <option>Supplier failed</option>
+                  <option>Wrong product</option>
+                  <option>Missing evidence</option>
+                  <option>Pending outcome</option>
+                </select>
+              </label>
+              <label>Primary impact
+                <select id="signalImpact">
+                  <option>Speed</option>
+                  <option>Cost</option>
+                  <option>Risk</option>
+                  <option>Quality</option>
+                  <option>Availability</option>
+                  <option>Compliance</option>
+                  <option>UX signal</option>
+                </select>
+              </label>
+              <label>Evidence source
+                <select id="signalEvidence">
+                  <option>Buyer judgement</option>
+                  <option>RFQ result</option>
+                  <option>Quote response</option>
+                  <option>PO placed</option>
+                  <option>Supplier reply</option>
+                  <option>Savings record</option>
+                  <option>Manual review</option>
+                </select>
+              </label>
+              <label>Confidence
+                <select id="signalConfidence">
+                  <option>Observed outcome</option>
+                  <option>Strong buyer signal</option>
+                  <option>Weak signal</option>
+                  <option>Needs validation</option>
+                </select>
+              </label>
+              <label>Buyer note
+                <textarea id="signalNote" rows="4" placeholder="Why should this recommendation, source, supplier, category, or rule be promoted or penalized next time?"></textarea>
+              </label>
+            </div>
+            <div class="signal-export-actions">
+              <button class="ghost-button compact" type="button" id="copySignalReport">Copy signal report</button>
+              <button class="ghost-button compact" type="button" id="exportSignalCsv">Export CSV</button>
+              <button class="ghost-button compact" type="button" id="exportSignalJson">Export JSON</button>
+            </div>
+          </form>
+          <div class="signal-register">
+            <div class="signal-register-head">
+              <div>
+                <strong>Local reinforcement memory</strong>
+                <span id="signalRegisterStatus">Stored locally in this browser</span>
+              </div>
+              <button class="ghost-button compact" type="button" id="clearSignalRecords">Clear signals</button>
+            </div>
+            <div class="signal-recommendations" id="signalRecommendations"></div>
+            <div class="signal-list" id="signalList"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -1807,8 +1921,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=4.7"></script>
-    <script src="back-to-top.js?v=4.7"></script>
-    <script src="app.js?v=4.7"></script>
+    <script src="catalog.js?v=4.8"></script>
+    <script src="back-to-top.js?v=4.8"></script>
+    <script src="app.js?v=4.8"></script>
   </body>
 </html>

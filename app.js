@@ -35,6 +35,7 @@ const state = {
   learningRecords: loadLearningRecords(),
   playbookConfig: loadPlaybookConfig(),
   playbookRules: loadPlaybookRules(),
+  reinforcementSignals: loadReinforcementSignals(),
   activeProductId: null
 };
 
@@ -306,6 +307,27 @@ const els = {
   playbookRecommendations: document.querySelector("#playbookRecommendations"),
   playbookRegisterStatus: document.querySelector("#playbookRegisterStatus"),
   playbookList: document.querySelector("#playbookList"),
+  signalSummary: document.querySelector("#signalSummary"),
+  signalForm: document.querySelector("#signalForm"),
+  signalId: document.querySelector("#signalId"),
+  signalProduct: document.querySelector("#signalProduct"),
+  signalModule: document.querySelector("#signalModule"),
+  signalFeedback: document.querySelector("#signalFeedback"),
+  signalOutcome: document.querySelector("#signalOutcome"),
+  signalImpact: document.querySelector("#signalImpact"),
+  signalEvidence: document.querySelector("#signalEvidence"),
+  signalConfidence: document.querySelector("#signalConfidence"),
+  signalNote: document.querySelector("#signalNote"),
+  saveSignalRecord: document.querySelector("#saveSignalRecord"),
+  prefillSignalContext: document.querySelector("#prefillSignalContext"),
+  clearSignalForm: document.querySelector("#clearSignalForm"),
+  copySignalReport: document.querySelector("#copySignalReport"),
+  exportSignalCsv: document.querySelector("#exportSignalCsv"),
+  exportSignalJson: document.querySelector("#exportSignalJson"),
+  clearSignalRecords: document.querySelector("#clearSignalRecords"),
+  signalRegisterStatus: document.querySelector("#signalRegisterStatus"),
+  signalRecommendations: document.querySelector("#signalRecommendations"),
+  signalList: document.querySelector("#signalList"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -396,6 +418,7 @@ function init() {
   populateSavingsProducts();
   populateSavingsQuotes();
   populateLearningProducts();
+  populateSignalProducts();
   populateAlternateProducts();
   populateApprovalProducts();
   hydrateFromUrl();
@@ -408,6 +431,7 @@ function init() {
   hydrateSavingsForm();
   hydrateLearningForm();
   hydratePlaybookControls();
+  hydrateSignalForm();
   renderCategories();
   renderSources();
   renderSourceDirectory();
@@ -431,6 +455,7 @@ function init() {
   renderSavingsRegister();
   renderLearningLoop();
   renderPlaybookLab();
+  renderReinforcementLab();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1129,6 +1154,49 @@ function wireEvents() {
 
       if (removeButton) {
         removePlaybookRule(removeButton.dataset.removePlaybookRule);
+      }
+    });
+  }
+  if (els.signalProduct) {
+    els.signalProduct.addEventListener("change", hydrateSignalFromSelectedProduct);
+  }
+  if (els.saveSignalRecord) {
+    els.saveSignalRecord.addEventListener("click", saveSignalRecordFromForm);
+  }
+  if (els.prefillSignalContext) {
+    els.prefillSignalContext.addEventListener("click", prefillSignalFromContext);
+  }
+  if (els.clearSignalForm) {
+    els.clearSignalForm.addEventListener("click", clearSignalForm);
+  }
+  if (els.copySignalReport) {
+    els.copySignalReport.addEventListener("click", copySignalReport);
+  }
+  if (els.exportSignalCsv) {
+    els.exportSignalCsv.addEventListener("click", exportSignalCsv);
+  }
+  if (els.exportSignalJson) {
+    els.exportSignalJson.addEventListener("click", exportSignalJson);
+  }
+  if (els.clearSignalRecords) {
+    els.clearSignalRecords.addEventListener("click", clearSignalRecords);
+  }
+  if (els.signalList) {
+    els.signalList.addEventListener("click", (event) => {
+      const loadButton = event.target.closest("[data-load-signal]");
+      const copyButton = event.target.closest("[data-copy-signal]");
+      const removeButton = event.target.closest("[data-remove-signal]");
+
+      if (loadButton) {
+        loadSignalRecordToForm(loadButton.dataset.loadSignal);
+      }
+
+      if (copyButton) {
+        copySingleSignalRecord(copyButton.dataset.copySignal, copyButton);
+      }
+
+      if (removeButton) {
+        removeSignalRecord(removeButton.dataset.removeSignal);
       }
     });
   }
@@ -1959,7 +2027,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "4.7",
+    version: "4.8",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -7723,7 +7791,7 @@ function renderPlaybookLab() {
   els.playbookSummary.innerHTML = [
     playbookSummaryTemplate("Generated rules", recommendations.length, `${summary.highConfidence} high confidence`),
     playbookSummaryTemplate("Saved playbooks", state.playbookRules.length, "Local organization memory"),
-    playbookSummaryTemplate("Learning inputs", summary.learningInputs, "Lessons + quotes + savings"),
+    playbookSummaryTemplate("Learning inputs", summary.learningInputs, "Lessons + quotes + savings + signals"),
     playbookSummaryTemplate("Top score", summary.topScoreLabel, summary.topRule || "Add more outcomes"),
     playbookSummaryTemplate("Boundary", config.scope, summary.privacyMode)
   ].join("");
@@ -7749,6 +7817,7 @@ function playbookRecommendations(config = playbookConfigFromFields()) {
   const decision = quoteDecisionInsights();
   const savings = savingsSummaryData();
   const replies = supplierReplySignalBundle();
+  const reinforcement = reinforcementSummaryData();
 
   if (learning.topPattern) {
     recommendations.push(makePlaybookRecommendation({
@@ -7815,6 +7884,24 @@ function playbookRecommendations(config = playbookConfigFromFields()) {
     }, config));
   }
 
+  if (state.reinforcementSignals.length) {
+    recommendations.push(makePlaybookRecommendation({
+      type: "reinforcement",
+      title: `Apply local feedback weighting to ${reinforcement.topImpact || "sourcing decisions"}`,
+      scope: reinforcement.topImpact || "Reinforcement memory",
+      trigger: `${state.reinforcementSignals.length} buyer feedback ${state.reinforcementSignals.length === 1 ? "signal" : "signals"} with net score ${reinforcement.netScoreLabel}`,
+      action: reinforcement.netScore >= 0
+        ? "Promote recommendations that match positive buyer feedback signals, while keeping verification gates visible."
+        : "Down-rank recommendations similar to negative buyer feedback until evidence or supplier behavior improves.",
+      why: reinforcement.netTone,
+      guardrail: "Use feedback as guidance, not automatic purchasing authority. Keep raw buyer notes local unless a governed opt-in learning policy exists.",
+      evidence: [`Positive rate: ${reinforcement.positiveRateLabel}`, `Top impact: ${reinforcement.topImpact || "TBC"}`, `Mode: local beta`],
+      category: reinforcement.topImpact || "Feedback",
+      supplier: "",
+      score: 64 + Math.min(22, Math.abs(Math.round(reinforcement.netScore * 3))) + Math.min(10, state.reinforcementSignals.length)
+    }, config));
+  }
+
   if (!recommendations.length) {
     recommendations.push(makePlaybookRecommendation({
       type: "starter",
@@ -7859,19 +7946,19 @@ function makePlaybookRecommendation(raw, config) {
 }
 
 function playbookGoalBoost(type, goal) {
-  if (goal === "Fastest reliable source" && ["supplier", "risk"].includes(type)) {
+  if (goal === "Fastest reliable source" && ["supplier", "risk", "reinforcement"].includes(type)) {
     return 14;
   }
-  if (goal === "Lowest landed cost" && type === "cost") {
+  if (goal === "Lowest landed cost" && ["cost", "reinforcement"].includes(type)) {
     return 16;
   }
-  if (goal === "Risk-controlled award" && ["risk", "learning"].includes(type)) {
+  if (goal === "Risk-controlled award" && ["risk", "learning", "reinforcement"].includes(type)) {
     return 14;
   }
-  if (goal === "Stock recovery" && ["supplier", "risk"].includes(type)) {
+  if (goal === "Stock recovery" && ["supplier", "risk", "reinforcement"].includes(type)) {
     return 10;
   }
-  return type === "learning" ? 6 : 0;
+  return ["learning", "reinforcement"].includes(type) ? 6 : 0;
 }
 
 function playbookEvidencePenalty(evidenceCount, evidenceMode) {
@@ -7946,7 +8033,7 @@ function topEntry(counts) {
 }
 
 function playbookSummaryData(recommendations, config = playbookConfigFromFields()) {
-  const learningInputs = state.learningRecords.length + state.quotes.length + state.savingsRecords.length + state.supplierReplies.length;
+  const learningInputs = state.learningRecords.length + state.quotes.length + state.savingsRecords.length + state.supplierReplies.length + state.reinforcementSignals.length;
   const top = recommendations[0];
   return {
     highConfidence: recommendations.filter((item) => item.score >= 80).length,
@@ -8175,6 +8262,520 @@ function exportPlaybookJson() {
   downloadFile(
     `InduScout-AI-Playbook-Lab-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), playbookLab: { generatedAt: new Date().toISOString(), config, recommendations, savedRules: state.playbookRules, generatedText: playbookBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function populateSignalProducts() {
+  if (!els.signalProduct) {
+    return;
+  }
+
+  const currentValue = els.signalProduct.value;
+  els.signalProduct.innerHTML = "";
+  products.forEach((product) => {
+    const option = document.createElement("option");
+    option.value = product.id;
+    option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
+    els.signalProduct.append(option);
+  });
+
+  const productId = currentValue && products.some((product) => product.id === currentValue)
+    ? currentValue
+    : state.shortlist[0] || state.compare[0] || state.quotes[0]?.productId || products[0]?.id || "";
+  if (productId) {
+    els.signalProduct.value = productId;
+  }
+}
+
+function selectedSignalProduct() {
+  return products.find((product) => product.id === els.signalProduct?.value) || products[0];
+}
+
+function signalFieldValue(element, fallback = "") {
+  const value = String(element?.value || "").trim();
+  return value || fallback;
+}
+
+function defaultSignalRecord() {
+  const product = products[0];
+  return {
+    id: "",
+    productId: product?.id || "",
+    module: "Finder",
+    feedback: "Promote recommendation",
+    outcome: "Better match",
+    impact: "Speed",
+    evidence: "Buyer judgement",
+    confidence: "Strong buyer signal",
+    note: ""
+  };
+}
+
+function hydrateSignalForm(record = {}) {
+  if (!els.signalForm) {
+    return;
+  }
+
+  const data = { ...defaultSignalRecord(), ...record };
+  const productId = data.productId && products.some((product) => product.id === data.productId) ? data.productId : products[0]?.id || "";
+  populateSignalProducts();
+  els.signalId.value = data.id || "";
+  els.signalProduct.value = productId;
+  els.signalModule.value = data.module || "Finder";
+  els.signalFeedback.value = data.feedback || "Promote recommendation";
+  els.signalOutcome.value = data.outcome || "Better match";
+  els.signalImpact.value = data.impact || "Speed";
+  els.signalEvidence.value = data.evidence || "Buyer judgement";
+  els.signalConfidence.value = data.confidence || "Strong buyer signal";
+  els.signalNote.value = data.note || "";
+}
+
+function hydrateSignalFromSelectedProduct() {
+  if (!els.signalNote || els.signalNote.value.trim()) {
+    return;
+  }
+  const product = selectedSignalProduct();
+  if (product) {
+    els.signalNote.value = `Review buyer feedback for ${product.brand} ${product.sku} in ${product.category}.`;
+  }
+}
+
+function signalFormSnapshot() {
+  updateProjectFromFields();
+  const product = selectedSignalProduct();
+  const existing = state.reinforcementSignals.find((signal) => signal.id === els.signalId?.value);
+  return sanitizeReinforcementSignal({
+    id: signalFieldValue(els.signalId, `${Date.now()}-${safeFilenamePart(`${product?.sku || "signal"}-${els.signalImpact?.value || "feedback"}`).toLowerCase() || "signal"}`),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    projectName: projectValue("name", ""),
+    buyer: projectValue("buyer", ""),
+    buyerContact: projectValue("contact", ""),
+    deliveryCountry: projectValue("country", ""),
+    targetDate: projectValue("targetDate", ""),
+    productId: product?.id || "",
+    brand: product?.brand || "",
+    sku: product?.sku || "",
+    productName: product?.name || "",
+    category: product?.category || "",
+    module: signalFieldValue(els.signalModule, "Finder"),
+    feedback: signalFieldValue(els.signalFeedback, "Promote recommendation"),
+    outcome: signalFieldValue(els.signalOutcome, "Better match"),
+    impact: signalFieldValue(els.signalImpact, "Speed"),
+    evidence: signalFieldValue(els.signalEvidence, "Buyer judgement"),
+    confidence: signalFieldValue(els.signalConfidence, "Strong buyer signal"),
+    note: signalFieldValue(els.signalNote, "")
+  });
+}
+
+function prefillSignalFromContext() {
+  if (!els.signalForm) {
+    return;
+  }
+
+  const bestQuote = quoteDecisionInsights().recommended?.quote || state.quotes.find((quote) => quote.status === "Best option") || state.quotes[0];
+  const savings = state.savingsRecords.find((record) => ["Accepted", "Partially accepted"].includes(record.status)) || state.savingsRecords[0];
+  const learning = state.learningRecords.find((record) => record.confidence === "Proven pattern") || state.learningRecords[0];
+  const playbook = state.playbookRules[0];
+  const productId = bestQuote?.productId || savings?.productId || learning?.productId || state.compare[0] || state.shortlist[0] || selectedSignalProduct()?.id || "";
+
+  hydrateSignalForm({
+    productId,
+    module: playbook ? "Playbooks" : bestQuote ? "Quotes" : savings ? "Savings" : learning ? "Learning" : "Finder",
+    feedback: playbook || bestQuote || savings ? "Promote recommendation" : "Keep neutral",
+    outcome: savings?.status === "Accepted" ? "Lower landed cost" : bestQuote ? "Better match" : learning?.outcome === "PO placed" ? "Risk avoided" : "Pending outcome",
+    impact: savings ? "Cost" : bestQuote ? "Availability" : learning?.pattern === "Certificate gap" ? "Compliance" : "Risk",
+    evidence: savings ? "Savings record" : bestQuote ? "Quote response" : learning ? "Manual review" : "Buyer judgement",
+    confidence: savings || bestQuote || learning ? "Observed outcome" : "Needs validation",
+    note: playbook
+      ? `Promoted playbook rule: ${playbook.title}.`
+      : bestQuote
+        ? `Best quote signal from ${bestQuote.supplier} for ${bestQuote.brand} ${bestQuote.sku}.`
+        : savings
+          ? `Savings signal from ${savings.supplier}; status ${savings.status}.`
+          : learning
+            ? `Learning signal: ${learning.recommendation || learning.lesson}`
+            : "Capture buyer feedback from the current sourcing context."
+  });
+}
+
+function saveSignalRecordFromForm() {
+  if (!els.signalForm) {
+    return;
+  }
+
+  const record = signalFormSnapshot();
+  state.reinforcementSignals = [record, ...state.reinforcementSignals.filter((item) => item.id !== record.id)].slice(0, 220);
+  saveReinforcementSignals();
+  hydrateSignalForm(record);
+  renderReinforcementLab();
+  renderPlaybookLab();
+  els.saveSignalRecord.textContent = "Signal saved";
+  setTimeout(() => {
+    els.saveSignalRecord.textContent = "Save signal";
+  }, 1200);
+}
+
+function clearSignalForm() {
+  hydrateSignalForm(defaultSignalRecord());
+}
+
+function loadSignalRecordToForm(id) {
+  const record = state.reinforcementSignals.find((item) => item.id === id);
+  if (!record) {
+    return;
+  }
+  hydrateSignalForm(record);
+  els.signalForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function removeSignalRecord(id) {
+  state.reinforcementSignals = state.reinforcementSignals.filter((record) => record.id !== id);
+  saveReinforcementSignals();
+  renderReinforcementLab();
+  renderPlaybookLab();
+}
+
+function clearSignalRecords() {
+  state.reinforcementSignals = [];
+  saveReinforcementSignals();
+  renderReinforcementLab();
+  renderPlaybookLab();
+}
+
+function renderReinforcementLab() {
+  if (!els.signalSummary || !els.signalRecommendations || !els.signalList) {
+    return;
+  }
+
+  const summary = reinforcementSummaryData();
+  const recommendations = reinforcementRecommendations();
+  els.signalSummary.innerHTML = [
+    signalSummaryTemplate("Signals", state.reinforcementSignals.length, `${summary.promoteCount} promote / ${summary.penaltyCount} penalize`),
+    signalSummaryTemplate("Net score", summary.netScoreLabel, summary.netTone),
+    signalSummaryTemplate("Positive rate", summary.positiveRateLabel, "Buyer feedback balance"),
+    signalSummaryTemplate("Top impact", summary.topImpact || "Add signals", summary.topImpactDetail),
+    signalSummaryTemplate("Model mode", "Local beta", "No server training")
+  ].join("");
+
+  if (els.signalRegisterStatus) {
+    els.signalRegisterStatus.textContent = state.reinforcementSignals.length
+      ? `${state.reinforcementSignals.length} saved ${state.reinforcementSignals.length === 1 ? "signal" : "signals"} in this browser`
+      : "Stored locally in this browser";
+  }
+
+  els.signalRecommendations.innerHTML = recommendations.map(signalRecommendationTemplate).join("");
+  els.signalList.innerHTML = state.reinforcementSignals.length
+    ? state.reinforcementSignals.map(signalRecordTemplate).join("")
+    : `<div class="empty-state quote-empty">Save buyer feedback signals here. InduScout will convert them into local scoring guidance for future sourcing decisions.</div>`;
+}
+
+function reinforcementSummaryData() {
+  const signals = state.reinforcementSignals;
+  const scores = signals.map(signalScore);
+  const netScore = scores.reduce((sum, value) => sum + value, 0);
+  const promoteCount = signals.filter((signal) => signal.feedback === "Promote recommendation").length;
+  const penaltyCount = signals.filter((signal) => signal.feedback === "Penalize recommendation").length;
+  const positiveCount = scores.filter((score) => score > 0).length;
+  const positiveRate = signals.length ? Math.round((positiveCount / signals.length) * 100) : 0;
+  const impacts = aggregateSignalScores("impact");
+  const topImpactEntry = Object.entries(impacts).sort((a, b) => Math.abs(b[1].score) - Math.abs(a[1].score))[0];
+  return {
+    promoteCount,
+    penaltyCount,
+    netScore,
+    netScoreLabel: signals.length ? `${netScore > 0 ? "+" : ""}${formatAmount(netScore)}` : "TBC",
+    netTone: netScore > 0 ? "Learning is promoting more than penalizing" : netScore < 0 ? "Learning is flagging risk" : "Awaiting balanced feedback",
+    positiveRateLabel: signals.length ? `${positiveRate}%` : "TBC",
+    topImpact: topImpactEntry?.[0] || "",
+    topImpactDetail: topImpactEntry ? `${topImpactEntry[1].count} signals / ${topImpactEntry[1].score > 0 ? "+" : ""}${formatAmount(topImpactEntry[1].score)} score` : "No impact weight yet"
+  };
+}
+
+function aggregateSignalScores(field) {
+  return state.reinforcementSignals.reduce((groups, signal) => {
+    const key = cleanText(signal[field] || "Unassigned", 120);
+    if (!groups[key]) {
+      groups[key] = { score: 0, count: 0, promotes: 0, penalties: 0 };
+    }
+    const score = signalScore(signal);
+    groups[key].score += score;
+    groups[key].count += 1;
+    groups[key].promotes += signal.feedback === "Promote recommendation" ? 1 : 0;
+    groups[key].penalties += signal.feedback === "Penalize recommendation" ? 1 : 0;
+    return groups;
+  }, {});
+}
+
+function signalScore(signal) {
+  const feedbackScores = {
+    "Promote recommendation": 2,
+    "Keep neutral": 0,
+    "Penalize recommendation": -2
+  };
+  const outcomeScores = {
+    "Better match": 1,
+    "Faster supplier": 1,
+    "Lower landed cost": 1,
+    "Risk avoided": 1,
+    "Supplier failed": -1.5,
+    "Wrong product": -2,
+    "Missing evidence": -1,
+    "Pending outcome": 0
+  };
+  const confidenceMultiplier = {
+    "Observed outcome": 1.35,
+    "Strong buyer signal": 1.1,
+    "Weak signal": 0.7,
+    "Needs validation": 0.45
+  };
+  const raw = (feedbackScores[signal.feedback] || 0) + (outcomeScores[signal.outcome] || 0);
+  return Math.round(raw * (confidenceMultiplier[signal.confidence] || 1) * 10) / 10;
+}
+
+function reinforcementRecommendations() {
+  const impacts = aggregateSignalScores("impact");
+  const modules = aggregateSignalScores("module");
+  const outcomes = aggregateSignalScores("outcome");
+  const strongestImpact = Object.entries(impacts).sort((a, b) => b[1].score - a[1].score)[0];
+  const weakestImpact = Object.entries(impacts).sort((a, b) => a[1].score - b[1].score)[0];
+  const strongestModule = Object.entries(modules).sort((a, b) => b[1].score - a[1].score)[0];
+  const weakestOutcome = Object.entries(outcomes).sort((a, b) => a[1].score - b[1].score)[0];
+  const recommendations = [];
+
+  if (strongestImpact && strongestImpact[1].score > 0) {
+    recommendations.push({
+      type: "promote",
+      title: `Increase ${strongestImpact[0].toLowerCase()} weighting`,
+      detail: `${strongestImpact[1].count} local signals suggest ${strongestImpact[0].toLowerCase()} is producing useful procurement outcomes.`,
+      action: "Promote matching playbook rules earlier, but keep buyer verification and evidence checks in the workflow.",
+      score: strongestImpact[1].score,
+      evidence: `${strongestImpact[1].promotes} promotes / ${strongestImpact[1].penalties} penalties`
+    });
+  }
+
+  if (weakestImpact && weakestImpact[1].score < 0) {
+    recommendations.push({
+      type: "penalize",
+      title: `Reduce confidence for ${weakestImpact[0].toLowerCase()} shortcuts`,
+      detail: `${weakestImpact[1].count} local signals are warning that this impact area needs stronger evidence.`,
+      action: "Add an extra confirmation step before recommending this route as preferred.",
+      score: weakestImpact[1].score,
+      evidence: `${weakestImpact[1].promotes} promotes / ${weakestImpact[1].penalties} penalties`
+    });
+  }
+
+  if (strongestModule && strongestModule[1].count >= 2) {
+    recommendations.push({
+      type: "module",
+      title: `Use ${strongestModule[0]} as a stronger signal source`,
+      detail: `${strongestModule[0]} has ${strongestModule[1].count} feedback signals and a net score of ${strongestModule[1].score > 0 ? "+" : ""}${formatAmount(strongestModule[1].score)}.`,
+      action: "Let this module contribute more evidence to playbook recommendations after repeat buyer confirmation.",
+      score: strongestModule[1].score,
+      evidence: "Module-level reinforcement"
+    });
+  }
+
+  if (weakestOutcome && weakestOutcome[1].score < 0) {
+    recommendations.push({
+      type: "review",
+      title: `Create review gate for ${weakestOutcome[0].toLowerCase()}`,
+      detail: `Signals tied to ${weakestOutcome[0].toLowerCase()} are negative in this browser.`,
+      action: "Require source evidence, certificate check, alternate review, or supplier escalation before award.",
+      score: weakestOutcome[1].score,
+      evidence: "Outcome-level risk signal"
+    });
+  }
+
+  if (!recommendations.length) {
+    recommendations.push({
+      type: "starter",
+      title: "Start with governed feedback capture",
+      detail: "Save at least three buyer signals across search, quotes, savings, or supplier replies.",
+      action: "Use neutral feedback for uncertain cases and promote or penalize only when there is a clear buyer observation.",
+      score: 0,
+      evidence: "No reinforcement history yet"
+    });
+  }
+
+  return recommendations.slice(0, 4);
+}
+
+function signalSummaryTemplate(label, value, detail) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function signalRecommendationTemplate(item) {
+  return `
+    <article class="signal-card ${escapeHtml(item.type)}">
+      <div class="signal-card-head">
+        <div>
+          <span>${escapeHtml(item.evidence)}</span>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p>${escapeHtml(item.detail)}</p>
+        </div>
+        <strong>${escapeHtml(item.score > 0 ? `+${formatAmount(item.score)}` : formatAmount(item.score))}</strong>
+      </div>
+      <p>${escapeHtml(item.action)}</p>
+    </article>
+  `;
+}
+
+function signalRecordTemplate(record) {
+  const score = signalScore(record);
+  const tone = score > 0 ? "positive" : score < 0 ? "negative" : "neutral";
+  return `
+    <article class="signal-card saved ${escapeHtml(tone)}">
+      <div class="signal-card-head">
+        <div>
+          <span>${escapeHtml(record.module)} / ${escapeHtml(record.impact)}</span>
+          <h3>${escapeHtml(record.brand)} ${escapeHtml(record.sku)} - ${escapeHtml(record.feedback)}</h3>
+          <p>${escapeHtml(record.productName)}</p>
+        </div>
+        <strong>${escapeHtml(score > 0 ? `+${formatAmount(score)}` : formatAmount(score))}</strong>
+      </div>
+      <dl class="signal-facts">
+        <div><dt>Outcome</dt><dd>${escapeHtml(record.outcome)}</dd></div>
+        <div><dt>Evidence</dt><dd>${escapeHtml(record.evidence)}</dd></div>
+        <div><dt>Confidence</dt><dd>${escapeHtml(record.confidence)}</dd></div>
+      </dl>
+      <p>${escapeHtml(record.note || "No buyer note added.")}</p>
+      <div class="signal-card-actions">
+        <button type="button" data-load-signal="${escapeHtml(record.id)}">Load</button>
+        <button type="button" data-copy-signal="${escapeHtml(record.id)}">Copy</button>
+        <button type="button" data-remove-signal="${escapeHtml(record.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function signalRecordText(record) {
+  return `InduScout reinforcement signal
+Saved: ${new Date(record.savedAt).toLocaleDateString()}
+
+Product: ${record.brand} ${record.sku} - ${record.productName}
+Category: ${record.category}
+Module: ${record.module}
+Buyer feedback: ${record.feedback}
+Observed outcome: ${record.outcome}
+Primary impact: ${record.impact}
+Evidence source: ${record.evidence}
+Confidence: ${record.confidence}
+Signal score: ${signalScore(record)}
+
+Buyer note:
+${record.note || "No buyer note added."}
+
+Governance note:
+This is a local feedback signal for improving sourcing recommendations. It should not be used for cross-organization learning unless the customer has approved an aggregated, anonymized, tenant-safe learning policy.`;
+}
+
+function signalReportText() {
+  const summary = reinforcementSummaryData();
+  const recommendations = reinforcementRecommendations().map((item, index) => `${index + 1}. ${item.title} (${item.score > 0 ? "+" : ""}${formatAmount(item.score)}) - ${item.action}`).join("\n");
+  const rows = state.reinforcementSignals.length
+    ? state.reinforcementSignals.map((record, index) => `${index + 1}. ${record.brand} ${record.sku} - ${record.module} - ${record.feedback} - ${record.outcome} - score ${signalScore(record)}`).join("\n")
+    : "No reinforcement signals saved yet.";
+
+  return `InduScout Reinforcement Signals report
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+
+Signals: ${state.reinforcementSignals.length}
+Net score: ${summary.netScoreLabel}
+Positive rate: ${summary.positiveRateLabel}
+Top impact: ${summary.topImpact || "TBC"}
+
+Recommended weight changes:
+${recommendations}
+
+Saved signals:
+${rows}
+
+Governance note:
+This beta keeps reinforcement memory inside the browser. Future SaaS learning should be opt-in, tenant-isolated, auditable, and aggregated or anonymized before any cross-organization benefit is created.`;
+}
+
+async function copySignalReport() {
+  const text = signalReportText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copySignalReport) {
+      els.copySignalReport.textContent = "Signal report copied";
+      setTimeout(() => {
+        els.copySignalReport.textContent = "Copy signal report";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy signal report", text);
+  }
+}
+
+async function copySingleSignalRecord(id, triggerButton) {
+  const record = state.reinforcementSignals.find((item) => item.id === id);
+  if (!record) {
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(signalRecordText(record));
+    if (triggerButton) {
+      triggerButton.textContent = "Copied";
+      setTimeout(() => {
+        triggerButton.textContent = "Copy";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy reinforcement signal", signalRecordText(record));
+  }
+}
+
+function signalExportTable() {
+  return {
+    headers: ["Brand", "SKU", "Product", "Category", "Module", "Feedback", "Outcome", "Impact", "Evidence", "Confidence", "Score", "Project", "Buyer note"],
+    rows: state.reinforcementSignals.map((record) => [
+      record.brand,
+      record.sku,
+      record.productName,
+      record.category,
+      record.module,
+      record.feedback,
+      record.outcome,
+      record.impact,
+      record.evidence,
+      record.confidence,
+      signalScore(record),
+      record.projectName,
+      record.note
+    ])
+  };
+}
+
+function exportSignalCsv() {
+  const table = signalExportTable();
+  if (!table.rows.length) {
+    els.exportSignalCsv.textContent = "Add signals first";
+    setTimeout(() => {
+      els.exportSignalCsv.textContent = "Export CSV";
+    }, 1200);
+    return;
+  }
+  const csv = [table.headers, ...table.rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  downloadFile(`InduScout-Reinforcement-Signals-${new Date().toISOString().slice(0, 10)}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
+}
+
+function exportSignalJson() {
+  downloadFile(
+    `InduScout-Reinforcement-Signals-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), reinforcementLab: { generatedAt: new Date().toISOString(), summary: reinforcementSummaryData(), recommendations: reinforcementRecommendations(), signals: state.reinforcementSignals, generatedText: signalReportText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -9933,7 +10534,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "4.3",
+    version: "4.8",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -9963,6 +10564,7 @@ function createSessionSnapshot() {
     savingsRecords: state.savingsRecords,
     learningRecords: state.learningRecords,
     playbookRules: state.playbookRules,
+    reinforcementSignals: state.reinforcementSignals,
     supplierReplies: state.supplierReplies
   };
 }
@@ -9998,6 +10600,9 @@ function applySession(session) {
   state.playbookRules = Array.isArray(session.playbookRules)
     ? session.playbookRules.map(sanitizePlaybookRule).filter(Boolean).slice(0, 120)
     : state.playbookRules;
+  state.reinforcementSignals = Array.isArray(session.reinforcementSignals)
+    ? session.reinforcementSignals.map(sanitizeReinforcementSignal).filter(Boolean).slice(0, 220)
+    : state.reinforcementSignals;
   state.supplierReplies = Array.isArray(session.supplierReplies)
     ? session.supplierReplies.map(sanitizeSupplierReply).filter(Boolean).slice(0, 120)
     : state.supplierReplies;
@@ -10018,6 +10623,7 @@ function applySession(session) {
   hydrateNegotiationFields();
   hydrateLearningForm();
   hydratePlaybookControls();
+  hydrateSignalForm();
   els.category.value = state.category;
   els.region.value = state.region;
   els.sourceType.value = state.sourceType;
@@ -10035,6 +10641,7 @@ function applySession(session) {
   saveLearningRecords();
   savePlaybookConfig();
   savePlaybookRules();
+  saveReinforcementSignals();
   saveSupplierReplies();
   saveProjectProfile();
   saveSpecRequirements();
@@ -10055,6 +10662,7 @@ function applySession(session) {
   renderSavingsRegister();
   renderLearningLoop();
   renderPlaybookLab();
+  renderReinforcementLab();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();
@@ -10117,7 +10725,7 @@ function importSessionFile(event) {
 function setSessionStatus(message) {
   els.sessionStatus.textContent = message;
   setTimeout(() => {
-    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, landed cost, negotiation, savings, supplier inbox, and notes locally.";
+    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, supplier inbox, and notes locally.";
   }, 1800);
 }
 
@@ -11972,6 +12580,23 @@ function savePlaybookRules() {
   }
 }
 
+function loadReinforcementSignals() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutReinforcementSignals") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizeReinforcementSignal).filter(Boolean).slice(0, 220) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveReinforcementSignals() {
+  try {
+    window.localStorage.setItem("induscoutReinforcementSignals", JSON.stringify(state.reinforcementSignals));
+  } catch {
+    // Reinforcement signals are a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
 function sanitizeNotes(notes, validProductIds = new Set(products.map((product) => product.id))) {
   if (!notes || typeof notes !== "object" || Array.isArray(notes)) {
     return {};
@@ -12187,7 +12812,7 @@ function sanitizePlaybookRule(rule) {
     return null;
   }
 
-  const allowedTypes = ["learning", "supplier", "cost", "risk", "starter"];
+  const allowedTypes = ["learning", "supplier", "cost", "risk", "reinforcement", "starter"];
   const cleanEvidence = Array.isArray(rule.evidence) ? rule.evidence.map((item) => cleanText(item, 220)).filter(Boolean).slice(0, 8) : [];
   const config = sanitizePlaybookConfig({
     goal: rule.goal,
@@ -12213,6 +12838,42 @@ function sanitizePlaybookRule(rule) {
     goal: config.goal,
     evidenceMode: config.evidence,
     learningBoundary: config.scope
+  };
+}
+
+function sanitizeReinforcementSignal(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const product = products.find((item) => item.id === record.productId) || products.find((item) => item.sku === record.sku) || products[0];
+  const allowedModules = ["Finder", "Compare", "RFQ builder", "Quotes", "Negotiation", "Savings", "Learning", "Playbooks", "Supplier inbox"];
+  const allowedFeedback = ["Promote recommendation", "Keep neutral", "Penalize recommendation"];
+  const allowedOutcomes = ["Better match", "Faster supplier", "Lower landed cost", "Risk avoided", "Supplier failed", "Wrong product", "Missing evidence", "Pending outcome"];
+  const allowedImpacts = ["Speed", "Cost", "Risk", "Quality", "Availability", "Compliance", "UX signal"];
+  const allowedEvidence = ["Buyer judgement", "RFQ result", "Quote response", "PO placed", "Supplier reply", "Savings record", "Manual review"];
+  const allowedConfidence = ["Observed outcome", "Strong buyer signal", "Weak signal", "Needs validation"];
+  return {
+    id: cleanText(record.id || `${Date.now()}-${safeFilenamePart(record.impact || product?.sku || "signal")}`, 100),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(record.updatedAt || record.savedAt || new Date().toISOString(), 40),
+    projectName: cleanText(record.projectName || "", 180),
+    buyer: cleanText(record.buyer || "", 180),
+    buyerContact: cleanText(record.buyerContact || "", 180),
+    deliveryCountry: cleanText(record.deliveryCountry || "", 120),
+    targetDate: cleanText(record.targetDate || "", 40),
+    productId: product?.id || cleanText(record.productId || "", 90),
+    brand: cleanText(record.brand || product?.brand || "", 120),
+    sku: cleanText(record.sku || product?.sku || "", 120),
+    productName: cleanText(record.productName || product?.name || "", 180),
+    category: cleanText(record.category || product?.category || "", 120),
+    module: allowedModules.includes(record.module) ? record.module : "Finder",
+    feedback: allowedFeedback.includes(record.feedback) ? record.feedback : "Keep neutral",
+    outcome: allowedOutcomes.includes(record.outcome) ? record.outcome : "Pending outcome",
+    impact: allowedImpacts.includes(record.impact) ? record.impact : "Risk",
+    evidence: allowedEvidence.includes(record.evidence) ? record.evidence : "Buyer judgement",
+    confidence: allowedConfidence.includes(record.confidence) ? record.confidence : "Needs validation",
+    note: cleanText(record.note || "", 1800)
   };
 }
 
