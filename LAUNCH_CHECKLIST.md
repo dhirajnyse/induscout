@@ -1,4 +1,4 @@
-# InduScout v4.3 Launch Checklist
+# InduScout v4.7 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -65,6 +65,15 @@ Use this checklist after each public GitHub Pages upload.
 - Save one target or supplier-pending savings record and confirm pipeline savings and open actions update.
 - Copy the savings report, export Savings CSV, export Savings JSON, and confirm project context, supplier, evidence, status, totals, and notes are included.
 - Export a session JSON, import it, and confirm saved savings records are restored.
+- Open Learning, click `Use current decision`, and confirm product, supplier, outcome, cycle time, confidence, lesson, and recommendation fields populate from quote/savings context where available.
+- Save one learning record and confirm the Learning summary cards update records, win/placed rate, average cycle, captured value, and next signal.
+- Copy the learning report, export Learning CSV, export Learning JSON, and confirm outcome, supplier, lesson, recommendation, and project context are included.
+- Export a session JSON, import it, and confirm saved learning records are restored.
+- Open Playbooks and confirm AI Playbook Lab renders generated rules from learning records, quote decisions, savings records, or supplier reply actions.
+- Change buyer objective, evidence strictness, and learning boundary, then confirm generated rule scores and boundary labels update.
+- Click `Promote top rule` and confirm a saved organization playbook appears in the local playbook register.
+- Copy the playbook brief and export Playbook JSON, then confirm generated recommendations, saved rules, objective settings, and governance note are included.
+- Export a session JSON, import it, and confirm saved playbook rules and playbook settings are restored.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.

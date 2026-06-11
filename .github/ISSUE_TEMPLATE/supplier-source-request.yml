@@ -1,0 +1,48 @@
+name: Supplier or source request
+description: Suggest a supplier, distributor, OEM page, marketplace, RFQ source, or data directory.
+title: "Supplier/source request: "
+labels: ["source-request", "needs-review"]
+body:
+  - type: input
+    id: source_name
+    attributes:
+      label: Source name
+      placeholder: "Example: RS, DigiKey, local distributor, OEM page"
+    validations:
+      required: true
+  - type: input
+    id: source_url
+    attributes:
+      label: Source URL
+      placeholder: "https://..."
+    validations:
+      required: true
+  - type: dropdown
+    id: source_type
+    attributes:
+      label: Source type
+      options:
+        - OEM
+        - Distributor
+        - Marketplace
+        - RFQ network
+        - Surplus or obsolete parts
+        - Data or datasheet directory
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: regions
+    attributes:
+      label: Regions served
+      placeholder: "Example: Global, Middle East, Europe, India"
+  - type: textarea
+    id: categories
+    attributes:
+      label: Product categories
+      placeholder: "Sensors, pumps, drives, bearings, tools, etc."
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification notes
+      description: Add evidence of authorization, certifications, official manufacturer relationship, or buyer experience.

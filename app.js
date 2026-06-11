@@ -32,6 +32,9 @@ const state = {
   substitutionApproval: loadSubstitutionApproval(),
   landedCost: loadLandedCostScenario(),
   negotiationPlan: loadNegotiationPlan(),
+  learningRecords: loadLearningRecords(),
+  playbookConfig: loadPlaybookConfig(),
+  playbookRules: loadPlaybookRules(),
   activeProductId: null
 };
 
@@ -270,6 +273,39 @@ const els = {
   clearSavingsRecords: document.querySelector("#clearSavingsRecords"),
   savingsRegisterStatus: document.querySelector("#savingsRegisterStatus"),
   savingsList: document.querySelector("#savingsList"),
+  learningSummary: document.querySelector("#learningSummary"),
+  learningForm: document.querySelector("#learningForm"),
+  learningId: document.querySelector("#learningId"),
+  learningProduct: document.querySelector("#learningProduct"),
+  learningSupplier: document.querySelector("#learningSupplier"),
+  learningOutcome: document.querySelector("#learningOutcome"),
+  learningCycleTime: document.querySelector("#learningCycleTime"),
+  learningSaving: document.querySelector("#learningSaving"),
+  learningConfidence: document.querySelector("#learningConfidence"),
+  learningPattern: document.querySelector("#learningPattern"),
+  learningLesson: document.querySelector("#learningLesson"),
+  learningRecommendation: document.querySelector("#learningRecommendation"),
+  saveLearningRecord: document.querySelector("#saveLearningRecord"),
+  prefillLearningFromDecision: document.querySelector("#prefillLearningFromDecision"),
+  clearLearningForm: document.querySelector("#clearLearningForm"),
+  copyLearningReport: document.querySelector("#copyLearningReport"),
+  exportLearningCsv: document.querySelector("#exportLearningCsv"),
+  exportLearningJson: document.querySelector("#exportLearningJson"),
+  clearLearningRecords: document.querySelector("#clearLearningRecords"),
+  learningRegisterStatus: document.querySelector("#learningRegisterStatus"),
+  learningList: document.querySelector("#learningList"),
+  playbookSummary: document.querySelector("#playbookSummary"),
+  playbookForm: document.querySelector("#playbookForm"),
+  playbookGoal: document.querySelector("#playbookGoal"),
+  playbookEvidence: document.querySelector("#playbookEvidence"),
+  playbookScope: document.querySelector("#playbookScope"),
+  promotePlaybookRule: document.querySelector("#promotePlaybookRule"),
+  copyPlaybookBrief: document.querySelector("#copyPlaybookBrief"),
+  exportPlaybookJson: document.querySelector("#exportPlaybookJson"),
+  clearPlaybookRules: document.querySelector("#clearPlaybookRules"),
+  playbookRecommendations: document.querySelector("#playbookRecommendations"),
+  playbookRegisterStatus: document.querySelector("#playbookRegisterStatus"),
+  playbookList: document.querySelector("#playbookList"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -359,6 +395,7 @@ function init() {
   populateNegotiationQuotes();
   populateSavingsProducts();
   populateSavingsQuotes();
+  populateLearningProducts();
   populateAlternateProducts();
   populateApprovalProducts();
   hydrateFromUrl();
@@ -369,6 +406,8 @@ function init() {
   hydrateLandedCostFields();
   hydrateNegotiationFields();
   hydrateSavingsForm();
+  hydrateLearningForm();
+  hydratePlaybookControls();
   renderCategories();
   renderSources();
   renderSourceDirectory();
@@ -390,6 +429,8 @@ function init() {
   renderLandedCostDesk();
   renderNegotiationDesk();
   renderSavingsRegister();
+  renderLearningLoop();
+  renderPlaybookLab();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -998,6 +1039,96 @@ function wireEvents() {
 
       if (removeButton) {
         removeSavingsRecord(removeButton.dataset.removeSavings);
+      }
+    });
+  }
+  if (els.learningProduct) {
+    els.learningProduct.addEventListener("change", prefillLearningSupplier);
+  }
+  if (els.saveLearningRecord) {
+    els.saveLearningRecord.addEventListener("click", saveLearningRecordFromForm);
+  }
+  if (els.prefillLearningFromDecision) {
+    els.prefillLearningFromDecision.addEventListener("click", prefillLearningFromDecision);
+  }
+  if (els.clearLearningForm) {
+    els.clearLearningForm.addEventListener("click", clearLearningForm);
+  }
+  if (els.copyLearningReport) {
+    els.copyLearningReport.addEventListener("click", copyLearningReport);
+  }
+  if (els.exportLearningCsv) {
+    els.exportLearningCsv.addEventListener("click", exportLearningCsv);
+  }
+  if (els.exportLearningJson) {
+    els.exportLearningJson.addEventListener("click", exportLearningJson);
+  }
+  if (els.clearLearningRecords) {
+    els.clearLearningRecords.addEventListener("click", clearLearningRecords);
+  }
+  if (els.learningList) {
+    els.learningList.addEventListener("click", (event) => {
+      const loadButton = event.target.closest("[data-load-learning]");
+      const copyButton = event.target.closest("[data-copy-learning]");
+      const removeButton = event.target.closest("[data-remove-learning]");
+
+      if (loadButton) {
+        loadLearningRecordToForm(loadButton.dataset.loadLearning);
+      }
+
+      if (copyButton) {
+        copySingleLearningRecord(copyButton.dataset.copyLearning, copyButton);
+      }
+
+      if (removeButton) {
+        removeLearningRecord(removeButton.dataset.removeLearning);
+      }
+    });
+  }
+  playbookControlInputs().forEach((input) => {
+    input.addEventListener("change", () => {
+      state.playbookConfig = playbookConfigFromFields();
+      savePlaybookConfig();
+      renderPlaybookLab();
+    });
+  });
+  if (els.promotePlaybookRule) {
+    els.promotePlaybookRule.addEventListener("click", () => promotePlaybookRule());
+  }
+  if (els.copyPlaybookBrief) {
+    els.copyPlaybookBrief.addEventListener("click", copyPlaybookBrief);
+  }
+  if (els.exportPlaybookJson) {
+    els.exportPlaybookJson.addEventListener("click", exportPlaybookJson);
+  }
+  if (els.clearPlaybookRules) {
+    els.clearPlaybookRules.addEventListener("click", clearPlaybookRules);
+  }
+  if (els.playbookRecommendations) {
+    els.playbookRecommendations.addEventListener("click", (event) => {
+      const promoteButton = event.target.closest("[data-promote-playbook]");
+      const copyButton = event.target.closest("[data-copy-playbook-rec]");
+
+      if (promoteButton) {
+        promotePlaybookRule(promoteButton.dataset.promotePlaybook, promoteButton);
+      }
+
+      if (copyButton) {
+        copyPlaybookRecommendation(copyButton.dataset.copyPlaybookRec, copyButton);
+      }
+    });
+  }
+  if (els.playbookList) {
+    els.playbookList.addEventListener("click", (event) => {
+      const copyButton = event.target.closest("[data-copy-playbook-rule]");
+      const removeButton = event.target.closest("[data-remove-playbook-rule]");
+
+      if (copyButton) {
+        copySavedPlaybookRule(copyButton.dataset.copyPlaybookRule, copyButton);
+      }
+
+      if (removeButton) {
+        removePlaybookRule(removeButton.dataset.removePlaybookRule);
       }
     });
   }
@@ -1828,7 +1959,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "4.3",
+    version: "4.7",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -6759,6 +6890,7 @@ function saveSavingsRecordFromForm() {
   saveSavingsRecords();
   hydrateSavingsForm(record);
   renderSavingsRegister();
+  renderPlaybookLab();
   els.saveSavingsRecord.textContent = "Savings saved";
   setTimeout(() => {
     els.saveSavingsRecord.textContent = "Save savings";
@@ -6782,12 +6914,14 @@ function removeSavingsRecord(id) {
   state.savingsRecords = state.savingsRecords.filter((record) => record.id !== id);
   saveSavingsRecords();
   renderSavingsRegister();
+  renderPlaybookLab();
 }
 
 function clearSavingsRecords() {
   state.savingsRecords = [];
   saveSavingsRecords();
   renderSavingsRegister();
+  renderPlaybookLab();
 }
 
 function renderSavingsRegister() {
@@ -7094,6 +7228,957 @@ function exportSavingsJson() {
   );
 }
 
+function populateLearningProducts() {
+  if (!els.learningProduct) {
+    return;
+  }
+
+  const currentValue = els.learningProduct.value;
+  els.learningProduct.innerHTML = "";
+  products.forEach((product) => {
+    const option = document.createElement("option");
+    option.value = product.id;
+    option.textContent = `${product.brand} ${product.sku} - ${product.name}`;
+    els.learningProduct.append(option);
+  });
+
+  if ([...els.learningProduct.options].some((option) => option.value === currentValue)) {
+    els.learningProduct.value = currentValue;
+  }
+}
+
+function selectedLearningProduct() {
+  return products.find((product) => product.id === els.learningProduct?.value) || products[0];
+}
+
+function learningFieldValue(element, fallback = "") {
+  const value = String(element?.value || "").trim();
+  return value || fallback;
+}
+
+function defaultLearningRecord() {
+  const product = products[0];
+  return {
+    id: "",
+    productId: product?.id || "",
+    supplier: product?.sources?.[0]?.name || "",
+    outcome: "Pending review",
+    cycleTime: "",
+    savingsValue: "",
+    confidence: "Useful signal",
+    pattern: "Authorized path",
+    lesson: "",
+    recommendation: ""
+  };
+}
+
+function hydrateLearningForm(record = {}) {
+  if (!els.learningForm) {
+    return;
+  }
+
+  const data = { ...defaultLearningRecord(), ...record };
+  const productId = data.productId && products.some((product) => product.id === data.productId) ? data.productId : products[0]?.id || "";
+  populateLearningProducts();
+  els.learningId.value = data.id || "";
+  els.learningProduct.value = productId;
+  els.learningSupplier.value = data.supplier || selectedLearningProduct()?.sources?.[0]?.name || "";
+  els.learningOutcome.value = data.outcome || "Pending review";
+  els.learningCycleTime.value = data.cycleTime || "";
+  els.learningSaving.value = data.savingsValue || "";
+  els.learningConfidence.value = data.confidence || "Useful signal";
+  els.learningPattern.value = data.pattern || "Authorized path";
+  els.learningLesson.value = data.lesson || "";
+  els.learningRecommendation.value = data.recommendation || "";
+}
+
+function prefillLearningSupplier() {
+  const product = selectedLearningProduct();
+  if (product && !els.learningSupplier.value.trim()) {
+    els.learningSupplier.value = product.sources?.[0]?.name || "";
+  }
+}
+
+function learningFormSnapshot() {
+  updateProjectFromFields();
+  const product = selectedLearningProduct();
+  const existing = state.learningRecords.find((record) => record.id === els.learningId?.value);
+  const supplier = learningFieldValue(els.learningSupplier, product?.sources?.[0]?.name || "Supplier TBC");
+  return sanitizeLearningRecord({
+    id: learningFieldValue(els.learningId, `${Date.now()}-${safeFilenamePart(`${supplier}-${product?.sku || "learning"}`).toLowerCase() || "learning"}`),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    projectName: projectValue("name", ""),
+    buyer: projectValue("buyer", ""),
+    buyerContact: projectValue("contact", ""),
+    deliveryCountry: projectValue("country", ""),
+    targetDate: projectValue("targetDate", ""),
+    productId: product?.id || "",
+    brand: product?.brand || "",
+    sku: product?.sku || "",
+    productName: product?.name || "",
+    category: product?.category || "",
+    supplier,
+    outcome: learningFieldValue(els.learningOutcome, "Pending review"),
+    cycleTime: learningFieldValue(els.learningCycleTime, ""),
+    savingsValue: learningFieldValue(els.learningSaving, ""),
+    confidence: learningFieldValue(els.learningConfidence, "Useful signal"),
+    pattern: learningFieldValue(els.learningPattern, "Authorized path"),
+    lesson: learningFieldValue(els.learningLesson, ""),
+    recommendation: learningFieldValue(els.learningRecommendation, "")
+  });
+}
+
+function prefillLearningFromDecision() {
+  if (!els.learningForm) {
+    return;
+  }
+
+  const decision = quoteDecisionInsights();
+  const best = decision.recommended?.quote || state.quotes[0];
+  const savings = state.savingsRecords[0];
+  const product = best
+    ? products.find((item) => item.id === best.productId) || products.find((item) => item.sku === best.sku)
+    : savings
+      ? products.find((item) => item.id === savings.productId) || products.find((item) => item.sku === savings.sku)
+      : selectedLearningProduct();
+  const supplier = best?.supplier || savings?.supplier || product?.sources?.[0]?.name || "";
+  const savingsLabel = savings ? `${savings.currency} ${savingsMetrics(savings).canCalculateSavings ? formatAmount(savingsMetrics(savings).savings) : savings.finalUnit || "value TBC"}` : "";
+  hydrateLearningForm({
+    productId: product?.id || "",
+    supplier,
+    outcome: best?.status === "Best option" || savings?.status === "Accepted" ? "PO placed" : "Pending review",
+    cycleTime: best?.leadTime || product?.lead || "",
+    savingsValue: savingsLabel,
+    confidence: decision.recommended ? "Useful signal" : "Needs review",
+    pattern: best ? "Authorized path" : "Manual lesson",
+    lesson: best ? `Current best quote scored ${decision.recommended.score}. Supplier path is ${supplier}.` : "",
+    recommendation: best ? `Start future sourcing with ${supplier}, then verify stock, certificates, warranty path, and landed cost before order.` : ""
+  });
+  renderLearningLoop();
+}
+
+function saveLearningRecordFromForm() {
+  if (!els.learningForm) {
+    return;
+  }
+
+  const record = learningFormSnapshot();
+  if (!record.lesson && !record.recommendation) {
+    els.saveLearningRecord.textContent = "Add lesson first";
+    setTimeout(() => {
+      els.saveLearningRecord.textContent = "Save learning";
+    }, 1200);
+    return;
+  }
+
+  state.learningRecords = [record, ...state.learningRecords.filter((item) => item.id !== record.id)].slice(0, 160);
+  saveLearningRecords();
+  hydrateLearningForm(record);
+  renderLearningLoop();
+  renderPlaybookLab();
+  els.saveLearningRecord.textContent = "Learning saved";
+  setTimeout(() => {
+    els.saveLearningRecord.textContent = "Save learning";
+  }, 1200);
+}
+
+function clearLearningForm() {
+  hydrateLearningForm(defaultLearningRecord());
+}
+
+function loadLearningRecordToForm(id) {
+  const record = state.learningRecords.find((item) => item.id === id);
+  if (!record) {
+    return;
+  }
+  hydrateLearningForm(record);
+  els.learningForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function removeLearningRecord(id) {
+  state.learningRecords = state.learningRecords.filter((record) => record.id !== id);
+  saveLearningRecords();
+  renderLearningLoop();
+  renderPlaybookLab();
+}
+
+function clearLearningRecords() {
+  state.learningRecords = [];
+  saveLearningRecords();
+  renderLearningLoop();
+  renderPlaybookLab();
+}
+
+function renderLearningLoop() {
+  if (!els.learningSummary || !els.learningList) {
+    return;
+  }
+
+  const summary = learningSummaryData();
+  els.learningSummary.innerHTML = [
+    learningSummaryTemplate("Records", state.learningRecords.length, `${summary.provenCount} proven`),
+    learningSummaryTemplate("Win / placed", summary.winRateLabel, `${summary.wonCount} positive outcomes`),
+    learningSummaryTemplate("Avg cycle", summary.averageCycleLabel, "From recorded outcomes"),
+    learningSummaryTemplate("Captured value", summary.valueLabel, "Savings or value mentions"),
+    learningSummaryTemplate("Next signal", summary.topPattern || "Add outcomes", summary.recommendation)
+  ].join("");
+
+  if (els.learningRegisterStatus) {
+    els.learningRegisterStatus.textContent = state.learningRecords.length
+      ? `${state.learningRecords.length} saved ${state.learningRecords.length === 1 ? "lesson" : "lessons"} in this browser`
+      : "Stored locally in this browser";
+  }
+
+  if (!state.learningRecords.length) {
+    els.learningList.innerHTML = `
+      <div class="empty-state quote-empty">
+        Save supplier outcomes, buyer decisions, and lessons here. This is the first step toward a closed-loop procurement learning system.
+      </div>
+    `;
+    return;
+  }
+
+  els.learningList.innerHTML = state.learningRecords.map(learningRecordTemplate).join("");
+}
+
+function learningSummaryData() {
+  const records = state.learningRecords;
+  const positiveOutcomes = ["RFQ won", "PO placed"];
+  const wonCount = records.filter((record) => positiveOutcomes.includes(record.outcome)).length;
+  const provenCount = records.filter((record) => record.confidence === "Proven pattern").length;
+  const cycleDays = records.map((record) => parseFirstNumber(record.cycleTime)).filter(Number.isFinite);
+  const valueMentions = records.filter((record) => String(record.savingsValue || "").trim()).length;
+  const patterns = records.reduce((counts, record) => {
+    counts[record.pattern] = (counts[record.pattern] || 0) + 1;
+    return counts;
+  }, {});
+  const topPattern = Object.entries(patterns).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
+  const averageCycle = cycleDays.length ? cycleDays.reduce((sum, value) => sum + value, 0) / cycleDays.length : 0;
+  const winRate = records.length ? Math.round((wonCount / records.length) * 100) : 0;
+  return {
+    wonCount,
+    provenCount,
+    winRateLabel: records.length ? `${winRate}%` : "TBC",
+    averageCycleLabel: cycleDays.length ? `${formatAmount(averageCycle)} days` : "TBC",
+    valueLabel: valueMentions ? `${valueMentions} records` : "TBC",
+    topPattern,
+    recommendation: learningRecommendationFromPattern(topPattern)
+  };
+}
+
+function learningRecommendationFromPattern(pattern) {
+  const recommendations = {
+    "Authorized path": "Start with verified OEM or distributor route",
+    "Fastest valid source": "Prioritize suppliers with proven response speed",
+    "Best landed cost": "Compare full landed cost before award",
+    "Alternate accepted": "Keep reviewed alternates ready for shortages",
+    "Certificate gap": "Request certificates earlier in RFQ",
+    "Supplier responsiveness": "Favor suppliers with reply discipline",
+    "No-stock risk": "Confirm stock before internal approval",
+    "Manual lesson": "Review buyer notes before next RFQ"
+  };
+  return recommendations[pattern] || "Capture outcomes to improve future sourcing";
+}
+
+function learningSummaryTemplate(label, value, detail) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function learningRecordTemplate(record) {
+  const outcomeClass = record.outcome.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return `
+    <article class="learning-card">
+      <div class="learning-card-head">
+        <div>
+          <span>${escapeHtml(record.pattern)}</span>
+          <h3>${escapeHtml(record.brand)} ${escapeHtml(record.sku)} - ${escapeHtml(record.supplier)}</h3>
+          <p>${escapeHtml(record.productName)}</p>
+        </div>
+        <strong class="learning-status ${escapeHtml(outcomeClass)}">${escapeHtml(record.outcome)}</strong>
+      </div>
+      <dl class="learning-facts">
+        <div><dt>Confidence</dt><dd>${escapeHtml(record.confidence)}</dd></div>
+        <div><dt>Cycle</dt><dd>${escapeHtml(record.cycleTime || "TBC")}</dd></div>
+        <div><dt>Value</dt><dd>${escapeHtml(record.savingsValue || "TBC")}</dd></div>
+        <div><dt>Category</dt><dd>${escapeHtml(record.category || "TBC")}</dd></div>
+      </dl>
+      <p><strong>Lesson:</strong> ${escapeHtml(record.lesson || "No lesson recorded.")}</p>
+      <p><strong>Next recommendation:</strong> ${escapeHtml(record.recommendation || learningRecommendationFromPattern(record.pattern))}</p>
+      <div class="learning-card-actions">
+        <button type="button" data-load-learning="${escapeHtml(record.id)}">Load</button>
+        <button type="button" data-copy-learning="${escapeHtml(record.id)}">Copy lesson</button>
+        <button type="button" data-remove-learning="${escapeHtml(record.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function learningRecordText(record) {
+  return `InduScout closed-loop learning record
+
+Project: ${record.projectName || projectValue("name", "TBC")}
+Buyer/company: ${record.buyer || projectValue("buyer", "TBC")}
+Product: ${record.brand} ${record.sku} - ${record.productName}
+Category: ${record.category}
+Supplier: ${record.supplier}
+Outcome: ${record.outcome}
+Cycle time: ${record.cycleTime || "TBC"}
+Savings / value: ${record.savingsValue || "TBC"}
+Confidence: ${record.confidence}
+Pattern: ${record.pattern}
+
+Lesson learned:
+${record.lesson || "None recorded."}
+
+Next recommendation:
+${record.recommendation || learningRecommendationFromPattern(record.pattern)}
+
+Learning guardrail:
+Treat this as buyer-side memory. Validate current stock, pricing, certificates, compatibility, and supplier legitimacy before a new purchase.`;
+}
+
+function learningReportText() {
+  const summary = learningSummaryData();
+  const rows = state.learningRecords.length
+    ? state.learningRecords.map((record, index) => `${index + 1}. ${record.brand} ${record.sku} - ${record.supplier} - ${record.outcome} - ${record.pattern}`).join("\n")
+    : "No learning records saved yet.";
+
+  return `InduScout closed-loop learning report
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+
+Records: ${state.learningRecords.length}
+Positive outcomes: ${summary.wonCount}
+Proven patterns: ${summary.provenCount}
+Win / placed rate: ${summary.winRateLabel}
+Average cycle time: ${summary.averageCycleLabel}
+Top pattern: ${summary.topPattern || "TBC"}
+Recommended improvement: ${summary.recommendation}
+
+Learning register:
+${rows}
+
+Closed-loop note:
+In a future SaaS version, anonymized and permissioned outcome signals can improve recommendations across teams while keeping buyer-sensitive commercial data protected.`;
+}
+
+async function copyLearningReport() {
+  const text = learningReportText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyLearningReport) {
+      els.copyLearningReport.textContent = "Learning report copied";
+      setTimeout(() => {
+        els.copyLearningReport.textContent = "Copy learning report";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy learning report", text);
+  }
+}
+
+async function copySingleLearningRecord(id, triggerButton) {
+  const record = state.learningRecords.find((item) => item.id === id);
+  if (!record) {
+    return;
+  }
+  const text = learningRecordText(record);
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = "Copied";
+      setTimeout(() => {
+        triggerButton.textContent = "Copy lesson";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy learning record", text);
+  }
+}
+
+function learningExportTable() {
+  const headers = [
+    "Project Name",
+    "Buyer / Company",
+    "Buyer Contact",
+    "Delivery Country",
+    "Target Date",
+    "Product",
+    "Brand",
+    "SKU",
+    "Category",
+    "Supplier",
+    "Outcome",
+    "Cycle Time",
+    "Savings / Value",
+    "Confidence",
+    "Pattern",
+    "Lesson",
+    "Recommendation",
+    "Saved At"
+  ];
+  const rows = state.learningRecords.map((record) => [
+    record.projectName,
+    record.buyer,
+    record.buyerContact,
+    record.deliveryCountry,
+    record.targetDate,
+    record.productName,
+    record.brand,
+    record.sku,
+    record.category,
+    record.supplier,
+    record.outcome,
+    record.cycleTime,
+    record.savingsValue,
+    record.confidence,
+    record.pattern,
+    record.lesson,
+    record.recommendation,
+    record.savedAt
+  ]);
+  return { headers, rows };
+}
+
+function exportLearningCsv() {
+  const table = learningExportTable();
+  if (!table.rows.length) {
+    els.exportLearningCsv.textContent = "Add learning first";
+    setTimeout(() => {
+      els.exportLearningCsv.textContent = "Export CSV";
+    }, 1200);
+    return;
+  }
+  const csv = [table.headers, ...table.rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+  const projectSlug = safeFilenamePart(projectValue("name", ""));
+  downloadFile(
+    projectSlug
+      ? `InduScout-Learning-Loop-${projectSlug}-${new Date().toISOString().slice(0, 10)}.csv`
+      : `InduScout-Learning-Loop-${new Date().toISOString().slice(0, 10)}.csv`,
+    `\ufeff${csv}`,
+    "text/csv;charset=utf-8"
+  );
+}
+
+function exportLearningJson() {
+  const summary = learningSummaryData();
+  downloadFile(
+    `InduScout-Learning-Loop-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), learningLoop: { generatedAt: new Date().toISOString(), summary, records: state.learningRecords, generatedText: learningReportText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function playbookControlInputs() {
+  return [els.playbookGoal, els.playbookEvidence, els.playbookScope].filter(Boolean);
+}
+
+function defaultPlaybookConfig() {
+  return {
+    goal: "Balanced procurement",
+    evidence: "Standard evidence",
+    scope: "Local organization only"
+  };
+}
+
+function hydratePlaybookControls(config = state.playbookConfig) {
+  if (!els.playbookForm) {
+    return;
+  }
+
+  const data = { ...defaultPlaybookConfig(), ...sanitizePlaybookConfig(config || {}) };
+  els.playbookGoal.value = data.goal;
+  els.playbookEvidence.value = data.evidence;
+  els.playbookScope.value = data.scope;
+  state.playbookConfig = data;
+}
+
+function playbookConfigFromFields() {
+  return sanitizePlaybookConfig({
+    goal: learningFieldValue(els.playbookGoal, "Balanced procurement"),
+    evidence: learningFieldValue(els.playbookEvidence, "Standard evidence"),
+    scope: learningFieldValue(els.playbookScope, "Local organization only")
+  });
+}
+
+function renderPlaybookLab() {
+  if (!els.playbookSummary || !els.playbookRecommendations || !els.playbookList) {
+    return;
+  }
+
+  const config = playbookConfigFromFields();
+  state.playbookConfig = config;
+  const recommendations = playbookRecommendations(config);
+  const summary = playbookSummaryData(recommendations, config);
+
+  els.playbookSummary.innerHTML = [
+    playbookSummaryTemplate("Generated rules", recommendations.length, `${summary.highConfidence} high confidence`),
+    playbookSummaryTemplate("Saved playbooks", state.playbookRules.length, "Local organization memory"),
+    playbookSummaryTemplate("Learning inputs", summary.learningInputs, "Lessons + quotes + savings"),
+    playbookSummaryTemplate("Top score", summary.topScoreLabel, summary.topRule || "Add more outcomes"),
+    playbookSummaryTemplate("Boundary", config.scope, summary.privacyMode)
+  ].join("");
+
+  els.playbookRecommendations.innerHTML = recommendations.length
+    ? recommendations.map(playbookRecommendationTemplate).join("")
+    : `<div class="empty-state quote-empty">Add learning records, quotes, savings, or supplier replies to generate sourcing playbook rules.</div>`;
+
+  if (els.playbookRegisterStatus) {
+    els.playbookRegisterStatus.textContent = state.playbookRules.length
+      ? `${state.playbookRules.length} saved ${state.playbookRules.length === 1 ? "rule" : "rules"} in this browser`
+      : "Stored locally in this browser";
+  }
+
+  els.playbookList.innerHTML = state.playbookRules.length
+    ? state.playbookRules.map(savedPlaybookRuleTemplate).join("")
+    : `<div class="empty-state quote-empty">Promote generated recommendations into saved organization playbooks here.</div>`;
+}
+
+function playbookRecommendations(config = playbookConfigFromFields()) {
+  const recommendations = [];
+  const learning = learningSignalBundle();
+  const decision = quoteDecisionInsights();
+  const savings = savingsSummaryData();
+  const replies = supplierReplySignalBundle();
+
+  if (learning.topPattern) {
+    recommendations.push(makePlaybookRecommendation({
+      type: "learning",
+      title: `Repeat the ${learning.topPattern.toLowerCase()} pattern`,
+      scope: learning.topCategory || "Cross-category sourcing",
+      trigger: `${learning.recordCount} learning ${learning.recordCount === 1 ? "record" : "records"} with ${learning.positiveCount} positive outcomes`,
+      action: learningRecommendationFromPattern(learning.topPattern),
+      why: learning.topLesson || "Local buyer memory shows this pattern is becoming useful.",
+      guardrail: "Confirm each new case against current stock, certificates, compatibility, warranty path, and supplier legitimacy.",
+      evidence: learning.evidence,
+      category: learning.topCategory,
+      supplier: learning.topSupplier,
+      score: 68 + learning.positiveCount * 5 + learning.provenCount * 6
+    }, config));
+  }
+
+  if (decision.recommended) {
+    const quote = decision.recommended.quote;
+    recommendations.push(makePlaybookRecommendation({
+      type: "supplier",
+      title: `Start RFQ with ${quote.supplier} for ${quote.category}`,
+      scope: quote.category,
+      trigger: `Best current quote score ${decision.recommended.score}`,
+      action: `Use ${quote.supplier} as the first outreach path, then compare against at least one alternate source before award.`,
+      why: decision.recommended.reason,
+      guardrail: "Do not auto-award. Reconfirm quoted price, validity, delivery terms, warranty path, certificate pack, and exact suffix.",
+      evidence: [`Quote status: ${quote.status}`, `Lead time: ${quote.leadTime || "TBC"}`, `Payment: ${quote.paymentTerms || "TBC"}`],
+      category: quote.category,
+      supplier: quote.supplier,
+      score: 62 + Math.round(decision.recommended.score / 4)
+    }, config));
+  }
+
+  if (savings.acceptedCount || savings.openActions) {
+    recommendations.push(makePlaybookRecommendation({
+      type: "cost",
+      title: "Turn negotiation outcomes into a savings rule",
+      scope: "Commercial review",
+      trigger: `${savings.acceptedCount} accepted savings records, ${savings.openActions} open savings actions`,
+      action: "When a quote is received, create a target price and evidence-backed counter-offer before award review.",
+      why: `Accepted savings: ${savings.acceptedLabel}. Pipeline savings: ${savings.pipelineLabel}.`,
+      guardrail: "Recognize savings only when supplier acceptance, buyer approval, delivery scope, and payment terms are documented.",
+      evidence: [`Largest saving: ${savings.largestLabel}`, `Pipeline: ${savings.pipelineLabel}`],
+      category: "Savings",
+      supplier: savings.largestSupplier || "",
+      score: 66 + savings.acceptedCount * 8 + savings.openActions * 2
+    }, config));
+  }
+
+  if (replies.actionCount) {
+    recommendations.push(makePlaybookRecommendation({
+      type: "risk",
+      title: "Create a supplier response SLA rule",
+      scope: "Supplier follow-up",
+      trigger: `${replies.actionCount} supplier reply actions need buyer attention`,
+      action: "Set a follow-up checkpoint for missing certificates, unclear alternates, revised price, and unanswered validity questions.",
+      why: replies.topAction ? `Most common next action: ${replies.topAction}.` : "Supplier replies contain unresolved buyer actions.",
+      guardrail: "Do not treat a supplier reply as compliant until certificates, warranty path, lead time, and seller identity are confirmed.",
+      evidence: replies.evidence,
+      category: "Supplier response",
+      supplier: replies.topSupplier,
+      score: 64 + replies.actionCount * 4
+    }, config));
+  }
+
+  if (!recommendations.length) {
+    recommendations.push(makePlaybookRecommendation({
+      type: "starter",
+      title: "Run the first closed-loop sourcing experiment",
+      scope: "Pilot workflow",
+      trigger: "No local outcomes have been saved yet",
+      action: "Shortlist one product, send an RFQ, log one supplier quote, capture the result in Learning, then promote a rule.",
+      why: "A closed-loop system needs outcome evidence before it can improve future recommendations.",
+      guardrail: "Keep sensitive buyer data local until governance, consent, tenancy, and deletion controls exist.",
+      evidence: ["No learning records yet", "No promoted playbook rules yet"],
+      category: "Pilot",
+      supplier: "",
+      score: 58
+    }, config));
+  }
+
+  return recommendations.sort((a, b) => b.score - a.score).slice(0, 6);
+}
+
+function makePlaybookRecommendation(raw, config) {
+  const goalBoost = playbookGoalBoost(raw.type, config.goal);
+  const evidencePenalty = playbookEvidencePenalty(raw.evidence.length, config.evidence);
+  const score = Math.max(1, Math.min(100, Math.round(raw.score + goalBoost - evidencePenalty)));
+  const id = safeFilenamePart(`${raw.type}-${raw.title}-${raw.scope}`).toLowerCase() || `${raw.type}-${score}`;
+  return {
+    id,
+    type: raw.type,
+    title: raw.title,
+    scope: raw.scope,
+    trigger: raw.trigger,
+    action: raw.action,
+    why: raw.why,
+    guardrail: raw.guardrail,
+    evidence: raw.evidence.slice(0, 6),
+    category: raw.category || "",
+    supplier: raw.supplier || "",
+    score,
+    goal: config.goal,
+    evidenceMode: config.evidence,
+    learningBoundary: config.scope
+  };
+}
+
+function playbookGoalBoost(type, goal) {
+  if (goal === "Fastest reliable source" && ["supplier", "risk"].includes(type)) {
+    return 14;
+  }
+  if (goal === "Lowest landed cost" && type === "cost") {
+    return 16;
+  }
+  if (goal === "Risk-controlled award" && ["risk", "learning"].includes(type)) {
+    return 14;
+  }
+  if (goal === "Stock recovery" && ["supplier", "risk"].includes(type)) {
+    return 10;
+  }
+  return type === "learning" ? 6 : 0;
+}
+
+function playbookEvidencePenalty(evidenceCount, evidenceMode) {
+  if (evidenceMode === "Audit-ready only") {
+    return evidenceCount >= 4 ? 0 : 12;
+  }
+  if (evidenceMode === "Strict verification") {
+    return evidenceCount >= 3 ? 0 : 7;
+  }
+  return evidenceCount ? 0 : 3;
+}
+
+function learningSignalBundle() {
+  const records = state.learningRecords;
+  const positiveOutcomes = ["RFQ won", "PO placed"];
+  const patternCounts = records.reduce((counts, record) => {
+    counts[record.pattern] = (counts[record.pattern] || 0) + 1;
+    return counts;
+  }, {});
+  const categoryCounts = records.reduce((counts, record) => {
+    if (record.category) {
+      counts[record.category] = (counts[record.category] || 0) + 1;
+    }
+    return counts;
+  }, {});
+  const supplierCounts = records.reduce((counts, record) => {
+    if (record.supplier) {
+      counts[record.supplier] = (counts[record.supplier] || 0) + 1;
+    }
+    return counts;
+  }, {});
+  const topPattern = topEntry(patternCounts);
+  const topCategory = topEntry(categoryCounts);
+  const topSupplier = topEntry(supplierCounts);
+  const provenCount = records.filter((record) => record.confidence === "Proven pattern").length;
+  const positiveCount = records.filter((record) => positiveOutcomes.includes(record.outcome)).length;
+  const topLesson = records.find((record) => record.pattern === topPattern && record.lesson)?.lesson || "";
+  const evidence = [
+    topPattern ? `Top pattern: ${topPattern}` : "",
+    topCategory ? `Top category: ${topCategory}` : "",
+    topSupplier ? `Top supplier: ${topSupplier}` : "",
+    provenCount ? `${provenCount} proven patterns` : "",
+    positiveCount ? `${positiveCount} positive outcomes` : ""
+  ].filter(Boolean);
+  return { recordCount: records.length, topPattern, topCategory, topSupplier, provenCount, positiveCount, topLesson, evidence };
+}
+
+function supplierReplySignalBundle() {
+  const replies = state.supplierReplies.filter(replyNeedsAction);
+  const actionCounts = replies.reduce((counts, reply) => {
+    counts[reply.nextAction] = (counts[reply.nextAction] || 0) + 1;
+    return counts;
+  }, {});
+  const supplierCounts = replies.reduce((counts, reply) => {
+    if (reply.supplier) {
+      counts[reply.supplier] = (counts[reply.supplier] || 0) + 1;
+    }
+    return counts;
+  }, {});
+  const topAction = topEntry(actionCounts);
+  const topSupplier = topEntry(supplierCounts);
+  const evidence = [
+    topAction ? `Top action: ${topAction}` : "",
+    topSupplier ? `Top supplier: ${topSupplier}` : "",
+    replies.length ? `${replies.length} unresolved supplier replies` : ""
+  ].filter(Boolean);
+  return { actionCount: replies.length, topAction, topSupplier, evidence };
+}
+
+function topEntry(counts) {
+  return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || "";
+}
+
+function playbookSummaryData(recommendations, config = playbookConfigFromFields()) {
+  const learningInputs = state.learningRecords.length + state.quotes.length + state.savingsRecords.length + state.supplierReplies.length;
+  const top = recommendations[0];
+  return {
+    highConfidence: recommendations.filter((item) => item.score >= 80).length,
+    learningInputs,
+    topScoreLabel: top ? `${top.score}/100` : "TBC",
+    topRule: top?.title || "",
+    privacyMode: config.scope === "Future anonymized network-ready"
+      ? "Requires consent + anonymization"
+      : "No backend sharing"
+  };
+}
+
+function playbookSummaryTemplate(label, value, detail) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function playbookRecommendationTemplate(recommendation) {
+  return `
+    <article class="playbook-card ${escapeHtml(recommendation.type)}">
+      <div class="playbook-card-head">
+        <div>
+          <span>${escapeHtml(recommendation.type)} rule</span>
+          <h3>${escapeHtml(recommendation.title)}</h3>
+          <p>${escapeHtml(recommendation.scope)}</p>
+        </div>
+        <strong>${escapeHtml(String(recommendation.score))}</strong>
+      </div>
+      <dl class="playbook-facts">
+        <div><dt>Goal</dt><dd>${escapeHtml(recommendation.goal)}</dd></div>
+        <div><dt>Evidence</dt><dd>${escapeHtml(recommendation.evidenceMode)}</dd></div>
+        <div><dt>Boundary</dt><dd>${escapeHtml(recommendation.learningBoundary)}</dd></div>
+      </dl>
+      <p><strong>Trigger:</strong> ${escapeHtml(recommendation.trigger)}</p>
+      <p><strong>Action:</strong> ${escapeHtml(recommendation.action)}</p>
+      <p><strong>Why:</strong> ${escapeHtml(recommendation.why)}</p>
+      <ul>${recommendation.evidence.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+      <p><strong>Guardrail:</strong> ${escapeHtml(recommendation.guardrail)}</p>
+      <div class="playbook-card-actions">
+        <button type="button" data-promote-playbook="${escapeHtml(recommendation.id)}">Promote rule</button>
+        <button type="button" data-copy-playbook-rec="${escapeHtml(recommendation.id)}">Copy</button>
+      </div>
+    </article>
+  `;
+}
+
+function savedPlaybookRuleTemplate(rule) {
+  return `
+    <article class="playbook-card saved">
+      <div class="playbook-card-head">
+        <div>
+          <span>${escapeHtml(rule.type)} playbook</span>
+          <h3>${escapeHtml(rule.title)}</h3>
+          <p>${escapeHtml(rule.scope)}</p>
+        </div>
+        <strong>${escapeHtml(String(rule.score))}</strong>
+      </div>
+      <p><strong>Rule:</strong> ${escapeHtml(rule.action)}</p>
+      <p><strong>Guardrail:</strong> ${escapeHtml(rule.guardrail)}</p>
+      <div class="playbook-card-actions">
+        <button type="button" data-copy-playbook-rule="${escapeHtml(rule.id)}">Copy rule</button>
+        <button type="button" data-remove-playbook-rule="${escapeHtml(rule.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function promotePlaybookRule(recommendationId = "", triggerButton = els.promotePlaybookRule) {
+  const recommendations = playbookRecommendations();
+  const recommendation = recommendations.find((item) => item.id === recommendationId) || recommendations[0];
+  if (!recommendation) {
+    return;
+  }
+
+  const rule = sanitizePlaybookRule({
+    ...recommendation,
+    id: `${Date.now()}-${safeFilenamePart(recommendation.title).toLowerCase() || "playbook-rule"}`,
+    savedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    sourceRecommendationId: recommendation.id
+  });
+  state.playbookRules = [rule, ...state.playbookRules.filter((item) => item.sourceRecommendationId !== recommendation.id)].slice(0, 120);
+  savePlaybookRules();
+  renderPlaybookLab();
+  if (triggerButton) {
+    const original = triggerButton.textContent;
+    triggerButton.textContent = "Rule promoted";
+    setTimeout(() => {
+      triggerButton.textContent = original || "Promote rule";
+    }, 1200);
+  }
+}
+
+function removePlaybookRule(id) {
+  state.playbookRules = state.playbookRules.filter((rule) => rule.id !== id);
+  savePlaybookRules();
+  renderPlaybookLab();
+}
+
+function clearPlaybookRules() {
+  state.playbookRules = [];
+  savePlaybookRules();
+  renderPlaybookLab();
+}
+
+function playbookRecommendationText(recommendation) {
+  return `InduScout AI playbook recommendation
+
+Title: ${recommendation.title}
+Score: ${recommendation.score}/100
+Scope: ${recommendation.scope}
+Goal: ${recommendation.goal}
+Evidence mode: ${recommendation.evidenceMode}
+Learning boundary: ${recommendation.learningBoundary}
+
+Trigger:
+${recommendation.trigger}
+
+Recommended rule:
+${recommendation.action}
+
+Why:
+${recommendation.why}
+
+Evidence:
+${recommendation.evidence.length ? recommendation.evidence.map((item) => `- ${item}`).join("\n") : "- Evidence TBC"}
+
+Guardrail:
+${recommendation.guardrail}`;
+}
+
+function playbookBriefText() {
+  const config = playbookConfigFromFields();
+  const recommendations = playbookRecommendations(config);
+  const summary = playbookSummaryData(recommendations, config);
+  const rows = recommendations.length
+    ? recommendations.map((item, index) => `${index + 1}. ${item.title} - ${item.score}/100 - ${item.action}`).join("\n")
+    : "No generated recommendations yet.";
+  const saved = state.playbookRules.length
+    ? state.playbookRules.map((item, index) => `${index + 1}. ${item.title} - ${item.score}/100`).join("\n")
+    : "No saved playbook rules yet.";
+
+  return `InduScout AI Playbook Lab
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Goal: ${config.goal}
+Evidence strictness: ${config.evidence}
+Learning boundary: ${config.scope}
+
+Generated rules: ${recommendations.length}
+High-confidence rules: ${summary.highConfidence}
+Learning inputs used: ${summary.learningInputs}
+Top score: ${summary.topScoreLabel}
+
+Generated recommendations:
+${rows}
+
+Saved organization playbooks:
+${saved}
+
+Governance note:
+This beta uses local browser data only. Cross-organization learning should be opt-in, tenant-isolated, aggregated or anonymized, and stripped of raw buyer notes, exact commercial terms, personal contact data, and confidential supplier evidence unless the customer explicitly permits that use.`;
+}
+
+async function copyPlaybookBrief() {
+  const text = playbookBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyPlaybookBrief) {
+      els.copyPlaybookBrief.textContent = "Playbook copied";
+      setTimeout(() => {
+        els.copyPlaybookBrief.textContent = "Copy playbook brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy playbook brief", text);
+  }
+}
+
+async function copyPlaybookRecommendation(id, triggerButton) {
+  const recommendation = playbookRecommendations().find((item) => item.id === id);
+  if (!recommendation) {
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(playbookRecommendationText(recommendation));
+    if (triggerButton) {
+      triggerButton.textContent = "Copied";
+      setTimeout(() => {
+        triggerButton.textContent = "Copy";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy playbook recommendation", playbookRecommendationText(recommendation));
+  }
+}
+
+async function copySavedPlaybookRule(id, triggerButton) {
+  const rule = state.playbookRules.find((item) => item.id === id);
+  if (!rule) {
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(playbookRecommendationText(rule));
+    if (triggerButton) {
+      triggerButton.textContent = "Copied";
+      setTimeout(() => {
+        triggerButton.textContent = "Copy rule";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy playbook rule", playbookRecommendationText(rule));
+  }
+}
+
+function exportPlaybookJson() {
+  const config = playbookConfigFromFields();
+  const recommendations = playbookRecommendations(config);
+  downloadFile(
+    `InduScout-AI-Playbook-Lab-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), playbookLab: { generatedAt: new Date().toISOString(), config, recommendations, savedRules: state.playbookRules, generatedText: playbookBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
 function selectedQuoteProduct() {
   return products.find((product) => product.id === els.quoteProduct?.value) || products[0];
 }
@@ -7203,6 +8288,7 @@ function saveQuoteFromForm() {
   saveQuoteRecords();
   hydrateQuoteForm(quote);
   renderQuoteTracker();
+  renderPlaybookLab();
   populateReplyItems();
   renderSupplierInbox();
   els.saveQuote.textContent = "Quote saved";
@@ -7219,6 +8305,7 @@ function clearQuoteRecords() {
   state.quotes = [];
   saveQuoteRecords();
   renderQuoteTracker();
+  renderPlaybookLab();
   populateReplyItems();
   renderSupplierInbox();
 }
@@ -7237,6 +8324,7 @@ function removeQuoteRecord(id) {
   state.quotes = state.quotes.filter((quote) => quote.id !== id);
   saveQuoteRecords();
   renderQuoteTracker();
+  renderPlaybookLab();
   populateReplyItems();
   renderSupplierInbox();
 }
@@ -7911,6 +8999,7 @@ function saveSupplierReply() {
   saveSupplierReplies();
   hydrateSupplierReplyForm(reply);
   renderSupplierInbox();
+  renderPlaybookLab();
   els.saveReply.textContent = "Reply saved";
   setTimeout(() => {
     els.saveReply.textContent = "Save reply";
@@ -7927,6 +9016,7 @@ function clearSupplierReplies() {
   saveSupplierReplies();
   clearSupplierReplyForm();
   renderSupplierInbox();
+  renderPlaybookLab();
 }
 
 function loadSupplierReply(id) {
@@ -7943,6 +9033,7 @@ function removeSupplierReply(id) {
   state.supplierReplies = state.supplierReplies.filter((reply) => reply.id !== id);
   saveSupplierReplies();
   renderSupplierInbox();
+  renderPlaybookLab();
 }
 
 function renderSupplierInbox() {
@@ -8655,6 +9746,7 @@ function convertReplyToQuote(replyOrId, triggerButton) {
   saveQuoteRecords();
   hydrateQuoteForm(quote);
   renderQuoteTracker();
+  renderPlaybookLab();
   populateReplyItems();
 
   const linkedReply = { ...reply, quoteId: quote.id, itemRef: `quote:${quote.id}`, updatedAt: new Date().toISOString() };
@@ -8662,6 +9754,7 @@ function convertReplyToQuote(replyOrId, triggerButton) {
   saveSupplierReplies();
   hydrateSupplierReplyForm(linkedReply);
   renderSupplierInbox();
+  renderPlaybookLab();
 
   if (triggerButton) {
     triggerButton.textContent = "Quote updated";
@@ -8848,6 +9941,7 @@ function createSessionSnapshot() {
     substitutionApproval: state.substitutionApproval,
     landedCost: state.landedCost,
     negotiationPlan: state.negotiationPlan,
+    playbookConfig: state.playbookConfig,
     filters: {
       query: state.query,
       category: state.category,
@@ -8867,6 +9961,8 @@ function createSessionSnapshot() {
     sourceLeads: state.sourceLeads,
     quotes: state.quotes,
     savingsRecords: state.savingsRecords,
+    learningRecords: state.learningRecords,
+    playbookRules: state.playbookRules,
     supplierReplies: state.supplierReplies
   };
 }
@@ -8896,6 +9992,12 @@ function applySession(session) {
   state.savingsRecords = Array.isArray(session.savingsRecords)
     ? session.savingsRecords.map(sanitizeSavingsRecord).filter(Boolean).slice(0, 120)
     : state.savingsRecords;
+  state.learningRecords = Array.isArray(session.learningRecords)
+    ? session.learningRecords.map(sanitizeLearningRecord).filter(Boolean).slice(0, 160)
+    : state.learningRecords;
+  state.playbookRules = Array.isArray(session.playbookRules)
+    ? session.playbookRules.map(sanitizePlaybookRule).filter(Boolean).slice(0, 120)
+    : state.playbookRules;
   state.supplierReplies = Array.isArray(session.supplierReplies)
     ? session.supplierReplies.map(sanitizeSupplierReply).filter(Boolean).slice(0, 120)
     : state.supplierReplies;
@@ -8905,6 +10007,7 @@ function applySession(session) {
   state.substitutionApproval = sanitizeSubstitutionApproval(session.substitutionApproval || {});
   state.landedCost = sanitizeLandedCostScenario(session.landedCost || {});
   state.negotiationPlan = sanitizeNegotiationPlan(session.negotiationPlan || {});
+  state.playbookConfig = sanitizePlaybookConfig(session.playbookConfig || {});
 
   setQuery(state.query);
   hydrateProjectFields();
@@ -8913,6 +10016,8 @@ function applySession(session) {
   hydrateSubstitutionApprovalFields();
   hydrateLandedCostFields();
   hydrateNegotiationFields();
+  hydrateLearningForm();
+  hydratePlaybookControls();
   els.category.value = state.category;
   els.region.value = state.region;
   els.sourceType.value = state.sourceType;
@@ -8927,6 +10032,9 @@ function applySession(session) {
   saveSourceLeads();
   saveQuoteRecords();
   saveSavingsRecords();
+  saveLearningRecords();
+  savePlaybookConfig();
+  savePlaybookRules();
   saveSupplierReplies();
   saveProjectProfile();
   saveSpecRequirements();
@@ -8945,6 +10053,8 @@ function applySession(session) {
   renderLandedCostDesk();
   renderNegotiationDesk();
   renderSavingsRegister();
+  renderLearningLoop();
+  renderPlaybookLab();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();
@@ -10812,6 +11922,56 @@ function saveSavingsRecords() {
   }
 }
 
+function loadLearningRecords() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutLearningRecords") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizeLearningRecord).filter(Boolean).slice(0, 160) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLearningRecords() {
+  try {
+    window.localStorage.setItem("induscoutLearningRecords", JSON.stringify(state.learningRecords));
+  } catch {
+    // Learning records are a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
+function loadPlaybookConfig() {
+  try {
+    return sanitizePlaybookConfig(JSON.parse(window.localStorage.getItem("induscoutPlaybookConfig") || "{}"));
+  } catch {
+    return defaultPlaybookConfig();
+  }
+}
+
+function savePlaybookConfig() {
+  try {
+    window.localStorage.setItem("induscoutPlaybookConfig", JSON.stringify(state.playbookConfig));
+  } catch {
+    // Playbook settings are a convenience only; generated recommendations still work if storage is blocked.
+  }
+}
+
+function loadPlaybookRules() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutPlaybookRules") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizePlaybookRule).filter(Boolean).slice(0, 120) : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePlaybookRules() {
+  try {
+    window.localStorage.setItem("induscoutPlaybookRules", JSON.stringify(state.playbookRules));
+  } catch {
+    // Playbook rules are a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
 function sanitizeNotes(notes, validProductIds = new Set(products.map((product) => product.id))) {
   if (!notes || typeof notes !== "object" || Array.isArray(notes)) {
     return {};
@@ -10960,6 +12120,99 @@ function sanitizeSavingsRecord(record) {
     evidenceUrl: cleanEvidenceReference(record.evidenceUrl || ""),
     decisionDate: cleanText(record.decisionDate || "", 40),
     notes: cleanText(record.notes || "", 1800)
+  };
+}
+
+function sanitizeLearningRecord(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const product = products.find((item) => item.id === record.productId) || products.find((item) => item.sku === record.sku) || products[0];
+  const allowedOutcomes = ["RFQ won", "PO placed", "Quote lost", "No bid", "Supplier rejected", "Pending review"];
+  const allowedConfidence = ["Proven pattern", "Useful signal", "Needs review", "Do not repeat"];
+  const allowedPatterns = [
+    "Authorized path",
+    "Fastest valid source",
+    "Best landed cost",
+    "Alternate accepted",
+    "Certificate gap",
+    "Supplier responsiveness",
+    "No-stock risk",
+    "Manual lesson"
+  ];
+  return {
+    id: cleanText(record.id || `${Date.now()}-${safeFilenamePart(record.supplier || product?.sku || "learning")}`, 90),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(record.updatedAt || record.savedAt || new Date().toISOString(), 40),
+    projectName: cleanText(record.projectName || "", 180),
+    buyer: cleanText(record.buyer || "", 180),
+    buyerContact: cleanText(record.buyerContact || "", 180),
+    deliveryCountry: cleanText(record.deliveryCountry || "", 120),
+    targetDate: cleanText(record.targetDate || "", 40),
+    productId: product?.id || cleanText(record.productId || "", 90),
+    brand: cleanText(record.brand || product?.brand || "", 120),
+    sku: cleanText(record.sku || product?.sku || "", 120),
+    productName: cleanText(record.productName || product?.name || "", 180),
+    category: cleanText(record.category || product?.category || "", 120),
+    supplier: cleanText(record.supplier || product?.sources?.[0]?.name || "Supplier TBC", 180),
+    outcome: allowedOutcomes.includes(record.outcome) ? record.outcome : "Pending review",
+    cycleTime: cleanText(record.cycleTime || "", 80),
+    savingsValue: cleanText(record.savingsValue || "", 140),
+    confidence: allowedConfidence.includes(record.confidence) ? record.confidence : "Useful signal",
+    pattern: allowedPatterns.includes(record.pattern) ? record.pattern : "Manual lesson",
+    lesson: cleanText(record.lesson || "", 1800),
+    recommendation: cleanText(record.recommendation || "", 1800)
+  };
+}
+
+function sanitizePlaybookConfig(config) {
+  const defaults = defaultPlaybookConfig();
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return defaults;
+  }
+
+  const allowedGoals = ["Balanced procurement", "Fastest reliable source", "Lowest landed cost", "Risk-controlled award", "Stock recovery"];
+  const allowedEvidence = ["Standard evidence", "Strict verification", "Audit-ready only"];
+  const allowedScopes = ["Local organization only", "Future anonymized network-ready", "Supplier-specific review"];
+  return {
+    goal: allowedGoals.includes(config.goal) ? config.goal : defaults.goal,
+    evidence: allowedEvidence.includes(config.evidence) ? config.evidence : defaults.evidence,
+    scope: allowedScopes.includes(config.scope) ? config.scope : defaults.scope
+  };
+}
+
+function sanitizePlaybookRule(rule) {
+  if (!rule || typeof rule !== "object") {
+    return null;
+  }
+
+  const allowedTypes = ["learning", "supplier", "cost", "risk", "starter"];
+  const cleanEvidence = Array.isArray(rule.evidence) ? rule.evidence.map((item) => cleanText(item, 220)).filter(Boolean).slice(0, 8) : [];
+  const config = sanitizePlaybookConfig({
+    goal: rule.goal,
+    evidence: rule.evidenceMode,
+    scope: rule.learningBoundary
+  });
+  return {
+    id: cleanText(rule.id || `${Date.now()}-${safeFilenamePart(rule.title || "playbook-rule")}`, 100),
+    savedAt: cleanText(rule.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(rule.updatedAt || rule.savedAt || new Date().toISOString(), 40),
+    sourceRecommendationId: cleanText(rule.sourceRecommendationId || "", 120),
+    type: allowedTypes.includes(rule.type) ? rule.type : "learning",
+    title: cleanText(rule.title || "Sourcing playbook rule", 180),
+    scope: cleanText(rule.scope || "Procurement workflow", 180),
+    trigger: cleanText(rule.trigger || "", 600),
+    action: cleanText(rule.action || "", 900),
+    why: cleanText(rule.why || "", 900),
+    guardrail: cleanText(rule.guardrail || "", 900),
+    evidence: cleanEvidence,
+    category: cleanText(rule.category || "", 140),
+    supplier: cleanText(rule.supplier || "", 180),
+    score: Math.max(1, Math.min(100, Math.round(Number(rule.score) || 50))),
+    goal: config.goal,
+    evidenceMode: config.evidence,
+    learningBoundary: config.scope
   };
 }
 

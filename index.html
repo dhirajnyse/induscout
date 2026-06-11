@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=4.3">
+    <link rel="stylesheet" href="styles.css?v=4.7">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -64,6 +64,8 @@
         <a href="#landed-cost">Cost</a>
         <a href="#negotiation">Negotiate</a>
         <a href="#savings">Savings</a>
+        <a href="#learning">Learning</a>
+        <a href="#playbooks">Playbooks</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -967,6 +969,160 @@
         </div>
       </section>
 
+      <section class="learning-band" id="learning" aria-labelledby="learning-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Closed-loop learning</p>
+            <h2 id="learning-title">Turn sourcing outcomes into a better playbook</h2>
+          </div>
+          <p>Record what happened after RFQ, quote, negotiation, or purchase decisions so future sourcing work benefits from proven supplier behavior, cycle time, savings, and buyer lessons.</p>
+        </div>
+        <div class="learning-console">
+          <div class="learning-summary" id="learningSummary"></div>
+          <form class="learning-form" id="learningForm">
+            <input id="learningId" type="hidden">
+            <div class="learning-form-head">
+              <div>
+                <strong>Outcome learning record</strong>
+                <span>Save local lessons from supplier outcomes, buyer decisions, and sourcing patterns.</span>
+              </div>
+              <div class="learning-actions">
+                <button type="button" id="saveLearningRecord">Save learning</button>
+                <button class="ghost-button compact" type="button" id="prefillLearningFromDecision">Use current decision</button>
+                <button class="ghost-button compact" type="button" id="clearLearningForm">Clear form</button>
+              </div>
+            </div>
+            <div class="learning-grid">
+              <label>Product
+                <select id="learningProduct"></select>
+              </label>
+              <label>Supplier
+                <input id="learningSupplier" type="text" placeholder="e.g. RS, Mouser, local distributor">
+              </label>
+              <label>Outcome
+                <select id="learningOutcome">
+                  <option>RFQ won</option>
+                  <option>PO placed</option>
+                  <option>Quote lost</option>
+                  <option>No bid</option>
+                  <option>Supplier rejected</option>
+                  <option>Pending review</option>
+                </select>
+              </label>
+              <label>Cycle time
+                <input id="learningCycleTime" type="text" inputmode="decimal" placeholder="e.g. 5 days">
+              </label>
+              <label>Savings / value
+                <input id="learningSaving" type="text" inputmode="decimal" placeholder="e.g. USD 250 saved, avoided downtime">
+              </label>
+              <label>Confidence
+                <select id="learningConfidence">
+                  <option>Proven pattern</option>
+                  <option>Useful signal</option>
+                  <option>Needs review</option>
+                  <option>Do not repeat</option>
+                </select>
+              </label>
+              <label>Pattern
+                <select id="learningPattern">
+                  <option>Authorized path</option>
+                  <option>Fastest valid source</option>
+                  <option>Best landed cost</option>
+                  <option>Alternate accepted</option>
+                  <option>Certificate gap</option>
+                  <option>Supplier responsiveness</option>
+                  <option>No-stock risk</option>
+                  <option>Manual lesson</option>
+                </select>
+              </label>
+              <label>Lesson learned
+                <textarea id="learningLesson" rows="4" placeholder="What did we learn about supplier response, pricing, lead time, certificates, alternates, or buyer validation?"></textarea>
+              </label>
+              <label>Next recommendation
+                <textarea id="learningRecommendation" rows="4" placeholder="What should InduScout recommend next time for this product, category, supplier, or buying situation?"></textarea>
+              </label>
+            </div>
+            <div class="learning-export-actions">
+              <button class="ghost-button compact" type="button" id="copyLearningReport">Copy learning report</button>
+              <button class="ghost-button compact" type="button" id="exportLearningCsv">Export CSV</button>
+              <button class="ghost-button compact" type="button" id="exportLearningJson">Export JSON</button>
+            </div>
+          </form>
+          <div class="learning-register">
+            <div class="learning-register-head">
+              <div>
+                <strong>Local learning memory</strong>
+                <span id="learningRegisterStatus">Stored locally in this browser</span>
+              </div>
+              <button class="ghost-button compact" type="button" id="clearLearningRecords">Clear learning</button>
+            </div>
+            <div class="learning-list" id="learningList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="playbook-band" id="playbooks" aria-labelledby="playbook-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">AI Playbook Lab</p>
+            <h2 id="playbook-title">Promote proven outcomes into sourcing rules</h2>
+          </div>
+          <p>Convert local learning memory, quote decisions, supplier replies, and savings outcomes into buyer-side rules that a future governed SaaS platform can improve over time.</p>
+        </div>
+        <div class="playbook-console">
+          <div class="playbook-summary" id="playbookSummary"></div>
+          <form class="playbook-form" id="playbookForm">
+            <div class="playbook-form-head">
+              <div>
+                <strong>Recommendation engine</strong>
+                <span>Choose the objective, evidence strictness, and learning boundary for generated rules.</span>
+              </div>
+              <div class="playbook-actions">
+                <button type="button" id="promotePlaybookRule">Promote top rule</button>
+                <button class="ghost-button compact" type="button" id="copyPlaybookBrief">Copy playbook brief</button>
+                <button class="ghost-button compact" type="button" id="exportPlaybookJson">Export JSON</button>
+              </div>
+            </div>
+            <div class="playbook-grid">
+              <label>Buyer objective
+                <select id="playbookGoal">
+                  <option>Balanced procurement</option>
+                  <option>Fastest reliable source</option>
+                  <option>Lowest landed cost</option>
+                  <option>Risk-controlled award</option>
+                  <option>Stock recovery</option>
+                </select>
+              </label>
+              <label>Evidence strictness
+                <select id="playbookEvidence">
+                  <option>Standard evidence</option>
+                  <option>Strict verification</option>
+                  <option>Audit-ready only</option>
+                </select>
+              </label>
+              <label>Learning boundary
+                <select id="playbookScope">
+                  <option>Local organization only</option>
+                  <option>Future anonymized network-ready</option>
+                  <option>Supplier-specific review</option>
+                </select>
+              </label>
+            </div>
+          </form>
+          <div class="playbook-recommendations" id="playbookRecommendations"></div>
+          <div class="playbook-register">
+            <div class="playbook-register-head">
+              <div>
+                <strong>Saved organization playbooks</strong>
+                <span id="playbookRegisterStatus">Stored locally in this browser</span>
+              </div>
+              <button class="ghost-button compact" type="button" id="clearPlaybookRules">Clear playbooks</button>
+            </div>
+            <div class="playbook-list" id="playbookList"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -1651,8 +1807,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=4.3"></script>
-    <script src="back-to-top.js?v=4.3"></script>
-    <script src="app.js?v=4.3"></script>
+    <script src="catalog.js?v=4.7"></script>
+    <script src="back-to-top.js?v=4.7"></script>
+    <script src="app.js?v=4.7"></script>
   </body>
 </html>

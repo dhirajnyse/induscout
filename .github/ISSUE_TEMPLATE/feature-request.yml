@@ -1,0 +1,39 @@
+name: Feature request
+description: Suggest a workflow, search, data, or UX improvement.
+title: "Feature request: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Procurement problem
+      placeholder: "What buyer, supplier, or sourcing workflow problem should this solve?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed feature
+      placeholder: "Describe the feature or workflow."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Product area
+      options:
+        - Search and filters
+        - Product detail and RFQ
+        - Compare and shortlist
+        - Trust and verification
+        - Supplier/source management
+        - Catalog data model
+        - Mobile or visual design
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      placeholder: "Screenshots, examples, comparable tools, or buyer notes."

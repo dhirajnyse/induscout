@@ -1,0 +1,62 @@
+name: Product request
+description: Ask InduScout to review a missing industrial product, part number, or sourcing path.
+title: "Product request: "
+labels: ["product-request", "needs-review"]
+body:
+  - type: input
+    id: requested_item
+    attributes:
+      label: Product or part number
+      placeholder: "Example: Pepperl+Fuchs NBB, Siemens 6ES7, unknown M12 sensor"
+    validations:
+      required: true
+  - type: input
+    id: brand
+    attributes:
+      label: Brand or maker
+      placeholder: "Known OEM, brand, or unknown"
+  - type: dropdown
+    id: category
+    attributes:
+      label: Likely category
+      options:
+        - Not sure
+        - Sensors
+        - PLCs & Automation
+        - Drives & Motors
+        - Bearings & Power Transmission
+        - Pumps
+        - Valves & Flow Control
+        - Pneumatics
+        - Hydraulics
+        - Electrical & Control Panels
+        - Cables & Connectivity
+        - Fasteners & Hardware
+        - Tools & MRO
+    validations:
+      required: true
+  - type: input
+    id: delivery_country
+    attributes:
+      label: Delivery country
+      placeholder: "Example: UAE, India, USA"
+  - type: input
+    id: quantity
+    attributes:
+      label: Quantity
+      placeholder: "Example: 1 pc, 10 pcs, 2 sets"
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      options:
+        - Standard sourcing
+        - Urgent breakdown
+        - Project tender
+        - Budgetary quote
+  - type: textarea
+    id: notes
+    attributes:
+      label: Application, specs, or sourcing notes
+      description: Add machine model, old part number, voltage, size, connection, preferred supplier, certificate, or compatibility detail.
+      placeholder: "Describe what you know and what the buyer needs to verify."

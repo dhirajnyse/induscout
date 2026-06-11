@@ -1,0 +1,43 @@
+name: Product data update
+description: Report outdated, missing, or incorrect product data.
+title: "Product data update: "
+labels: ["product-data", "needs-review"]
+body:
+  - type: input
+    id: product
+    attributes:
+      label: Product or part number
+      placeholder: "Example: Omron MY2N, SKF 6205-2RS1"
+    validations:
+      required: true
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue type
+      options:
+        - Missing buying source
+        - Wrong or outdated specification
+        - Datasheet or certificate issue
+        - Alternate product concern
+        - Supplier verification concern
+        - Other product data concern
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Suggested correction or evidence
+      description: Add source links, datasheet references, supplier notes, or corrected specifications.
+      placeholder: "Paste links or describe what should change."
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: Region or country affected
+      placeholder: "Example: UAE, India, Europe, North America"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes
+      placeholder: "Any compatibility, certification, or sourcing context."

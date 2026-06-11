@@ -8,8 +8,8 @@ The current public beta is the supported version. Older uploaded builds should b
 
 ## Data Handling
 
-- Buyer notes, project context, spec match requirements, alternate review setup, substitution approval setup, landed cost scenarios, negotiation plans, savings records, shortlists, quote records, supplier replies, and sessions are stored in the user's browser local storage.
-- Exported CSV, XLSX, RFQ packs, decision memos, PO handover packs, supplier compliance packs, buyer file exports, supplier scorecard exports, spec match matrix exports, alternate review exports, substitution approval exports, landed cost exports, negotiation exports, savings register exports, and session JSON files are created locally in the browser.
+- Buyer notes, project context, spec match requirements, alternate review setup, substitution approval setup, landed cost scenarios, negotiation plans, savings records, learning records, playbook rules, shortlists, quote records, supplier replies, and sessions are stored in the user's browser local storage.
+- Exported CSV, XLSX, RFQ packs, decision memos, PO handover packs, supplier compliance packs, buyer file exports, supplier scorecard exports, spec match matrix exports, alternate review exports, substitution approval exports, landed cost exports, negotiation exports, savings register exports, learning loop exports, AI playbook exports, and session JSON files are created locally in the browser.
 - The public beta is not intended for confidential tender data, passwords, access tokens, payment details, regulated personal data, or private commercial documents.
 
 ## Current Security Baseline
