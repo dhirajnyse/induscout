@@ -1,4 +1,4 @@
-# InduScout v5.0 Launch Checklist
+# InduScout v5.1 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -82,8 +82,13 @@ Use this checklist after each public GitHub Pages upload.
 - Change learning boundary, evidence threshold, commercial data rule, and personal data rule, then confirm readiness score, network candidates, and matrix statuses update.
 - Copy the governance brief and export Governance JSON, then confirm the policy, signal counts, matrix, recommendations, and generated text are included.
 - Export a session JSON, import it, and confirm the governance policy is restored.
-- Click the top `v5.0` tab and confirm the Version & Build Phases section opens.
-- Confirm the Build Phases tracker shows current live build v5.0, release mode, v5.1 next gate, completed phases, current closed-loop intelligence with governance controls, governed SaaS foundation, and future network learning layer.
+- Open Learning Queue and confirm candidate summary cards, review filters, approval actions, and learning candidate cards render.
+- Save at least one reinforcement signal, learning record, source lead, quote, or supplier reply, then confirm it appears in the Learning Queue with risk, evidence, suggested scope, and recommended action.
+- Use Approve, Tenant only, Block, and Approve safe, then confirm queue summary counts and candidate statuses update.
+- Copy one candidate, copy the queue brief, and export Learning Queue JSON; confirm approval status, risk, scope, and governance note are included.
+- Export a session JSON, import it, and confirm learning approval decisions are restored.
+- Click the top `v5.1` tab and confirm the Version & Build Phases section opens.
+- Confirm the Build Phases tracker shows current live build v5.1, release mode, v5.2 next gate, completed phases, current closed-loop intelligence with governance controls and learning approval queue, governed SaaS foundation, and future network learning layer.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.

@@ -37,6 +37,7 @@ const state = {
   playbookRules: loadPlaybookRules(),
   reinforcementSignals: loadReinforcementSignals(),
   governancePolicy: loadGovernancePolicy(),
+  learningApprovals: loadLearningApprovals(),
   activeProductId: null
 };
 
@@ -339,6 +340,14 @@ const els = {
   exportGovernanceJson: document.querySelector("#exportGovernanceJson"),
   governanceMatrix: document.querySelector("#governanceMatrix"),
   governanceRecommendations: document.querySelector("#governanceRecommendations"),
+  learningQueueSummary: document.querySelector("#learningQueueSummary"),
+  learningQueueStatus: document.querySelector("#learningQueueStatus"),
+  learningQueueFilter: document.querySelector("#learningQueueFilter"),
+  learningQueueRisk: document.querySelector("#learningQueueRisk"),
+  approveSafeLearning: document.querySelector("#approveSafeLearning"),
+  copyLearningQueue: document.querySelector("#copyLearningQueue"),
+  exportLearningQueueJson: document.querySelector("#exportLearningQueueJson"),
+  learningQueueList: document.querySelector("#learningQueueList"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -469,6 +478,7 @@ function init() {
   renderPlaybookLab();
   renderReinforcementLab();
   renderGovernanceCenter();
+  renderLearningQueue();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1218,6 +1228,7 @@ function wireEvents() {
       state.governancePolicy = governancePolicyFromFields();
       saveGovernancePolicy();
       renderGovernanceCenter();
+      renderLearningQueue();
     });
   });
   if (els.copyGovernanceBrief) {
@@ -1225,6 +1236,32 @@ function wireEvents() {
   }
   if (els.exportGovernanceJson) {
     els.exportGovernanceJson.addEventListener("click", exportGovernanceJson);
+  }
+  [els.learningQueueFilter, els.learningQueueRisk].filter(Boolean).forEach((input) => {
+    input.addEventListener("change", renderLearningQueue);
+  });
+  if (els.approveSafeLearning) {
+    els.approveSafeLearning.addEventListener("click", approveSafeLearningCandidates);
+  }
+  if (els.copyLearningQueue) {
+    els.copyLearningQueue.addEventListener("click", copyLearningQueueBrief);
+  }
+  if (els.exportLearningQueueJson) {
+    els.exportLearningQueueJson.addEventListener("click", exportLearningQueueJson);
+  }
+  if (els.learningQueueList) {
+    els.learningQueueList.addEventListener("click", (event) => {
+      const actionButton = event.target.closest("[data-learning-queue-action]");
+      const copyButton = event.target.closest("[data-copy-learning-candidate]");
+
+      if (actionButton) {
+        setLearningCandidateStatus(actionButton.dataset.learningQueueAction, actionButton.dataset.candidateId);
+      }
+
+      if (copyButton) {
+        copyLearningCandidate(copyButton.dataset.copyLearningCandidate, copyButton);
+      }
+    });
   }
   if (els.quoteList) {
     els.quoteList.addEventListener("click", (event) => {
@@ -1528,6 +1565,7 @@ function render() {
   renderBuyerFile();
   renderSupplierScorecard();
   renderGovernanceCenter();
+  renderLearningQueue();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2054,7 +2092,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.0",
+    version: "5.1",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -8159,6 +8197,7 @@ function promotePlaybookRule(recommendationId = "", triggerButton = els.promoteP
   state.playbookRules = [rule, ...state.playbookRules.filter((item) => item.sourceRecommendationId !== recommendation.id)].slice(0, 120);
   savePlaybookRules();
   renderPlaybookLab();
+  renderLearningQueue();
   if (triggerButton) {
     const original = triggerButton.textContent;
     triggerButton.textContent = "Rule promoted";
@@ -8172,12 +8211,14 @@ function removePlaybookRule(id) {
   state.playbookRules = state.playbookRules.filter((rule) => rule.id !== id);
   savePlaybookRules();
   renderPlaybookLab();
+  renderLearningQueue();
 }
 
 function clearPlaybookRules() {
   state.playbookRules = [];
   savePlaybookRules();
   renderPlaybookLab();
+  renderLearningQueue();
 }
 
 function playbookRecommendationText(recommendation) {
@@ -9032,6 +9073,9 @@ function renderGovernanceCenter() {
   ].join("");
   els.governanceMatrix.innerHTML = governanceMatrixItems(data).map(governanceMatrixTemplate).join("");
   els.governanceRecommendations.innerHTML = governanceRecommendations(data).map(governanceRecommendationTemplate).join("");
+  if (els.learningQueueList) {
+    renderLearningQueue();
+  }
 }
 
 function governanceSummaryTemplate(label, value, detail) {
@@ -9121,6 +9165,378 @@ function exportGovernanceJson() {
   downloadFile(
     `InduScout-AI-Governance-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), governance: { generatedAt: new Date().toISOString(), data, matrix: governanceMatrixItems(data), recommendations: governanceRecommendations(data), generatedText: governanceBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function learningQueueCandidates() {
+  const candidates = [];
+  const addCandidate = (candidate) => {
+    if (!candidate || !candidate.id) {
+      return;
+    }
+    const approval = state.learningApprovals[candidate.id] || {};
+    candidates.push({
+      status: approval.status || "Needs review",
+      decidedAt: approval.decidedAt || "",
+      decisionNote: approval.decisionNote || "",
+      ...candidate
+    });
+  };
+
+  state.reinforcementSignals.forEach((signal) => {
+    const risk = signal.note ? "Medium" : "Low";
+    addCandidate({
+      id: `signal-${signal.id}`,
+      sourceType: "Reinforcement signal",
+      title: `${signal.brand} ${signal.sku} - ${signal.feedback}`,
+      subject: `${signal.module} / ${signal.impact}`,
+      detail: signal.note || `${signal.outcome} from ${signal.evidence}.`,
+      evidence: signal.confidence,
+      risk,
+      suggestedScope: learningCandidateScope(risk),
+      recommendedAction: signal.feedback === "Penalize recommendation" ? "Keep as local risk signal until repeat evidence appears." : "Promote into local scoring after buyer review."
+    });
+  });
+
+  state.learningRecords.forEach((record) => {
+    const risk = record.savingsValue ? "Medium" : "Low";
+    addCandidate({
+      id: `learning-${record.id}`,
+      sourceType: "Outcome lesson",
+      title: `${record.brand} ${record.sku} - ${record.outcome}`,
+      subject: record.pattern,
+      detail: record.recommendation || record.lesson || "Buyer learning record.",
+      evidence: record.confidence,
+      risk,
+      suggestedScope: learningCandidateScope(risk),
+      recommendedAction: record.confidence === "Proven pattern" ? "Promote into organization playbooks." : "Hold for more evidence before broader influence."
+    });
+  });
+
+  state.playbookRules.forEach((rule) => {
+    const risk = rule.learningBoundary === "Future anonymized network-ready" ? "Medium" : "Low";
+    addCandidate({
+      id: `playbook-${rule.id}`,
+      sourceType: "Playbook rule",
+      title: rule.title,
+      subject: rule.goal,
+      detail: rule.action || rule.guardrail || "Saved sourcing playbook rule.",
+      evidence: rule.evidenceMode,
+      risk,
+      suggestedScope: rule.learningBoundary === "Supplier-specific review" ? "Tenant only" : learningCandidateScope(risk),
+      recommendedAction: "Review evidence and promote only when the rule is repeatable across similar buying contexts."
+    });
+  });
+
+  state.savingsRecords.forEach((record) => {
+    addCandidate({
+      id: `savings-${record.id}`,
+      sourceType: "Savings outcome",
+      title: `${record.brand} ${record.sku} - ${record.status}`,
+      subject: record.supplier,
+      detail: record.notes || `Savings evidence from ${record.supplier}.`,
+      evidence: record.evidenceUrl ? "Evidence URL present" : "Buyer-entered savings",
+      risk: "High",
+      suggestedScope: "Local only",
+      recommendedAction: "Use for local value analytics; do not share raw prices, supplier terms, or savings values across organizations."
+    });
+  });
+
+  state.quotes.forEach((quote) => {
+    addCandidate({
+      id: `quote-${quote.id}`,
+      sourceType: "Quote outcome",
+      title: `${quote.brand} ${quote.sku} - ${quote.status}`,
+      subject: quote.supplier,
+      detail: quote.notes || `Lead time ${quote.leadTime || "TBC"}, MOQ ${quote.moq || "TBC"}.`,
+      evidence: quote.sourceUrl ? "Source URL present" : "Buyer-entered quote",
+      risk: quote.unitPrice || quote.paymentTerms || quote.deliveryTerms ? "High" : "Medium",
+      suggestedScope: quote.unitPrice ? "Tenant aggregate only" : "Tenant only",
+      recommendedAction: "Keep raw quote data tenant-only; convert to anonymized range signals only after admin approval."
+    });
+  });
+
+  state.supplierReplies.forEach((reply) => {
+    addCandidate({
+      id: `reply-${reply.id}`,
+      sourceType: "Supplier reply",
+      title: `${reply.supplier} - ${reply.status}`,
+      subject: reply.productLabel || reply.subject || "Supplier message",
+      detail: reply.notes || reply.message || "Supplier reply captured in inbox.",
+      evidence: reply.nextAction,
+      risk: reply.message || reply.notes ? "High" : "Medium",
+      suggestedScope: "Local only",
+      recommendedAction: "Use for local follow-up and scorecard signals; strip message text before any learning export."
+    });
+  });
+
+  state.sourceLeads.forEach((lead) => {
+    addCandidate({
+      id: `source-${lead.id}`,
+      sourceType: "Source lead",
+      title: lead.name,
+      subject: `${lead.type} / ${lead.category}`,
+      detail: lead.notes || lead.website || "Supplier/source lead awaiting review.",
+      evidence: lead.evidenceUrl ? "Evidence URL present" : lead.status,
+      risk: lead.contact || lead.notes ? "Medium" : "Low",
+      suggestedScope: learningCandidateScope(lead.contact || lead.notes ? "Medium" : "Low"),
+      recommendedAction: "Promote only after source legitimacy, authorization path, and public evidence are verified."
+    });
+  });
+
+  return candidates.sort((a, b) => learningStatusRank(a.status) - learningStatusRank(b.status) || learningRiskRank(b.risk) - learningRiskRank(a.risk));
+}
+
+function learningCandidateScope(risk) {
+  if (risk === "High") {
+    return "Local only";
+  }
+  if (risk === "Medium") {
+    return state.governancePolicy.boundary === "Opt-in anonymized network" ? "Tenant only" : "Local only";
+  }
+  return state.governancePolicy.boundary === "Opt-in anonymized network" ? "Anonymized network candidate" : state.governancePolicy.boundary === "Tenant-only learning" ? "Tenant only" : "Local only";
+}
+
+function learningStatusRank(status) {
+  return {
+    "Needs review": 0,
+    "Tenant only": 1,
+    "Approved": 2,
+    "Blocked": 3
+  }[status] ?? 4;
+}
+
+function learningRiskRank(risk) {
+  return {
+    High: 3,
+    Medium: 2,
+    Low: 1
+  }[risk] || 0;
+}
+
+function learningQueueSummary(candidates = learningQueueCandidates()) {
+  const approved = candidates.filter((candidate) => candidate.status === "Approved").length;
+  const tenantOnly = candidates.filter((candidate) => candidate.status === "Tenant only").length;
+  const blocked = candidates.filter((candidate) => candidate.status === "Blocked").length;
+  const highRisk = candidates.filter((candidate) => candidate.risk === "High").length;
+  const networkReady = candidates.filter((candidate) => candidate.status === "Approved" && candidate.suggestedScope === "Anonymized network candidate").length;
+  return {
+    total: candidates.length,
+    needsReview: candidates.length - approved - tenantOnly - blocked,
+    approved,
+    tenantOnly,
+    blocked,
+    highRisk,
+    networkReady
+  };
+}
+
+function filteredLearningQueueCandidates() {
+  const statusFilter = els.learningQueueFilter?.value || "all";
+  const riskFilter = els.learningQueueRisk?.value || "all";
+  return learningQueueCandidates().filter((candidate) => {
+    const statusSlug = learningStatusSlug(candidate.status);
+    const riskSlug = candidate.risk.toLowerCase();
+    return (statusFilter === "all" || statusFilter === statusSlug) && (riskFilter === "all" || riskFilter === riskSlug);
+  });
+}
+
+function learningStatusSlug(status) {
+  return String(status || "Needs review").toLowerCase().replace(/\s+/g, "-");
+}
+
+function renderLearningQueue() {
+  if (!els.learningQueueSummary || !els.learningQueueList) {
+    return;
+  }
+
+  const allCandidates = learningQueueCandidates();
+  const summary = learningQueueSummary(allCandidates);
+  const visibleCandidates = filteredLearningQueueCandidates();
+  els.learningQueueSummary.innerHTML = [
+    learningQueueSummaryTemplate("Candidates", summary.total, `${summary.needsReview} need review`),
+    learningQueueSummaryTemplate("Approved", summary.approved, `${summary.networkReady} network-ready`),
+    learningQueueSummaryTemplate("Tenant only", summary.tenantOnly, "Organization learning"),
+    learningQueueSummaryTemplate("Blocked", summary.blocked, "Excluded from learning"),
+    learningQueueSummaryTemplate("High risk", summary.highRisk, "Commercial or message context")
+  ].join("");
+
+  if (els.learningQueueStatus) {
+    els.learningQueueStatus.textContent = summary.total
+      ? `${visibleCandidates.length} shown from ${summary.total} candidates. Approvals stay local until a governed SaaS backend exists.`
+      : "No learning candidates yet. Save signals, lessons, quotes, savings, replies, or source leads.";
+  }
+
+  els.learningQueueList.innerHTML = visibleCandidates.length
+    ? visibleCandidates.map(learningQueueCandidateTemplate).join("")
+    : `<div class="empty-state quote-empty">No candidates match this queue filter. Add sourcing outcomes or change the review filters.</div>`;
+}
+
+function learningQueueSummaryTemplate(label, value, detail) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function learningQueueCandidateTemplate(candidate) {
+  const statusSlug = learningStatusSlug(candidate.status);
+  const riskClass = candidate.risk.toLowerCase();
+  return `
+    <article class="learning-queue-card ${escapeHtml(statusSlug)} ${escapeHtml(riskClass)}">
+      <div>
+        <span>${escapeHtml(candidate.sourceType)} / ${escapeHtml(candidate.risk)} risk</span>
+        <h3>${escapeHtml(candidate.title)}</h3>
+        <p>${escapeHtml(candidate.detail)}</p>
+        <dl class="learning-queue-facts">
+          <div><dt>Subject</dt><dd>${escapeHtml(candidate.subject)}</dd></div>
+          <div><dt>Evidence</dt><dd>${escapeHtml(candidate.evidence)}</dd></div>
+          <div><dt>Scope</dt><dd>${escapeHtml(candidate.suggestedScope)}</dd></div>
+        </dl>
+      </div>
+      <div class="learning-queue-decision">
+        <strong class="learning-queue-status ${escapeHtml(statusSlug)}">${escapeHtml(candidate.status)}</strong>
+        <p>${escapeHtml(candidate.recommendedAction)}</p>
+        <div class="learning-queue-actions">
+          <button type="button" data-learning-queue-action="Approved" data-candidate-id="${escapeHtml(candidate.id)}">Approve</button>
+          <button type="button" data-learning-queue-action="Tenant only" data-candidate-id="${escapeHtml(candidate.id)}">Tenant only</button>
+          <button type="button" data-learning-queue-action="Blocked" data-candidate-id="${escapeHtml(candidate.id)}">Block</button>
+          <button type="button" data-copy-learning-candidate="${escapeHtml(candidate.id)}">Copy candidate</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function setLearningCandidateStatus(status, candidateId) {
+  const allowed = ["Approved", "Tenant only", "Blocked"];
+  if (!allowed.includes(status) || !candidateId) {
+    return;
+  }
+  state.learningApprovals[candidateId] = {
+    status,
+    decidedAt: new Date().toISOString(),
+    decisionNote: status === "Approved" ? "Approved for governed learning influence." : status === "Tenant only" ? "Limited to organization learning boundary." : "Blocked from learning influence."
+  };
+  saveLearningApprovals();
+  renderLearningQueue();
+}
+
+function approveSafeLearningCandidates() {
+  const candidates = learningQueueCandidates();
+  candidates
+    .filter((candidate) => candidate.risk === "Low" && candidate.status !== "Blocked")
+    .forEach((candidate) => {
+      state.learningApprovals[candidate.id] = {
+        status: "Approved",
+        decidedAt: new Date().toISOString(),
+        decisionNote: "Bulk-approved low-risk candidate."
+      };
+    });
+  saveLearningApprovals();
+  renderLearningQueue();
+  if (els.approveSafeLearning) {
+    els.approveSafeLearning.textContent = "Safe candidates approved";
+    setTimeout(() => {
+      els.approveSafeLearning.textContent = "Approve safe";
+    }, 1400);
+  }
+}
+
+function learningCandidateText(candidate) {
+  return `InduScout learning review candidate
+Source type: ${candidate.sourceType}
+Title: ${candidate.title}
+Subject: ${candidate.subject}
+Risk: ${candidate.risk}
+Suggested scope: ${candidate.suggestedScope}
+Status: ${candidate.status}
+Evidence: ${candidate.evidence}
+
+Candidate detail:
+${candidate.detail}
+
+Recommended action:
+${candidate.recommendedAction}
+
+Governance note:
+Raw buyer notes, contact details, quote prices, payment terms, supplier messages, and tender context should stay local or tenant-only unless explicitly scrubbed and approved.`;
+}
+
+async function copyLearningCandidate(candidateId, triggerButton) {
+  const candidate = learningQueueCandidates().find((item) => item.id === candidateId);
+  if (!candidate) {
+    return;
+  }
+  const text = learningCandidateText(candidate);
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = "Copied";
+      setTimeout(() => {
+        triggerButton.textContent = "Copy candidate";
+      }, 1200);
+    }
+  } catch {
+    window.prompt("Copy learning candidate", text);
+  }
+}
+
+function learningQueueBriefText() {
+  const candidates = learningQueueCandidates();
+  const summary = learningQueueSummary(candidates);
+  const rows = candidates.length
+    ? candidates.map((candidate, index) => `${index + 1}. ${candidate.sourceType} - ${candidate.title} - ${candidate.risk} risk - ${candidate.status} - ${candidate.suggestedScope}`).join("\n")
+    : "No learning candidates yet.";
+
+  return `InduScout governed learning review queue
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Governance boundary: ${state.governancePolicy.boundary}
+Evidence threshold: ${state.governancePolicy.evidence}
+
+Queue summary:
+- Candidates: ${summary.total}
+- Needs review: ${summary.needsReview}
+- Approved: ${summary.approved}
+- Tenant only: ${summary.tenantOnly}
+- Blocked: ${summary.blocked}
+- High risk: ${summary.highRisk}
+- Network-ready approved candidates: ${summary.networkReady}
+
+Candidate register:
+${rows}
+
+Operating principle:
+Learning should become stronger over time, but only after buyer review. Sensitive quote terms, supplier messages, buyer notes, contacts, and tender context should remain local or tenant-only unless explicitly scrubbed, approved, anonymized, and auditable.`;
+}
+
+async function copyLearningQueueBrief() {
+  const text = learningQueueBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyLearningQueue) {
+      els.copyLearningQueue.textContent = "Queue brief copied";
+      setTimeout(() => {
+        els.copyLearningQueue.textContent = "Copy queue brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy learning queue brief", text);
+  }
+}
+
+function exportLearningQueueJson() {
+  const candidates = learningQueueCandidates();
+  downloadFile(
+    `InduScout-Learning-Queue-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), learningQueue: { generatedAt: new Date().toISOString(), summary: learningQueueSummary(candidates), candidates, generatedText: learningQueueBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -10885,7 +11301,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.0",
+    version: "5.1",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -10917,6 +11333,7 @@ function createSessionSnapshot() {
     playbookRules: state.playbookRules,
     reinforcementSignals: state.reinforcementSignals,
     governancePolicy: state.governancePolicy,
+    learningApprovals: state.learningApprovals,
     supplierReplies: state.supplierReplies
   };
 }
@@ -10956,6 +11373,7 @@ function applySession(session) {
     ? session.reinforcementSignals.map(sanitizeReinforcementSignal).filter(Boolean).slice(0, 220)
     : state.reinforcementSignals;
   state.governancePolicy = sanitizeGovernancePolicy(session.governancePolicy || state.governancePolicy);
+  state.learningApprovals = sanitizeLearningApprovals(session.learningApprovals || state.learningApprovals);
   state.supplierReplies = Array.isArray(session.supplierReplies)
     ? session.supplierReplies.map(sanitizeSupplierReply).filter(Boolean).slice(0, 120)
     : state.supplierReplies;
@@ -10997,6 +11415,7 @@ function applySession(session) {
   savePlaybookRules();
   saveReinforcementSignals();
   saveGovernancePolicy();
+  saveLearningApprovals();
   saveSupplierReplies();
   saveProjectProfile();
   saveSpecRequirements();
@@ -11019,6 +11438,7 @@ function applySession(session) {
   renderPlaybookLab();
   renderReinforcementLab();
   renderGovernanceCenter();
+  renderLearningQueue();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();
@@ -11081,7 +11501,7 @@ function importSessionFile(event) {
 function setSessionStatus(message) {
   els.sessionStatus.textContent = message;
   setTimeout(() => {
-    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, governance policy, supplier inbox, and notes locally.";
+    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, governance policy, learning approvals, supplier inbox, and notes locally.";
   }, 1800);
 }
 
@@ -12978,6 +13398,22 @@ function saveGovernancePolicy() {
   }
 }
 
+function loadLearningApprovals() {
+  try {
+    return sanitizeLearningApprovals(JSON.parse(window.localStorage.getItem("induscoutLearningApprovals") || "{}"));
+  } catch {
+    return {};
+  }
+}
+
+function saveLearningApprovals() {
+  try {
+    window.localStorage.setItem("induscoutLearningApprovals", JSON.stringify(state.learningApprovals));
+  } catch {
+    // Learning approval decisions are local-only until a governed SaaS backend exists.
+  }
+}
+
 function sanitizeNotes(notes, validProductIds = new Set(products.map((product) => product.id))) {
   if (!notes || typeof notes !== "object" || Array.isArray(notes)) {
     return {};
@@ -13238,6 +13674,31 @@ function sanitizeGovernancePolicy(policy) {
     commercial: allowedCommercial.includes(policy.commercial) ? policy.commercial : defaults.commercial,
     personal: allowedPersonal.includes(policy.personal) ? policy.personal : defaults.personal
   };
+}
+
+function sanitizeLearningApprovals(approvals) {
+  if (!approvals || typeof approvals !== "object" || Array.isArray(approvals)) {
+    return {};
+  }
+
+  const allowedStatuses = ["Approved", "Tenant only", "Blocked", "Needs review"];
+  return Object.fromEntries(
+    Object.entries(approvals)
+      .slice(0, 400)
+      .map(([id, approval]) => {
+        const source = approval && typeof approval === "object" && !Array.isArray(approval) ? approval : {};
+        const status = allowedStatuses.includes(source.status) ? source.status : "Needs review";
+        return [
+          cleanText(id, 140),
+          {
+            status,
+            decidedAt: cleanText(source.decidedAt || "", 40),
+            decisionNote: cleanText(source.decisionNote || "", 300)
+          }
+        ];
+      })
+      .filter(([id]) => id)
+  );
 }
 
 function sanitizeReinforcementSignal(record) {

@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v5.0 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.0 adds an AI Governance center so buyers and collaborators can see how local outcomes, reinforcement signals, commercial data, personal data, and future network learning should be controlled before SaaS launch.
+This v5.1 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.1 adds a governed Learning Review Queue so buyers and collaborators can approve, tenant-limit, or block the local signals that may influence future recommendations before any SaaS or network-learning layer exists.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -55,6 +55,7 @@ This v5.0 public beta is still static and lightweight, but it already demonstrat
 - AI Playbook Lab with buyer objective controls, evidence strictness, local/network-ready learning boundary, ranked generated rules, promoted organization playbooks, copyable playbook brief, and JSON export.
 - Reinforcement Signals Lab with buyer feedback capture, positive/negative weighting, module and impact scoring, generated weight-change recommendations, copyable signal report, CSV export, JSON export, and playbook influence.
 - AI Governance center with learning policy simulator, readiness score, signal boundary matrix, sensitive-data guardrails, network-learning candidate count, copyable governance brief, and JSON export.
+- Learning Review Queue that turns lessons, reinforcement signals, quotes, savings records, supplier replies, playbook rules, and source leads into reviewable learning candidates with risk levels, approval status, tenant-only controls, block controls, copyable queue brief, and JSON export.
 - Version tab and Build Phases tracker with current live build, public beta mode, next major gate, completed phases, current closed-loop intelligence phase, governed SaaS foundation, and future network learning path.
 - Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
 - Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.
@@ -64,7 +65,7 @@ This v5.0 public beta is still static and lightweight, but it already demonstrat
 - Product detail RFQ drawer includes a Track quote action that opens the selected product in the quote form.
 - Copyable product data update/report request.
 - Browser-saved buyer notes for each product.
-- Save/load session desk for project profile, spec match requirements, alternate review setup, substitution approval setup, landed cost scenario, negotiation plan, savings register, learning records, playbook rules, reinforcement signals, governance policy, filters, shortlist, compare list, source intake, quote records, supplier replies, and notes, with JSON export/import for moving work between browsers or machines.
+- Save/load session desk for project profile, spec match requirements, alternate review setup, substitution approval setup, landed cost scenario, negotiation plan, savings register, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, filters, shortlist, compare list, source intake, quote records, supplier replies, and notes, with JSON export/import for moving work between browsers or machines.
 - Saved missing-product requests are included in session JSON export/import.
 - Compare desk for up to four selected products.
 - Shortlist drawer with exportable RFQ-style summary.
@@ -143,7 +144,7 @@ InduScout is a discovery and procurement workflow aid. Buyers must verify pricin
 
 ## Security And Privacy Note
 
-The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, savings records, learning records, playbook rules, reinforcement signals, governance policy, and sessions are stored locally in the user's browser unless exported by the user.
+The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, and sessions are stored locally in the user's browser unless exported by the user.
 
 - Do not enter confidential tender data, passwords, access tokens, payment details, or sensitive personal data into the public beta.
 - Session JSON import is limited and sanitized before it is loaded into the app.
