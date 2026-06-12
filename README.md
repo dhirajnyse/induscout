@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v5.3 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.3 adds a Tenant Admin Foundation that previews organization roles, export controls, learning-governance checks, and a local audit trail before any SaaS backend, account system, or network-learning layer exists.
+This v5.4 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.4 adds an API & Integration Blueprint that previews future endpoint contracts, event flows, connector readiness, and data boundaries before any SaaS backend, account system, or network-learning layer exists.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -58,6 +58,7 @@ This v5.3 public beta is still static and lightweight, but it already demonstrat
 - Learning Review Queue that turns lessons, reinforcement signals, quotes, savings records, supplier replies, playbook rules, and source leads into reviewable learning candidates with risk levels, approval status, tenant-only controls, block controls, copyable queue brief, and JSON export.
 - Closed-Loop Intelligence / AI Loop view with influence readiness, eligible/gated signal counts, supplier benchmark guidance, governed recommendation updates, copyable AI loop brief, and JSON export.
 - Tenant Admin Foundation with role model, admin readiness score, export governance checks, learning decision controls, generated audit trail preview, copyable admin brief, and JSON export.
+- API & Integration Blueprint with integration readiness score, future endpoint contract cards, connector guardrails, event stream preview, copyable integration brief, and JSON export.
 - Version tab and Build Phases tracker with current live build, public beta mode, next major gate, completed phases, current closed-loop intelligence phase, governed SaaS foundation, and future network learning path.
 - Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
 - Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.
@@ -146,7 +147,7 @@ InduScout is a discovery and procurement workflow aid. Buyers must verify pricin
 
 ## Security And Privacy Note
 
-The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, tenant admin previews, and sessions are stored locally in the user's browser unless exported by the user.
+The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, no live API endpoints, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, tenant admin previews, integration blueprint previews, and sessions are stored locally in the user's browser unless exported by the user.
 
 - Do not enter confidential tender data, passwords, access tokens, payment details, or sensitive personal data into the public beta.
 - Session JSON import is limited and sanitized before it is loaded into the app.
@@ -168,5 +169,5 @@ The current public beta is a static GitHub Pages app. It has no login system, no
 - Strengthen technical fit workflows with richer product attributes and engineering review evidence fields.
 - Expand supplier intake into a governed submission and verification review workflow.
 - Add saved projects and team collaboration.
-- Add backend search, accounts, and structured supplier/product APIs.
+- Add backend search, accounts, structured supplier/product APIs, and partner integration connectors.
 - Add richer product detail pages for SEO as the catalog expands category by category.

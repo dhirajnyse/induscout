@@ -361,6 +361,13 @@ const els = {
   tenantRoleGrid: document.querySelector("#tenantRoleGrid"),
   tenantControlGrid: document.querySelector("#tenantControlGrid"),
   tenantAuditList: document.querySelector("#tenantAuditList"),
+  integrationSummary: document.querySelector("#integrationSummary"),
+  integrationStatus: document.querySelector("#integrationStatus"),
+  copyIntegrationBrief: document.querySelector("#copyIntegrationBrief"),
+  exportIntegrationJson: document.querySelector("#exportIntegrationJson"),
+  integrationEndpointGrid: document.querySelector("#integrationEndpointGrid"),
+  integrationControlGrid: document.querySelector("#integrationControlGrid"),
+  integrationEventList: document.querySelector("#integrationEventList"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -494,6 +501,7 @@ function init() {
   renderLearningQueue();
   renderAiLoop();
   renderTenantAdmin();
+  renderIntegrationBlueprint();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1246,6 +1254,7 @@ function wireEvents() {
       renderLearningQueue();
       renderAiLoop();
       renderTenantAdmin();
+      renderIntegrationBlueprint();
     });
   });
   if (els.copyGovernanceBrief) {
@@ -1277,6 +1286,12 @@ function wireEvents() {
   }
   if (els.exportTenantAdminJson) {
     els.exportTenantAdminJson.addEventListener("click", exportTenantAdminJson);
+  }
+  if (els.copyIntegrationBrief) {
+    els.copyIntegrationBrief.addEventListener("click", copyIntegrationBrief);
+  }
+  if (els.exportIntegrationJson) {
+    els.exportIntegrationJson.addEventListener("click", exportIntegrationJson);
   }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
@@ -1597,6 +1612,7 @@ function render() {
   renderLearningQueue();
   renderAiLoop();
   renderTenantAdmin();
+  renderIntegrationBlueprint();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2123,7 +2139,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.3",
+    version: "5.4",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -9113,6 +9129,9 @@ function renderGovernanceCenter() {
   if (els.tenantAdminSummary) {
     renderTenantAdmin();
   }
+  if (els.integrationSummary) {
+    renderIntegrationBlueprint();
+  }
 }
 
 function governanceSummaryTemplate(label, value, detail) {
@@ -9463,6 +9482,7 @@ function setLearningCandidateStatus(status, candidateId) {
   renderLearningQueue();
   renderAiLoop();
   renderTenantAdmin();
+  renderIntegrationBlueprint();
 }
 
 function approveSafeLearningCandidates() {
@@ -9480,6 +9500,7 @@ function approveSafeLearningCandidates() {
   renderLearningQueue();
   renderAiLoop();
   renderTenantAdmin();
+  renderIntegrationBlueprint();
   if (els.approveSafeLearning) {
     els.approveSafeLearning.textContent = "Safe candidates approved";
     setTimeout(() => {
@@ -10136,6 +10157,261 @@ function exportTenantAdminJson() {
   downloadFile(
     `InduScout-Tenant-Admin-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), tenantAdmin: { generatedAt: new Date().toISOString(), data, roles: tenantRoleCards(data), controls: tenantControlCards(data), generatedText: tenantAdminBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function integrationBlueprintData() {
+  const tenant = tenantAdminData();
+  const governance = governanceData();
+  const aiLoop = aiLoopData();
+  const scorecard = supplierScorecardData();
+  const sourcePaths = products.reduce((count, product) => count + (Array.isArray(product.sources) ? product.sources.length : 0), 0);
+  const activityPoints = [
+    state.project.name || state.project.buyer,
+    state.shortlist.length,
+    state.quotes.length,
+    state.supplierReplies.length,
+    state.sourceLeads.length,
+    state.learningRecords.length,
+    Object.keys(state.learningApprovals).length
+  ].filter(Boolean).length;
+  const readiness = Math.min(96, Math.round((tenant.adminReadiness * 0.45) + (governance.guardrailScore * 0.2) + (activityPoints * 5) + (products.length ? 16 : 0)));
+
+  return {
+    readiness,
+    status: readiness >= 82 ? "Integration blueprint is board-ready" : readiness >= 65 ? "Integration blueprint is credible for partner review" : "Integration blueprint needs more buyer activity",
+    productRecords: products.length,
+    sourcePaths,
+    shortlistItems: state.shortlist.length,
+    quoteRecords: state.quotes.length,
+    supplierReplies: state.supplierReplies.length,
+    sourceLeads: state.sourceLeads.length,
+    learningDecisions: Object.keys(state.learningApprovals).length,
+    tenant,
+    governance,
+    aiLoop,
+    scorecard
+  };
+}
+
+function integrationEndpointCards(data = integrationBlueprintData()) {
+  return [
+    {
+      method: "GET",
+      path: "/api/products/search",
+      title: "Product discovery",
+      readiness: data.productRecords ? "Contract-ready" : "Needs catalog data",
+      boundary: "Public catalog data only",
+      detail: "Search products by keyword, brand, SKU, category, application, source channel, and confidence signal.",
+      fields: ["query", "category", "region", "sourceType", "confidence"]
+    },
+    {
+      method: "POST",
+      path: "/api/projects/{id}/rfq-pack",
+      title: "RFQ pack builder",
+      readiness: state.shortlist.length ? "Workflow proven locally" : "Needs shortlist activity",
+      boundary: "Tenant workspace data",
+      detail: "Generate RFQ packs, buyer notes, supplier emails, and procurement briefs from shortlist and project context.",
+      fields: ["project", "shortlist", "buyerNotes", "deliveryCountry", "targetDate"]
+    },
+    {
+      method: "POST",
+      path: "/api/quotes",
+      title: "Quote tracker",
+      readiness: state.quotes.length ? "Workflow proven locally" : "Needs quote examples",
+      boundary: "Commercial data, tenant-only",
+      detail: "Capture supplier quote replies, pricing, validity, delivery terms, and follow-up status.",
+      fields: ["supplier", "price", "quantity", "leadTime", "validUntil"]
+    },
+    {
+      method: "POST",
+      path: "/api/suppliers/replies",
+      title: "Supplier inbox",
+      readiness: state.supplierReplies.length ? "Workflow proven locally" : "Needs reply examples",
+      boundary: "Supplier communication, tenant-only",
+      detail: "Convert supplier messages into quote actions, data update requests, clarification emails, and next-step tasks.",
+      fields: ["supplier", "subject", "message", "status", "nextAction"]
+    },
+    {
+      method: "POST",
+      path: "/api/learning/candidates",
+      title: "Governed learning candidates",
+      readiness: data.learningDecisions ? "Guardrails previewed" : "Needs approval activity",
+      boundary: "Approved or tenant-only learning only",
+      detail: "Promote sourcing outcomes into governed learning candidates after buyer approval and data boundary checks.",
+      fields: ["outcome", "evidence", "risk", "approvalStatus", "tenantBoundary"]
+    },
+    {
+      method: "GET",
+      path: "/api/admin/audit-events",
+      title: "Admin audit trail",
+      readiness: "Backend required",
+      boundary: "Admin-only tenant control plane",
+      detail: "Expose immutable audit events for exports, role actions, learning approvals, and policy changes once server storage exists.",
+      fields: ["actor", "event", "scope", "timestamp", "policy"]
+    }
+  ];
+}
+
+function integrationControlCards(data = integrationBlueprintData()) {
+  return [
+    {
+      title: "Authentication and roles",
+      status: "Backend required",
+      detail: "Connectors must run behind organization accounts, RBAC, session expiry, and admin-managed permissions.",
+      checks: ["Buyer, reviewer, admin, and supplier roles", "OAuth or enterprise identity later", "No shared secrets in frontend code"]
+    },
+    {
+      title: "Tenant isolation",
+      status: data.tenant.adminReadiness >= 70 ? "Designed" : "Draft",
+      detail: "Project notes, quote pricing, supplier replies, and learning records must be separated by organization.",
+      checks: ["Tenant-scoped API keys", "Server-side authorization", "No cross-tenant raw commercial data"]
+    },
+    {
+      title: "Audit and governance",
+      status: data.governance.guardrailScore >= 80 ? "Strong preview" : "Needs review",
+      detail: "Every export, learning decision, supplier update, and admin policy change needs a durable audit event.",
+      checks: ["Persistent event log", "Export history", "Learning approval trace"]
+    },
+    {
+      title: "Rate limits and abuse controls",
+      status: "SaaS gate",
+      detail: "Search and integration endpoints need quota limits, validation, logging, and suspicious activity alerts.",
+      checks: ["Input validation", "Request quotas", "Bot and scraping controls"]
+    }
+  ];
+}
+
+function integrationEvents(data = integrationBlueprintData()) {
+  return [
+    ["product.searched", state.query ? `Last search: ${state.query}` : "Searches are local in the static beta", "Finder"],
+    ["shortlist.updated", `${data.shortlistItems} items currently shortlisted`, "RFQ"],
+    ["rfq.exported", "RFQ pack and procurement brief exports are generated in-browser", "Export"],
+    ["quote.received", `${data.quoteRecords} quote records saved locally`, "Quotes"],
+    ["supplier.reply_logged", `${data.supplierReplies} supplier replies logged locally`, "Inbox"],
+    ["learning.candidate_reviewed", `${data.learningDecisions} learning decisions recorded`, "AI governance"],
+    ["admin.audit_previewed", `${data.tenant.auditEvents.length} audit preview events available`, "Admin"]
+  ];
+}
+
+function renderIntegrationBlueprint() {
+  if (!els.integrationSummary || !els.integrationEndpointGrid || !els.integrationControlGrid || !els.integrationEventList) {
+    return;
+  }
+
+  const data = integrationBlueprintData();
+  els.integrationSummary.innerHTML = [
+    tenantSummaryTemplate("Integration readiness", `${data.readiness}%`, data.status),
+    tenantSummaryTemplate("Endpoint contracts", integrationEndpointCards(data).length, "Future API surfaces"),
+    tenantSummaryTemplate("Event types", integrationEvents(data).length, "Webhook-style workflow signals"),
+    tenantSummaryTemplate("Source paths", data.sourcePaths, "Catalog, RFQ, and supplier links")
+  ].join("");
+
+  if (els.integrationStatus) {
+    els.integrationStatus.textContent = `${data.status}. This public beta remains static: no live API, no server database, and no hidden data transfer.`;
+  }
+
+  els.integrationEndpointGrid.innerHTML = integrationEndpointCards(data).map(integrationEndpointTemplate).join("");
+  els.integrationControlGrid.innerHTML = integrationControlCards(data).map(integrationControlTemplate).join("");
+  els.integrationEventList.innerHTML = integrationEvents(data).map(integrationEventTemplate).join("");
+}
+
+function integrationEndpointTemplate(endpoint) {
+  return `
+    <article class="integration-endpoint-card">
+      <div>
+        <span>${escapeHtml(endpoint.method)}</span>
+        <code>${escapeHtml(endpoint.path)}</code>
+      </div>
+      <h3>${escapeHtml(endpoint.title)}</h3>
+      <p>${escapeHtml(endpoint.detail)}</p>
+      <dl>
+        <dt>Readiness</dt>
+        <dd>${escapeHtml(endpoint.readiness)}</dd>
+        <dt>Data boundary</dt>
+        <dd>${escapeHtml(endpoint.boundary)}</dd>
+      </dl>
+      <small>${endpoint.fields.map((field) => escapeHtml(field)).join(" | ")}</small>
+    </article>
+  `;
+}
+
+function integrationControlTemplate(control) {
+  return `
+    <article class="integration-control-card">
+      <span>${escapeHtml(control.status)}</span>
+      <h3>${escapeHtml(control.title)}</h3>
+      <p>${escapeHtml(control.detail)}</p>
+      <ul>${control.checks.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </article>
+  `;
+}
+
+function integrationEventTemplate(event) {
+  const [name, detail, scope] = event;
+  return `
+    <article class="integration-event">
+      <span>${escapeHtml(scope)}</span>
+      <div>
+        <strong>${escapeHtml(name)}</strong>
+        <p>${escapeHtml(detail)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function integrationBriefText() {
+  const data = integrationBlueprintData();
+  const endpoints = integrationEndpointCards(data).map((endpoint, index) => `${index + 1}. ${endpoint.method} ${endpoint.path} - ${endpoint.title} (${endpoint.readiness}; ${endpoint.boundary})`).join("\n");
+  const controls = integrationControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.status} - ${control.detail}`).join("\n");
+  const events = integrationEvents(data).map((event, index) => `${index + 1}. ${event[0]} [${event[2]}] - ${event[1]}`).join("\n");
+
+  return `InduScout v5.4 API and integration blueprint
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Integration readiness: ${data.readiness}% (${data.status})
+Catalog records: ${data.productRecords}
+Source paths: ${data.sourcePaths}
+Quote records: ${data.quoteRecords}
+Supplier replies: ${data.supplierReplies}
+Learning decisions: ${data.learningDecisions}
+
+Future endpoint contracts:
+${endpoints}
+
+Integration controls:
+${controls}
+
+Event stream preview:
+${events}
+
+Important boundary:
+InduScout v5.4 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
+}
+
+async function copyIntegrationBrief() {
+  const text = integrationBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyIntegrationBrief) {
+      els.copyIntegrationBrief.textContent = "Integration brief copied";
+      setTimeout(() => {
+        els.copyIntegrationBrief.textContent = "Copy integration brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy integration brief", text);
+  }
+}
+
+function exportIntegrationJson() {
+  const data = integrationBlueprintData();
+  downloadFile(
+    `InduScout-Integration-Blueprint-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), integrationBlueprint: { generatedAt: new Date().toISOString(), data, endpoints: integrationEndpointCards(data), controls: integrationControlCards(data), events: integrationEvents(data), generatedText: integrationBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -11900,7 +12176,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.3",
+    version: "5.4",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -12040,6 +12316,7 @@ function applySession(session) {
   renderLearningQueue();
   renderAiLoop();
   renderTenantAdmin();
+  renderIntegrationBlueprint();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();

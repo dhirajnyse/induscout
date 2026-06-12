@@ -525,6 +525,7 @@ h1 {
 .learning-queue-band,
 .ai-loop-band,
 .tenant-admin-band,
+.integration-band,
 .inbox-band,
 .scorecard-band,
 .quality-band,
@@ -3757,12 +3758,14 @@ input[type="checkbox"] {
   font-size: 0.72rem;
 }
 
-.tenant-admin-band {
+.tenant-admin-band,
+.integration-band {
   background: #ffffff;
   border-bottom: 1px solid var(--line);
 }
 
-.tenant-admin-console {
+.tenant-admin-console,
+.integration-console {
   display: grid;
   gap: 18px;
   max-width: 1180px;
@@ -3771,12 +3774,16 @@ input[type="checkbox"] {
 
 .tenant-admin-summary,
 .tenant-role-grid,
-.tenant-control-grid {
+.tenant-control-grid,
+.integration-summary,
+.integration-endpoint-grid,
+.integration-control-grid {
   display: grid;
   gap: 14px;
 }
 
-.tenant-admin-summary {
+.tenant-admin-summary,
+.integration-summary {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
@@ -3788,11 +3795,24 @@ input[type="checkbox"] {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.integration-endpoint-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.integration-control-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .tenant-admin-summary article,
 .tenant-admin-toolbar,
 .tenant-role-card,
 .tenant-control-card,
-.tenant-audit-panel {
+.tenant-audit-panel,
+.integration-summary article,
+.integration-toolbar,
+.integration-endpoint-card,
+.integration-control-card,
+.integration-event-panel {
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -3801,12 +3821,16 @@ input[type="checkbox"] {
 
 .tenant-admin-summary article,
 .tenant-role-card,
-.tenant-control-card {
+.tenant-control-card,
+.integration-summary article,
+.integration-endpoint-card,
+.integration-control-card {
   min-width: 0;
   padding: 16px;
 }
 
-.tenant-admin-summary article {
+.tenant-admin-summary article,
+.integration-summary article {
   display: grid;
   gap: 7px;
 }
@@ -3816,7 +3840,13 @@ input[type="checkbox"] {
 .tenant-role-card span,
 .tenant-control-card span,
 .tenant-audit-panel span,
-.tenant-audit-event span {
+.tenant-audit-event span,
+.integration-summary span,
+.integration-toolbar span,
+.integration-endpoint-card span,
+.integration-control-card span,
+.integration-event-panel span,
+.integration-event span {
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 900;
@@ -3825,11 +3855,14 @@ input[type="checkbox"] {
 
 .tenant-admin-summary article > span,
 .tenant-role-card > span,
-.tenant-control-card > span {
+.tenant-control-card > span,
+.integration-summary article > span,
+.integration-control-card > span {
   color: var(--teal);
 }
 
-.tenant-admin-summary strong {
+.tenant-admin-summary strong,
+.integration-summary strong {
   font-size: 1.5rem;
   line-height: 1.05;
   overflow-wrap: anywhere;
@@ -3838,12 +3871,17 @@ input[type="checkbox"] {
 .tenant-admin-summary small,
 .tenant-role-card p,
 .tenant-control-card p,
-.tenant-audit-event p {
+.tenant-audit-event p,
+.integration-summary small,
+.integration-endpoint-card p,
+.integration-control-card p,
+.integration-event p {
   color: var(--muted);
   font-size: 0.84rem;
 }
 
-.tenant-admin-toolbar {
+.tenant-admin-toolbar,
+.integration-toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
@@ -3851,19 +3889,22 @@ input[type="checkbox"] {
   padding: 16px 18px;
 }
 
-.tenant-admin-toolbar > div:first-child {
+.tenant-admin-toolbar > div:first-child,
+.integration-toolbar > div:first-child {
   display: grid;
   gap: 3px;
 }
 
-.tenant-admin-actions {
+.tenant-admin-actions,
+.integration-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
 }
 
-.tenant-admin-actions button:first-child {
+.tenant-admin-actions button:first-child,
+.integration-actions button:first-child {
   min-height: 38px;
   padding: 0 18px;
   color: #ffffff;
@@ -3874,11 +3915,68 @@ input[type="checkbox"] {
 }
 
 .tenant-role-card,
-.tenant-control-card {
+.tenant-control-card,
+.integration-endpoint-card,
+.integration-control-card {
   display: grid;
   align-content: start;
   gap: 9px;
   border-top: 5px solid var(--teal);
+}
+
+.integration-endpoint-card {
+  border-top-color: #38bdf8;
+}
+
+.integration-control-card {
+  border-top-color: var(--green);
+}
+
+.integration-endpoint-card > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.integration-endpoint-card code {
+  display: inline-flex;
+  min-width: 0;
+  padding: 5px 7px;
+  color: #0f172a;
+  background: #f1f5f9;
+  border: 1px solid #dbeafe;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.integration-endpoint-card dl {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 6px 10px;
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 0.84rem;
+}
+
+.integration-endpoint-card dt {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.integration-endpoint-card dd {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.integration-endpoint-card small {
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
 }
 
 .tenant-role-card.admin,
@@ -3897,19 +3995,24 @@ input[type="checkbox"] {
 }
 
 .tenant-role-card h3,
-.tenant-control-card h3 {
+.tenant-control-card h3,
+.integration-endpoint-card h3,
+.integration-control-card h3 {
   margin: 0;
   font-size: 1.08rem;
 }
 
 .tenant-role-card p,
-.tenant-control-card p {
+.tenant-control-card p,
+.integration-endpoint-card p,
+.integration-control-card p {
   margin: 0;
   line-height: 1.55;
 }
 
 .tenant-role-card ul,
-.tenant-control-card ul {
+.tenant-control-card ul,
+.integration-control-card ul {
   display: grid;
   gap: 6px;
   margin: 0;
@@ -3918,23 +4021,27 @@ input[type="checkbox"] {
   font-size: 0.84rem;
 }
 
-.tenant-audit-panel {
+.tenant-audit-panel,
+.integration-event-panel {
   display: grid;
   gap: 12px;
   padding: 18px;
 }
 
-.tenant-audit-panel > div:first-child {
+.tenant-audit-panel > div:first-child,
+.integration-event-panel > div:first-child {
   display: grid;
   gap: 3px;
 }
 
-.tenant-audit-list {
+.tenant-audit-list,
+.integration-event-list {
   display: grid;
   gap: 10px;
 }
 
-.tenant-audit-event {
+.tenant-audit-event,
+.integration-event {
   display: grid;
   grid-template-columns: 140px minmax(0, 1fr) 140px;
   gap: 12px;
@@ -3943,6 +4050,10 @@ input[type="checkbox"] {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
+}
+
+.integration-event {
+  grid-template-columns: 160px minmax(0, 1fr);
 }
 
 .tenant-audit-event strong {
@@ -8594,6 +8705,9 @@ footer a {
   .tenant-admin-summary,
   .tenant-role-grid,
   .tenant-control-grid,
+  .integration-summary,
+  .integration-endpoint-grid,
+  .integration-control-grid,
   .quality-stats,
   .inbox-summary,
   .scorecard-facts,
@@ -8636,7 +8750,8 @@ footer a {
   .learning-queue-card,
   .ai-loop-toolbar,
   .ai-loop-recommendations,
-  .tenant-admin-toolbar {
+  .tenant-admin-toolbar,
+  .integration-toolbar {
     grid-template-columns: 1fr;
   }
 
@@ -9020,6 +9135,9 @@ footer a {
   .tenant-admin-summary,
   .tenant-role-grid,
   .tenant-control-grid,
+  .integration-summary,
+  .integration-endpoint-grid,
+  .integration-control-grid,
   .request-grid,
   .quote-grid,
   .quote-summary,

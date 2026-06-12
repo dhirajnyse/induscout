@@ -1,4 +1,4 @@
-# InduScout v5.3 Launch Checklist
+# InduScout v5.4 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -93,8 +93,10 @@ Use this checklist after each public GitHub Pages upload.
 - Open Admin and confirm admin readiness, audit event count, export records, learning decisions, role cards, control checks, and audit trail preview render.
 - Save project context, shortlist an item, save a quote or source lead, and approve a learning candidate; confirm the Admin audit trail reflects the activity.
 - Copy the admin brief and export Tenant Admin JSON; confirm roles, controls, audit events, governance boundary, and SaaS readiness principle are included.
-- Click the top `v5.3` tab and confirm the Version & Build Phases section opens.
-- Confirm the Build Phases tracker shows current live build v5.3, release mode, v5.4 next gate, completed phases, current closed-loop intelligence, governed SaaS foundation, and future network learning layer.
+- Open Integrations and confirm integration readiness, endpoint contract count, event type count, source path count, future endpoint cards, connector guardrails, and event stream preview render.
+- Copy the integration brief and export Integration JSON; confirm future endpoint contracts, data boundaries, event stream preview, and no-live-API warning are included.
+- Click the top `v5.4` tab and confirm the Version & Build Phases section opens.
+- Confirm the Build Phases tracker shows current live build v5.4, release mode, v5.5 next gate, completed phases, current closed-loop intelligence, governed SaaS foundation, and future network learning layer.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.
@@ -156,4 +158,5 @@ Use this checklist after each public GitHub Pages upload.
 - Add richer regional availability notes.
 - Build supplier submission review rules.
 - Grow Supplier Intake into a governed review workflow before public supplier submissions.
+- Convert the v5.4 integration blueprint into a secure API sandbox only after accounts, tenant isolation, RBAC, rate limits, and persistent audit logs are ready.
 - Plan backend search only after static catalog workflow is stable.

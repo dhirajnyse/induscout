@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=5.3">
+    <link rel="stylesheet" href="styles.css?v=5.4">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -71,7 +71,8 @@
         <a href="#learning-queue">Learning Queue</a>
         <a href="#ai-loop">AI Loop</a>
         <a href="#tenant-admin">Admin</a>
-        <a class="version-tab" href="#version">v5.3</a>
+        <a href="#integrations">Integrations</a>
+        <a class="version-tab" href="#version">v5.4</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -1398,6 +1399,38 @@
         </div>
       </section>
 
+      <section class="integration-band" id="integrations" aria-labelledby="integrations-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">API & Integration Blueprint</p>
+            <h2 id="integrations-title">Map InduScout into buyer systems</h2>
+          </div>
+          <p>Preview the future endpoint contracts, event flow, connector readiness, and data boundaries needed before InduScout connects to ERP, supplier portals, RFQ tools, catalog feeds, and analytics systems.</p>
+        </div>
+        <div class="integration-console">
+          <div class="integration-summary" id="integrationSummary"></div>
+          <div class="integration-toolbar">
+            <div>
+              <strong>Future integration control plane</strong>
+              <span id="integrationStatus">Static blueprint generated from the current buyer workspace. No live API is exposed in this public beta.</span>
+            </div>
+            <div class="integration-actions">
+              <button type="button" id="copyIntegrationBrief">Copy integration brief</button>
+              <button class="ghost-button compact" type="button" id="exportIntegrationJson">Export JSON</button>
+            </div>
+          </div>
+          <div class="integration-endpoint-grid" id="integrationEndpointGrid"></div>
+          <div class="integration-control-grid" id="integrationControlGrid"></div>
+          <div class="integration-event-panel">
+            <div>
+              <strong>Event stream preview</strong>
+              <span>These are future webhook-style events that could power ERP notes, buyer dashboards, and governed learning signals.</span>
+            </div>
+            <div class="integration-event-list" id="integrationEventList"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -1924,8 +1957,8 @@
           <div class="version-status">
             <article class="current">
               <span>Current live build</span>
-              <strong>v5.3</strong>
-              <p>Tenant admin foundation with role model, control checks, and local audit trail preview.</p>
+              <strong>v5.4</strong>
+              <p>Integration blueprint with future API contracts, event flows, connector readiness, and tenant-safe data boundaries.</p>
             </article>
             <article>
               <span>Release mode</span>
@@ -1934,8 +1967,8 @@
             </article>
             <article>
               <span>Next major gate</span>
-              <strong>v5.4</strong>
-              <p>Move toward SaaS foundations: accounts, tenant-safe APIs, persistent audit logs, permissions, and admin review workflows.</p>
+              <strong>v5.5</strong>
+              <p>Move toward backend readiness: account identity, persistent audit logs, API sandbox design, permissions, and admin review workflows.</p>
             </article>
           </div>
           <div class="phase-grid">
@@ -1968,7 +2001,7 @@
           <div class="release-ledger">
             <div>
               <strong>Recent release trail</strong>
-              <span>v5.1 Learning Review Queue -> v5.2 AI Loop -> v5.3 Tenant Admin</span>
+              <span>v5.2 AI Loop -> v5.3 Tenant Admin -> v5.4 Integrations</span>
             </div>
             <a href="#roadmap">Open roadmap</a>
           </div>
@@ -2145,8 +2178,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=5.3"></script>
-    <script src="back-to-top.js?v=5.3"></script>
-    <script src="app.js?v=5.3"></script>
+    <script src="catalog.js?v=5.4"></script>
+    <script src="back-to-top.js?v=5.4"></script>
+    <script src="app.js?v=5.4"></script>
   </body>
 </html>
