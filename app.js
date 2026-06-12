@@ -374,6 +374,12 @@ const els = {
   exportSaasGateJson: document.querySelector("#exportSaasGateJson"),
   saasGateGrid: document.querySelector("#saasGateGrid"),
   saasGateSequence: document.querySelector("#saasGateSequence"),
+  pilotPackSummary: document.querySelector("#pilotPackSummary"),
+  pilotPackStatus: document.querySelector("#pilotPackStatus"),
+  copyPilotPackBrief: document.querySelector("#copyPilotPackBrief"),
+  exportPilotPackJson: document.querySelector("#exportPilotPackJson"),
+  pilotPackGrid: document.querySelector("#pilotPackGrid"),
+  pilotPackSequence: document.querySelector("#pilotPackSequence"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -509,6 +515,7 @@ function init() {
   renderTenantAdmin();
   renderIntegrationBlueprint();
   renderSaasGate();
+  renderPilotPack();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1263,6 +1270,7 @@ function wireEvents() {
       renderTenantAdmin();
       renderIntegrationBlueprint();
       renderSaasGate();
+      renderPilotPack();
     });
   });
   if (els.copyGovernanceBrief) {
@@ -1306,6 +1314,12 @@ function wireEvents() {
   }
   if (els.exportSaasGateJson) {
     els.exportSaasGateJson.addEventListener("click", exportSaasGateJson);
+  }
+  if (els.copyPilotPackBrief) {
+    els.copyPilotPackBrief.addEventListener("click", copyPilotPackBrief);
+  }
+  if (els.exportPilotPackJson) {
+    els.exportPilotPackJson.addEventListener("click", exportPilotPackJson);
   }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
@@ -1628,6 +1642,7 @@ function render() {
   renderTenantAdmin();
   renderIntegrationBlueprint();
   renderSaasGate();
+  renderPilotPack();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2154,7 +2169,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.5",
+    version: "5.6",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -9150,6 +9165,9 @@ function renderGovernanceCenter() {
   if (els.saasGateSummary) {
     renderSaasGate();
   }
+  if (els.pilotPackSummary) {
+    renderPilotPack();
+  }
 }
 
 function governanceSummaryTemplate(label, value, detail) {
@@ -9502,6 +9520,7 @@ function setLearningCandidateStatus(status, candidateId) {
   renderTenantAdmin();
   renderIntegrationBlueprint();
   renderSaasGate();
+  renderPilotPack();
 }
 
 function approveSafeLearningCandidates() {
@@ -9521,6 +9540,7 @@ function approveSafeLearningCandidates() {
   renderTenantAdmin();
   renderIntegrationBlueprint();
   renderSaasGate();
+  renderPilotPack();
   if (els.approveSafeLearning) {
     els.approveSafeLearning.textContent = "Safe candidates approved";
     setTimeout(() => {
@@ -10387,7 +10407,7 @@ function integrationBriefText() {
   const controls = integrationControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.status} - ${control.detail}`).join("\n");
   const events = integrationEvents(data).map((event, index) => `${index + 1}. ${event[0]} [${event[2]}] - ${event[1]}`).join("\n");
 
-  return `InduScout v5.5 API and integration blueprint
+  return `InduScout v5.6 API and integration blueprint
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10409,7 +10429,7 @@ Event stream preview:
 ${events}
 
 Important boundary:
-InduScout v5.5 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
+InduScout v5.6 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
 }
 
 async function copyIntegrationBrief() {
@@ -10600,7 +10620,7 @@ function saasGateBriefText() {
   const gates = saasGateCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Owner: ${card.owner}. ${card.detail}`).join("\n");
   const sequence = saasGateSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.5 SaaS readiness gate
+  return `InduScout v5.6 SaaS readiness gate
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10619,7 +10639,7 @@ Backend migration sequence:
 ${sequence}
 
 Operating rule:
-InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.5 is a planning and readiness simulator, not a live SaaS backend.`;
+InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.6 is a planning and readiness simulator, not a live SaaS backend.`;
 }
 
 async function copySaasGateBrief() {
@@ -10642,6 +10662,224 @@ function exportSaasGateJson() {
   downloadFile(
     `InduScout-SaaS-Gate-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), saasGate: { generatedAt: new Date().toISOString(), data, gates: saasGateCards(data), sequence: saasGateSequence(data), generatedText: saasGateBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function pilotPackData() {
+  const saas = saasGateData();
+  const integration = integrationBlueprintData();
+  const evidenceItems = evidenceReviewItems();
+  const totalProducts = products.length || 1;
+  const verifiedCoverage = percentage(products.filter((product) => product.verified).length, totalProducts);
+  const datasheetCoverage = percentage(products.filter((product) => product.datasheet).length, totalProducts);
+  const workflowSignals = [
+    products.length >= 60,
+    sourceDirectory.length >= 20,
+    state.shortlist.length > 0,
+    state.quotes.length > 0,
+    state.supplierReplies.length > 0,
+    state.sourceLeads.length > 0,
+    state.learningRecords.length > 0,
+    Object.keys(state.learningApprovals).length > 0
+  ].filter(Boolean).length;
+  const readiness = Math.min(96, Math.round((saas.readiness * 0.28) + (integration.readiness * 0.2) + (verifiedCoverage * 0.18) + (datasheetCoverage * 0.14) + (workflowSignals * 4) + 8));
+
+  return {
+    readiness,
+    status: readiness >= 82 ? "Ready for curated pilot conversations" : readiness >= 68 ? "Good for friendly early-adopter demos" : "Needs more workflow evidence before buyer pilot",
+    categoryCount: categoryTaxonomy.length,
+    productRecords: products.length,
+    sourcePaths: products.reduce((count, product) => count + (Array.isArray(product.sources) ? product.sources.length : 0), 0),
+    shortlistItems: state.shortlist.length,
+    quoteRecords: state.quotes.length,
+    supplierReplies: state.supplierReplies.length,
+    sourceLeads: state.sourceLeads.length,
+    evidenceItems: evidenceItems.length,
+    workflowSignals,
+    saas,
+    integration,
+    verifiedCoverage,
+    datasheetCoverage
+  };
+}
+
+function pilotPackCards(data = pilotPackData()) {
+  return [
+    {
+      title: "Pilot scope",
+      status: "Ready to brief",
+      score: Math.min(95, 60 + data.categoryCount + Math.round(data.productRecords / 4)),
+      detail: "Run a focused procurement pilot around search, shortlist, RFQ prep, quote tracking, supplier replies, and buyer file outputs.",
+      proof: [`${data.categoryCount} beta categories`, `${data.productRecords} product records`, `${data.sourcePaths} source links`],
+      output: "Pilot scope memo"
+    },
+    {
+      title: "Buyer onboarding",
+      status: projectValue("name", "") ? "Context available" : "Needs pilot context",
+      score: projectValue("name", "") ? 82 : 62,
+      detail: "Collect project name, buyer contact, target categories, country, timeline, sample parts, and verification expectations.",
+      proof: ["Project RFQ workspace", "Missing-product intake", "Buyer verification reminder"],
+      output: "Onboarding checklist"
+    },
+    {
+      title: "Workflow proof",
+      status: data.workflowSignals >= 5 ? "Strong local evidence" : "Add more examples",
+      score: Math.min(92, 50 + data.workflowSignals * 6),
+      detail: "Demonstrate the end-to-end buyer desk from finder to RFQ pack, quotes, scorecard, compliance, and buyer file.",
+      proof: [`${data.shortlistItems} shortlist items`, `${data.quoteRecords} quotes`, `${data.supplierReplies} supplier replies`],
+      output: "Workflow demo script"
+    },
+    {
+      title: "Data room",
+      status: "Ready for public beta",
+      score: 84,
+      detail: "Use README, Security, Privacy, Launch Checklist, sitemap, sample exports, and generated briefs as pilot evidence.",
+      proof: ["README.md", "SECURITY.md", "PRIVACY.md", "LAUNCH_CHECKLIST.md"],
+      output: "Pilot data-room index"
+    },
+    {
+      title: "Success metrics",
+      status: "Defined",
+      score: 78,
+      detail: "Measure time to shortlist, source confidence, datasheet coverage, RFQ completeness, quote response quality, and avoided risk.",
+      proof: ["Fit score", "Source path count", "Review queue", "Supplier scorecard"],
+      output: "Pilot KPI sheet"
+    },
+    {
+      title: "Feedback loop",
+      status: data.evidenceItems ? "Signals available" : "Needs pilot feedback",
+      score: data.evidenceItems ? 80 : 60,
+      detail: "Capture product requests, source corrections, supplier replies, learning records, and governed approval decisions after each pilot run.",
+      proof: [`${data.evidenceItems} review items`, `${data.sourceLeads} source leads`, `${Object.keys(state.learningApprovals).length} learning decisions`],
+      output: "Pilot learning report"
+    },
+    {
+      title: "Partner/API story",
+      status: data.integration.readiness >= 70 ? "Credible blueprint" : "Needs integration evidence",
+      score: data.integration.readiness,
+      detail: "Use integration contracts and SaaS gates to explain future ERP, supplier portal, RFQ, and analytics integrations.",
+      proof: ["Endpoint contracts", "Event stream preview", "SaaS gate blockers"],
+      output: "Partner integration appendix"
+    },
+    {
+      title: "Pilot boundaries",
+      status: "Clear beta limits",
+      score: 86,
+      detail: "Keep confidential data out of the public beta; use local browser storage and buyer-controlled exports until a secure backend exists.",
+      proof: ["No login", "No backend storage", "No live API", "Local exports"],
+      output: "Beta boundary note"
+    }
+  ];
+}
+
+function pilotPackSequence(data = pilotPackData()) {
+  return [
+    ["01", "Qualify pilot", "Pick one buyer team, one procurement lane, and 20-50 representative parts."],
+    ["02", "Prepare sample run", `Use ${data.categoryCount} categories and current catalog records to build a controlled demo workflow.`],
+    ["03", "Run buyer workflow", "Search, compare, shortlist, prepare RFQ pack, log quote replies, score suppliers, and export the buyer file."],
+    ["04", "Collect feedback", "Capture missing parts, source corrections, supplier response quality, time saved, and workflow gaps."],
+    ["05", "Prioritize SaaS build", "Convert pilot findings into backend, API, data, governance, and catalog priorities before production."],
+    ["06", "Decide next cohort", "Invite another friendly buyer only after risks, missing data, and support load are understood."]
+  ];
+}
+
+function renderPilotPack() {
+  if (!els.pilotPackSummary || !els.pilotPackGrid || !els.pilotPackSequence) {
+    return;
+  }
+
+  const data = pilotPackData();
+  els.pilotPackSummary.innerHTML = [
+    tenantSummaryTemplate("Pilot readiness", `${data.readiness}%`, data.status),
+    tenantSummaryTemplate("Pilot cards", pilotPackCards(data).length, "Scope, workflow, proof, metrics"),
+    tenantSummaryTemplate("Catalog base", data.productRecords, `${data.categoryCount} categories`),
+    tenantSummaryTemplate("Proof signals", data.workflowSignals, "Local workflow evidence")
+  ].join("");
+
+  if (els.pilotPackStatus) {
+    els.pilotPackStatus.textContent = `${data.status}. Use this as an early-adopter pack; keep sensitive buyer data outside the public beta.`;
+  }
+
+  els.pilotPackGrid.innerHTML = pilotPackCards(data).map(pilotPackCardTemplate).join("");
+  els.pilotPackSequence.innerHTML = pilotPackSequence(data).map(pilotPackStepTemplate).join("");
+}
+
+function pilotPackCardTemplate(card) {
+  const statusClass = card.score >= 82 ? "ready" : card.score >= 70 ? "review" : "needs";
+  return `
+    <article class="pilot-pack-card ${statusClass}">
+      <div>
+        <span>${escapeHtml(card.status)}</span>
+        <strong>${escapeHtml(String(card.score))}</strong>
+      </div>
+      <h3>${escapeHtml(card.title)}</h3>
+      <p>${escapeHtml(card.detail)}</p>
+      <small>${escapeHtml(card.output)}</small>
+      <ul>${card.proof.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </article>
+  `;
+}
+
+function pilotPackStepTemplate(step) {
+  const [number, title, detail] = step;
+  return `
+    <article class="pilot-pack-step">
+      <span>${escapeHtml(number)}</span>
+      <div>
+        <strong>${escapeHtml(title)}</strong>
+        <p>${escapeHtml(detail)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function pilotPackBriefText() {
+  const data = pilotPackData();
+  const cards = pilotPackCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Output: ${card.output}. ${card.detail}`).join("\n");
+  const sequence = pilotPackSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
+
+  return `InduScout v5.6 Pilot Launch Pack
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Pilot readiness: ${data.readiness}% (${data.status})
+Catalog base: ${data.categoryCount} categories, ${data.productRecords} product records, ${data.sourcePaths} source links
+Workflow evidence: ${data.workflowSignals} proof signals
+SaaS readiness: ${data.saas.readiness}%
+Integration readiness: ${data.integration.readiness}%
+
+Pilot pack:
+${cards}
+
+Pilot operating plan:
+${sequence}
+
+Boundary:
+InduScout v5.6 is suitable for curated public-beta pilot conversations, demos, and buyer workflow validation. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
+}
+
+async function copyPilotPackBrief() {
+  const text = pilotPackBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyPilotPackBrief) {
+      els.copyPilotPackBrief.textContent = "Pilot brief copied";
+      setTimeout(() => {
+        els.copyPilotPackBrief.textContent = "Copy pilot brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy pilot brief", text);
+  }
+}
+
+function exportPilotPackJson() {
+  const data = pilotPackData();
+  downloadFile(
+    `InduScout-Pilot-Pack-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), pilotPack: { generatedAt: new Date().toISOString(), data, cards: pilotPackCards(data), sequence: pilotPackSequence(data), generatedText: pilotPackBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -12406,7 +12644,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.5",
+    version: "5.6",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -12548,6 +12786,7 @@ function applySession(session) {
   renderTenantAdmin();
   renderIntegrationBlueprint();
   renderSaasGate();
+  renderPilotPack();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();

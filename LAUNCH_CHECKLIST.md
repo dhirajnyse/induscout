@@ -1,4 +1,4 @@
-# InduScout v5.5 Launch Checklist
+# InduScout v5.6 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -97,8 +97,10 @@ Use this checklist after each public GitHub Pages upload.
 - Copy the integration brief and export Integration JSON; confirm future endpoint contracts, data boundaries, event stream preview, and no-live-API warning are included.
 - Open SaaS Gate and confirm SaaS readiness, backend gates, required backend work, blockers, gate cards, status labels, owners, checks, and backend migration sequence render.
 - Copy the SaaS gate brief and export SaaS Gate JSON; confirm identity/RBAC, tenant data model, API sandbox, audit logs, privacy, learning governance, commercial evidence, operations, and migration sequence are included.
-- Click the top `v5.5` tab and confirm the Version & Build Phases section opens.
-- Confirm the Build Phases tracker shows current live build v5.5, release mode, v5.6 next gate, completed phases, current closed-loop intelligence, governed SaaS foundation, and future network learning layer.
+- Open Pilot and confirm pilot readiness, pilot card count, catalog base, proof signals, pilot cards, card outputs, and pilot operating plan render.
+- Copy the pilot brief and export Pilot Pack JSON; confirm pilot scope, buyer onboarding, workflow proof, data room, success metrics, feedback loop, partner/API story, pilot boundaries, and operating sequence are included.
+- Click the top `v5.6` tab and confirm the Version & Build Phases section opens.
+- Confirm the Build Phases tracker shows current live build v5.6, release mode, v5.7 next gate, completed phases, current closed-loop intelligence, governed SaaS foundation, and future network learning layer.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.
@@ -160,5 +162,5 @@ Use this checklist after each public GitHub Pages upload.
 - Add richer regional availability notes.
 - Build supplier submission review rules.
 - Grow Supplier Intake into a governed review workflow before public supplier submissions.
-- Convert the v5.5 SaaS Gate and integration blueprint into a secure API sandbox only after accounts, tenant isolation, RBAC, rate limits, persistent audit logs, monitoring, backup, and incident-response gates are ready.
+- Use the v5.6 Pilot Launch Pack for curated early-adopter conversations, then convert pilot findings into secure API sandbox and backend priorities only after accounts, tenant isolation, RBAC, rate limits, persistent audit logs, monitoring, backup, and incident-response gates are ready.
 - Plan backend search only after static catalog workflow is stable.
