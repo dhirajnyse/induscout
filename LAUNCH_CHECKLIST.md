@@ -1,4 +1,4 @@
-# InduScout v5.2 Launch Checklist
+# InduScout v5.3 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -90,8 +90,11 @@ Use this checklist after each public GitHub Pages upload.
 - Open AI Loop and confirm influence readiness, eligible signal count, gated signal count, top supplier, pipeline steps, and recommendation cards render.
 - Approve at least one Learning Queue candidate and confirm AI Loop eligible signal count, readiness, and recommendation cards update.
 - Copy the AI loop brief and export AI Loop JSON; confirm governance boundary, eligible/gated counts, recommendation updates, and operating principle are included.
-- Click the top `v5.2` tab and confirm the Version & Build Phases section opens.
-- Confirm the Build Phases tracker shows current live build v5.2, release mode, v5.3 next gate, completed phases, current closed-loop intelligence with explainable recommendation influence, governed SaaS foundation, and future network learning layer.
+- Open Admin and confirm admin readiness, audit event count, export records, learning decisions, role cards, control checks, and audit trail preview render.
+- Save project context, shortlist an item, save a quote or source lead, and approve a learning candidate; confirm the Admin audit trail reflects the activity.
+- Copy the admin brief and export Tenant Admin JSON; confirm roles, controls, audit events, governance boundary, and SaaS readiness principle are included.
+- Click the top `v5.3` tab and confirm the Version & Build Phases section opens.
+- Confirm the Build Phases tracker shows current live build v5.3, release mode, v5.4 next gate, completed phases, current closed-loop intelligence, governed SaaS foundation, and future network learning layer.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.

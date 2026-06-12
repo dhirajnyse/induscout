@@ -354,6 +354,13 @@ const els = {
   exportAiLoopJson: document.querySelector("#exportAiLoopJson"),
   aiLoopPipeline: document.querySelector("#aiLoopPipeline"),
   aiLoopRecommendations: document.querySelector("#aiLoopRecommendations"),
+  tenantAdminSummary: document.querySelector("#tenantAdminSummary"),
+  tenantAdminStatus: document.querySelector("#tenantAdminStatus"),
+  copyTenantAdminBrief: document.querySelector("#copyTenantAdminBrief"),
+  exportTenantAdminJson: document.querySelector("#exportTenantAdminJson"),
+  tenantRoleGrid: document.querySelector("#tenantRoleGrid"),
+  tenantControlGrid: document.querySelector("#tenantControlGrid"),
+  tenantAuditList: document.querySelector("#tenantAuditList"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -486,6 +493,7 @@ function init() {
   renderGovernanceCenter();
   renderLearningQueue();
   renderAiLoop();
+  renderTenantAdmin();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1237,6 +1245,7 @@ function wireEvents() {
       renderGovernanceCenter();
       renderLearningQueue();
       renderAiLoop();
+      renderTenantAdmin();
     });
   });
   if (els.copyGovernanceBrief) {
@@ -1262,6 +1271,12 @@ function wireEvents() {
   }
   if (els.exportAiLoopJson) {
     els.exportAiLoopJson.addEventListener("click", exportAiLoopJson);
+  }
+  if (els.copyTenantAdminBrief) {
+    els.copyTenantAdminBrief.addEventListener("click", copyTenantAdminBrief);
+  }
+  if (els.exportTenantAdminJson) {
+    els.exportTenantAdminJson.addEventListener("click", exportTenantAdminJson);
   }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
@@ -1581,6 +1596,7 @@ function render() {
   renderGovernanceCenter();
   renderLearningQueue();
   renderAiLoop();
+  renderTenantAdmin();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2107,7 +2123,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.2",
+    version: "5.3",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -9094,6 +9110,9 @@ function renderGovernanceCenter() {
   if (els.aiLoopRecommendations) {
     renderAiLoop();
   }
+  if (els.tenantAdminSummary) {
+    renderTenantAdmin();
+  }
 }
 
 function governanceSummaryTemplate(label, value, detail) {
@@ -9443,6 +9462,7 @@ function setLearningCandidateStatus(status, candidateId) {
   saveLearningApprovals();
   renderLearningQueue();
   renderAiLoop();
+  renderTenantAdmin();
 }
 
 function approveSafeLearningCandidates() {
@@ -9459,6 +9479,7 @@ function approveSafeLearningCandidates() {
   saveLearningApprovals();
   renderLearningQueue();
   renderAiLoop();
+  renderTenantAdmin();
   if (els.approveSafeLearning) {
     els.approveSafeLearning.textContent = "Safe candidates approved";
     setTimeout(() => {
@@ -9835,6 +9856,286 @@ function exportAiLoopJson() {
   downloadFile(
     `InduScout-AI-Loop-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), aiLoop: { generatedAt: new Date().toISOString(), data, recommendations, generatedText: aiLoopBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function tenantAdminData() {
+  const governance = governanceData();
+  const aiLoop = aiLoopData();
+  const learning = learningQueueSummary();
+  const scorecard = supplierScorecardData();
+  const reviewItems = evidenceReviewItems();
+  const exportableRecords = state.shortlist.length + state.compare.length + state.quotes.length + state.supplierReplies.length + state.sourceLeads.length + state.learningRecords.length + state.savingsRecords.length;
+  const adminReadiness = Math.max(0, Math.min(100, Math.round(
+    20 +
+    governance.readinessScore * 0.25 +
+    aiLoop.influenceScore * 0.2 +
+    Math.min(18, exportableRecords * 2) +
+    Math.min(14, reviewItems.length * 2) +
+    (state.project.name || state.project.buyer ? 8 : 0)
+  )));
+  return {
+    governance,
+    aiLoop,
+    learning,
+    scorecard,
+    reviewItems,
+    exportableRecords,
+    adminReadiness,
+    adminStatus: tenantAdminStatusLabel(adminReadiness),
+    auditEvents: tenantAuditEvents({ governance, aiLoop, learning, scorecard, reviewItems })
+  };
+}
+
+function tenantAdminStatusLabel(score) {
+  if (score >= 82) {
+    return "Ready for SaaS design review";
+  }
+  if (score >= 64) {
+    return "Strong admin prototype";
+  }
+  if (score >= 45) {
+    return "Controls need more activity";
+  }
+  return "Early admin foundation";
+}
+
+function tenantRoleCards(data = tenantAdminData()) {
+  return [
+    {
+      className: "admin",
+      title: "Organization admin",
+      detail: "Owns tenant settings, learning boundary, user access, export policy, and deletion requests.",
+      permissions: ["Approve learning scope", "Export audit pack", "Manage buyer roles", "Review sensitive signals"]
+    },
+    {
+      className: "buyer",
+      title: "Buyer / sourcing user",
+      detail: "Searches products, prepares RFQs, records quotes, evaluates suppliers, and exports buyer files.",
+      permissions: ["Create shortlists", "Track quotes", "Copy supplier emails", "Export project files"]
+    },
+    {
+      className: "reviewer",
+      title: "Technical reviewer",
+      detail: "Checks specs, alternates, certificates, substitution approvals, and supplier evidence before award.",
+      permissions: ["Review alternates", "Approve substitutions", "Check certificates", "Flag risks"]
+    },
+    {
+      className: "supplier",
+      title: "Supplier contributor",
+      detail: "Future restricted role for source submissions, quote replies, evidence uploads, and correction requests.",
+      permissions: ["Submit source evidence", "Reply to RFQs", "Update catalog claims", "No buyer notes access"]
+    }
+  ];
+}
+
+function tenantControlCards(data = tenantAdminData()) {
+  const exportStatus = data.exportableRecords ? "ready" : "review";
+  const learningStatus = data.learning.approved || data.learning.tenantOnly ? "ready" : "review";
+  const networkStatus = state.governancePolicy.boundary === "Opt-in anonymized network" && data.learning.networkReady ? "review" : "ready";
+  return [
+    {
+      className: learningStatus,
+      title: "Learning approvals",
+      detail: `${data.learning.approved} approved, ${data.learning.tenantOnly} tenant-only, ${data.learning.blocked} blocked.`,
+      items: ["No silent learning", "Reviewed candidates only", "Blocked signals excluded"]
+    },
+    {
+      className: exportStatus,
+      title: "Export governance",
+      detail: `${data.exportableRecords} local records can appear in buyer-controlled exports.`,
+      items: ["Sanitized filenames", "Formula-injection guard", "User downloads only"]
+    },
+    {
+      className: networkStatus,
+      title: "Network learning gate",
+      detail: `${data.learning.networkReady} approved candidates are network-ready under current policy.`,
+      items: ["Consent required", "Anonymize first", "Audit and deletion controls"]
+    }
+  ];
+}
+
+function tenantAuditEvents(data) {
+  const events = [];
+  const addEvent = (event) => {
+    if (event && event.title) {
+      events.push({
+        actor: event.actor || "InduScout local session",
+        title: event.title,
+        detail: event.detail || "",
+        scope: event.scope || "Local",
+        time: event.time || new Date().toISOString()
+      });
+    }
+  };
+
+  if (state.project.name || state.project.buyer) {
+    addEvent({
+      actor: projectValue("buyer", "Buyer workspace"),
+      title: "Project context prepared",
+      detail: projectValue("name", "Unnamed project"),
+      scope: "Project"
+    });
+  }
+  if (state.shortlist.length) {
+    addEvent({ title: "Shortlist contains buyer-selected products", detail: `${state.shortlist.length} products shortlisted`, scope: "Sourcing" });
+  }
+  if (state.compare.length) {
+    addEvent({ title: "Comparison desk prepared", detail: `${state.compare.length} products compared`, scope: "Sourcing" });
+  }
+  if (state.quotes.length) {
+    addEvent({ title: "Quote tracker records saved", detail: `${state.quotes.length} quote records in local browser`, scope: "Commercial" });
+  }
+  if (state.supplierReplies.length) {
+    addEvent({ title: "Supplier inbox activity logged", detail: `${state.supplierReplies.length} replies captured`, scope: "Supplier" });
+  }
+  if (state.sourceLeads.length) {
+    addEvent({ title: "Source intake leads saved", detail: `${state.sourceLeads.length} source leads awaiting or passing review`, scope: "Source review" });
+  }
+  if (data.learning.approved || data.learning.tenantOnly || data.learning.blocked) {
+    addEvent({
+      title: "Learning queue decisions recorded",
+      detail: `${data.learning.approved} approved, ${data.learning.tenantOnly} tenant-only, ${data.learning.blocked} blocked`,
+      scope: "AI governance"
+    });
+  }
+  if (data.aiLoop.eligible.length) {
+    addEvent({
+      title: "AI Loop has governed influence candidates",
+      detail: `${data.aiLoop.eligible.length} candidates can influence local recommendations`,
+      scope: "AI loop"
+    });
+  }
+  if (data.reviewItems.length) {
+    addEvent({ title: "Evidence review board has items", detail: `${data.reviewItems.length} evidence or risk items visible`, scope: "Review" });
+  }
+
+  if (!events.length) {
+    addEvent({
+      title: "No buyer activity captured yet",
+      detail: "Start with project context, shortlist, quotes, source leads, or learning approvals.",
+      scope: "Starter"
+    });
+  }
+
+  return events.slice(0, 10);
+}
+
+function renderTenantAdmin() {
+  if (!els.tenantAdminSummary || !els.tenantRoleGrid || !els.tenantControlGrid || !els.tenantAuditList) {
+    return;
+  }
+
+  const data = tenantAdminData();
+  els.tenantAdminSummary.innerHTML = [
+    tenantSummaryTemplate("Admin readiness", `${data.adminReadiness}%`, data.adminStatus),
+    tenantSummaryTemplate("Audit events", data.auditEvents.length, "Generated locally"),
+    tenantSummaryTemplate("Export records", data.exportableRecords, "Buyer-controlled files"),
+    tenantSummaryTemplate("Learning decisions", data.learning.approved + data.learning.tenantOnly + data.learning.blocked, "Approved, tenant-only, or blocked")
+  ].join("");
+
+  if (els.tenantAdminStatus) {
+    els.tenantAdminStatus.textContent = `${data.adminStatus}. Backend accounts, persistent audit logs, and real permissions are still future SaaS work.`;
+  }
+
+  els.tenantRoleGrid.innerHTML = tenantRoleCards(data).map(tenantRoleTemplate).join("");
+  els.tenantControlGrid.innerHTML = tenantControlCards(data).map(tenantControlTemplate).join("");
+  els.tenantAuditList.innerHTML = data.auditEvents.map(tenantAuditTemplate).join("");
+}
+
+function tenantSummaryTemplate(label, value, detail) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function tenantRoleTemplate(role) {
+  return `
+    <article class="tenant-role-card ${escapeHtml(role.className)}">
+      <span>Role model</span>
+      <h3>${escapeHtml(role.title)}</h3>
+      <p>${escapeHtml(role.detail)}</p>
+      <ul>${role.permissions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </article>
+  `;
+}
+
+function tenantControlTemplate(control) {
+  return `
+    <article class="tenant-control-card ${escapeHtml(control.className)}">
+      <span>Control check</span>
+      <h3>${escapeHtml(control.title)}</h3>
+      <p>${escapeHtml(control.detail)}</p>
+      <ul>${control.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </article>
+  `;
+}
+
+function tenantAuditTemplate(event) {
+  return `
+    <article class="tenant-audit-event">
+      <span>${escapeHtml(event.scope)}</span>
+      <div>
+        <strong>${escapeHtml(event.title)}</strong>
+        <p>${escapeHtml(event.detail)}</p>
+      </div>
+      <em>${escapeHtml(event.actor)}</em>
+    </article>
+  `;
+}
+
+function tenantAdminBriefText() {
+  const data = tenantAdminData();
+  const roles = tenantRoleCards(data).map((role, index) => `${index + 1}. ${role.title}: ${role.permissions.join("; ")}`).join("\n");
+  const controls = tenantControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.detail}`).join("\n");
+  const events = data.auditEvents.map((event, index) => `${index + 1}. [${event.scope}] ${event.title} - ${event.detail}`).join("\n");
+
+  return `InduScout tenant admin foundation brief
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Governance boundary: ${state.governancePolicy.boundary}
+Admin readiness: ${data.adminReadiness}% (${data.adminStatus})
+
+Role model:
+${roles}
+
+Control checks:
+${controls}
+
+Audit trail preview:
+${events}
+
+SaaS readiness principle:
+This static beta previews the admin control plane only. Real SaaS launch still requires authentication, tenant isolation, role permissions, server-side validation, persistent audit logs, encryption, retention/deletion workflows, and privacy terms before buyer data is stored centrally.`;
+}
+
+async function copyTenantAdminBrief() {
+  const text = tenantAdminBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyTenantAdminBrief) {
+      els.copyTenantAdminBrief.textContent = "Admin brief copied";
+      setTimeout(() => {
+        els.copyTenantAdminBrief.textContent = "Copy admin brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy admin brief", text);
+  }
+}
+
+function exportTenantAdminJson() {
+  const data = tenantAdminData();
+  downloadFile(
+    `InduScout-Tenant-Admin-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), tenantAdmin: { generatedAt: new Date().toISOString(), data, roles: tenantRoleCards(data), controls: tenantControlCards(data), generatedText: tenantAdminBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -11599,7 +11900,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.2",
+    version: "5.3",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -11738,6 +12039,7 @@ function applySession(session) {
   renderGovernanceCenter();
   renderLearningQueue();
   renderAiLoop();
+  renderTenantAdmin();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();

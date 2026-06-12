@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=5.2">
+    <link rel="stylesheet" href="styles.css?v=5.3">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -70,7 +70,8 @@
         <a href="#governance">Governance</a>
         <a href="#learning-queue">Learning Queue</a>
         <a href="#ai-loop">AI Loop</a>
-        <a class="version-tab" href="#version">v5.2</a>
+        <a href="#tenant-admin">Admin</a>
+        <a class="version-tab" href="#version">v5.3</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -1365,6 +1366,38 @@
         </div>
       </section>
 
+      <section class="tenant-admin-band" id="tenant-admin" aria-labelledby="tenant-admin-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Tenant Admin Foundation</p>
+            <h2 id="tenant-admin-title">Prepare the controls a SaaS buyer will expect</h2>
+          </div>
+          <p>Model organization roles, learning permissions, export controls, and audit events before InduScout moves from a static beta into a tenant-safe hosted platform.</p>
+        </div>
+        <div class="tenant-admin-console">
+          <div class="tenant-admin-summary" id="tenantAdminSummary"></div>
+          <div class="tenant-admin-toolbar">
+            <div>
+              <strong>Governed workspace control plane</strong>
+              <span id="tenantAdminStatus">Local-only admin preview generated from current browser activity.</span>
+            </div>
+            <div class="tenant-admin-actions">
+              <button type="button" id="copyTenantAdminBrief">Copy admin brief</button>
+              <button class="ghost-button compact" type="button" id="exportTenantAdminJson">Export JSON</button>
+            </div>
+          </div>
+          <div class="tenant-role-grid" id="tenantRoleGrid"></div>
+          <div class="tenant-control-grid" id="tenantControlGrid"></div>
+          <div class="tenant-audit-panel">
+            <div>
+              <strong>Audit trail preview</strong>
+              <span>Generated from local project, quote, supplier, learning, and export activity.</span>
+            </div>
+            <div class="tenant-audit-list" id="tenantAuditList"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -1891,8 +1924,8 @@
           <div class="version-status">
             <article class="current">
               <span>Current live build</span>
-              <strong>v5.2</strong>
-              <p>Closed-loop intelligence layer that shows how approved learning can influence local recommendations.</p>
+              <strong>v5.3</strong>
+              <p>Tenant admin foundation with role model, control checks, and local audit trail preview.</p>
             </article>
             <article>
               <span>Release mode</span>
@@ -1901,8 +1934,8 @@
             </article>
             <article>
               <span>Next major gate</span>
-              <strong>v5.3</strong>
-              <p>Move toward SaaS foundations: accounts, tenant-safe APIs, audit logs, role permissions, and admin review workflows.</p>
+              <strong>v5.4</strong>
+              <p>Move toward SaaS foundations: accounts, tenant-safe APIs, persistent audit logs, permissions, and admin review workflows.</p>
             </article>
           </div>
           <div class="phase-grid">
@@ -1924,7 +1957,7 @@
             <article class="phase-card next">
               <span>Phase 4 / Next</span>
               <h3>Governed SaaS foundation</h3>
-              <p>User accounts, organizations, permissions, secure storage, APIs, source review queues, audit logs, and deletion workflows.</p>
+              <p>Tenant admin controls, account roles, organizations, permissions, secure storage, APIs, source review queues, audit logs, and deletion workflows.</p>
             </article>
             <article class="phase-card future">
               <span>Phase 5 / Future</span>
@@ -1935,7 +1968,7 @@
           <div class="release-ledger">
             <div>
               <strong>Recent release trail</strong>
-              <span>v5.0 AI Governance -> v5.1 Learning Review Queue -> v5.2 AI Loop</span>
+              <span>v5.1 Learning Review Queue -> v5.2 AI Loop -> v5.3 Tenant Admin</span>
             </div>
             <a href="#roadmap">Open roadmap</a>
           </div>
@@ -2112,8 +2145,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=5.2"></script>
-    <script src="back-to-top.js?v=5.2"></script>
-    <script src="app.js?v=5.2"></script>
+    <script src="catalog.js?v=5.3"></script>
+    <script src="back-to-top.js?v=5.3"></script>
+    <script src="app.js?v=5.3"></script>
   </body>
 </html>
