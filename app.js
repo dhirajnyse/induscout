@@ -348,6 +348,12 @@ const els = {
   copyLearningQueue: document.querySelector("#copyLearningQueue"),
   exportLearningQueueJson: document.querySelector("#exportLearningQueueJson"),
   learningQueueList: document.querySelector("#learningQueueList"),
+  aiLoopSummary: document.querySelector("#aiLoopSummary"),
+  aiLoopStatus: document.querySelector("#aiLoopStatus"),
+  copyAiLoopBrief: document.querySelector("#copyAiLoopBrief"),
+  exportAiLoopJson: document.querySelector("#exportAiLoopJson"),
+  aiLoopPipeline: document.querySelector("#aiLoopPipeline"),
+  aiLoopRecommendations: document.querySelector("#aiLoopRecommendations"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -479,6 +485,7 @@ function init() {
   renderReinforcementLab();
   renderGovernanceCenter();
   renderLearningQueue();
+  renderAiLoop();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1229,6 +1236,7 @@ function wireEvents() {
       saveGovernancePolicy();
       renderGovernanceCenter();
       renderLearningQueue();
+      renderAiLoop();
     });
   });
   if (els.copyGovernanceBrief) {
@@ -1248,6 +1256,12 @@ function wireEvents() {
   }
   if (els.exportLearningQueueJson) {
     els.exportLearningQueueJson.addEventListener("click", exportLearningQueueJson);
+  }
+  if (els.copyAiLoopBrief) {
+    els.copyAiLoopBrief.addEventListener("click", copyAiLoopBrief);
+  }
+  if (els.exportAiLoopJson) {
+    els.exportAiLoopJson.addEventListener("click", exportAiLoopJson);
   }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
@@ -1566,6 +1580,7 @@ function render() {
   renderSupplierScorecard();
   renderGovernanceCenter();
   renderLearningQueue();
+  renderAiLoop();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2092,7 +2107,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.1",
+    version: "5.2",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -9076,6 +9091,9 @@ function renderGovernanceCenter() {
   if (els.learningQueueList) {
     renderLearningQueue();
   }
+  if (els.aiLoopRecommendations) {
+    renderAiLoop();
+  }
 }
 
 function governanceSummaryTemplate(label, value, detail) {
@@ -9424,6 +9442,7 @@ function setLearningCandidateStatus(status, candidateId) {
   };
   saveLearningApprovals();
   renderLearningQueue();
+  renderAiLoop();
 }
 
 function approveSafeLearningCandidates() {
@@ -9439,6 +9458,7 @@ function approveSafeLearningCandidates() {
     });
   saveLearningApprovals();
   renderLearningQueue();
+  renderAiLoop();
   if (els.approveSafeLearning) {
     els.approveSafeLearning.textContent = "Safe candidates approved";
     setTimeout(() => {
@@ -9537,6 +9557,284 @@ function exportLearningQueueJson() {
   downloadFile(
     `InduScout-Learning-Queue-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), learningQueue: { generatedAt: new Date().toISOString(), summary: learningQueueSummary(candidates), candidates, generatedText: learningQueueBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function aiLoopEligibleCandidates() {
+  return learningQueueCandidates().filter((candidate) => ["Approved", "Tenant only"].includes(candidate.status));
+}
+
+function aiLoopStatusLabel(score) {
+  if (score >= 80) {
+    return "Ready for stronger local guidance";
+  }
+  if (score >= 62) {
+    return "Useful with buyer review";
+  }
+  if (score >= 42) {
+    return "Early signal layer";
+  }
+  return "Needs more approved evidence";
+}
+
+function aiLoopTopCandidateType(candidates) {
+  const counts = candidates.reduce((groups, candidate) => {
+    const key = candidate.sourceType || "Learning signal";
+    groups[key] = (groups[key] || 0) + 1;
+    return groups;
+  }, {});
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+  return top ? { label: top[0], count: top[1] } : { label: "No approved pattern", count: 0 };
+}
+
+function aiLoopData() {
+  const candidates = learningQueueCandidates();
+  const eligible = aiLoopEligibleCandidates();
+  const summary = learningQueueSummary(candidates);
+  const governance = governanceData();
+  const scorecard = supplierScorecardData();
+  const decision = quoteDecisionInsights();
+  const topType = aiLoopTopCandidateType(eligible);
+  const localEvidence = state.quotes.length + state.supplierReplies.length + state.savingsRecords.length + state.learningRecords.length + state.reinforcementSignals.length;
+  const influenceScore = Math.max(0, Math.min(100, Math.round(
+    18 +
+    governance.readinessScore * 0.32 +
+    eligible.length * 7 +
+    Math.min(16, localEvidence * 2) -
+    summary.blocked * 2
+  )));
+  const networkAllowed = state.governancePolicy.boundary === "Opt-in anonymized network";
+  return {
+    candidates,
+    eligible,
+    summary,
+    governance,
+    scorecard,
+    decision,
+    topType,
+    localEvidence,
+    influenceScore,
+    statusLabel: aiLoopStatusLabel(influenceScore),
+    networkAllowed,
+    gatedSignals: summary.needsReview + summary.blocked,
+    topSupplier: scorecard.top?.name || "TBC",
+    topSupplierScore: scorecard.top?.score || 0
+  };
+}
+
+function aiLoopRecommendationCards(data = aiLoopData()) {
+  const cards = [];
+  const boost = Math.min(24, data.eligible.length * 4 + Math.round(data.governance.readinessScore / 12));
+
+  if (data.eligible.length) {
+    cards.push({
+      className: "boost",
+      title: "Apply approved learning to local recommendation weight",
+      score: `+${boost}`,
+      boundary: state.governancePolicy.boundary,
+      evidence: `${data.eligible.length} approved or tenant-only candidates`,
+      detail: `The system can safely use ${data.topType.label.toLowerCase()} as a local buyer-side signal because it passed the review queue.`,
+      action: "Promote matching product, source, or supplier paths in local guidance while keeping final buyer verification visible.",
+      tags: ["reviewed", "local influence", data.topType.label]
+    });
+  } else {
+    cards.push({
+      className: "hold",
+      title: "Hold recommendation learning until evidence is approved",
+      score: "+0",
+      boundary: "Review required",
+      evidence: `${data.summary.needsReview} candidates waiting`,
+      detail: "The app can still search and prepare RFQs, but closed-loop weighting should wait for approved learning candidates.",
+      action: "Approve low-risk learning candidates or save more outcomes, supplier replies, quotes, and reinforcement signals.",
+      tags: ["safe default", "human review", "no silent learning"]
+    });
+  }
+
+  if (data.scorecard.top) {
+    cards.push({
+      className: data.scorecard.top.score >= 70 ? "boost" : "hold",
+      title: `${data.scorecard.top.name} becomes the current supplier benchmark`,
+      score: `${data.scorecard.top.score}%`,
+      boundary: "Supplier scorecard",
+      evidence: `${data.scorecard.top.quotes} quotes / ${data.scorecard.top.replies} replies / ${data.scorecard.top.sourceLeads} leads`,
+      detail: data.scorecard.top.statusLabel,
+      action: data.scorecard.top.nextAction,
+      tags: data.scorecard.top.strengths.slice(0, 3)
+    });
+  } else {
+    cards.push({
+      className: "hold",
+      title: "Supplier recommendation needs quote or reply evidence",
+      score: "TBC",
+      boundary: "Local workspace",
+      evidence: "No ranked supplier path yet",
+      detail: "Supplier scoring becomes more useful when the buyer logs quotes, replies, source leads, or shortlist source paths.",
+      action: "Use supplier outreach, quote tracker, inbox, and source intake to generate the first ranked supplier path.",
+      tags: ["quotes", "inbox", "source intake"]
+    });
+  }
+
+  if (data.networkAllowed && data.summary.networkReady) {
+    cards.push({
+      className: "boost",
+      title: "Prepare anonymized network-learning candidates",
+      score: `${data.summary.networkReady}`,
+      boundary: "Opt-in network candidate",
+      evidence: "Approved low-risk signals with network-ready scope",
+      detail: "These candidates could later help other organizations after consent, aggregation, anonymization, audit logging, and deletion controls exist.",
+      action: "Keep raw commercial terms out; export only scrubbed learning metadata for future SaaS review.",
+      tags: ["anonymized", "permissioned", "audit-ready"]
+    });
+  } else {
+    cards.push({
+      className: "hold",
+      title: "Keep cross-organization learning gated",
+      score: `${data.summary.networkReady}`,
+      boundary: state.governancePolicy.boundary,
+      evidence: `${data.gatedSignals} gated or blocked candidates`,
+      detail: "This protects buyer notes, contacts, supplier messages, and raw commercial terms while the product is still a static beta.",
+      action: "Use the governance policy simulator and learning queue before any shared-learning or SaaS backend is introduced.",
+      tags: ["tenant-safe", "privacy", "governance"]
+    });
+  }
+
+  if (data.decision.recommended) {
+    cards.push({
+      className: "boost",
+      title: "Use quote decision score as commercial feedback",
+      score: `${data.decision.recommended.score}`,
+      boundary: "Tenant-only commercial learning",
+      evidence: `${data.decision.scoredQuotes.length} quote records scored`,
+      detail: `${data.decision.recommended.quote.supplier} currently leads the quote decision desk.`,
+      action: "Use the winner as a buyer-side benchmark, but keep raw price, payment, delivery, and validity fields tenant-only.",
+      tags: ["quote scoring", "commercial guardrail", "buyer validation"]
+    });
+  }
+
+  return cards.slice(0, 5);
+}
+
+function renderAiLoop() {
+  if (!els.aiLoopSummary || !els.aiLoopPipeline || !els.aiLoopRecommendations) {
+    return;
+  }
+
+  const data = aiLoopData();
+  const recommendations = aiLoopRecommendationCards(data);
+  els.aiLoopSummary.innerHTML = [
+    aiLoopSummaryTemplate("Influence readiness", `${data.influenceScore}%`, data.statusLabel),
+    aiLoopSummaryTemplate("Eligible signals", data.eligible.length, `${data.summary.approved} approved / ${data.summary.tenantOnly} tenant-only`),
+    aiLoopSummaryTemplate("Gated signals", data.gatedSignals, `${data.summary.needsReview} review / ${data.summary.blocked} blocked`),
+    aiLoopSummaryTemplate("Top supplier", data.topSupplier, data.topSupplierScore ? `${data.topSupplierScore}% current score` : "Add quotes or source paths")
+  ].join("");
+
+  if (els.aiLoopStatus) {
+    els.aiLoopStatus.textContent = data.eligible.length
+      ? `${recommendations.length} explainable recommendation updates generated from approved local learning.`
+      : "Approve learning candidates before the AI Loop changes recommendation guidance.";
+  }
+
+  els.aiLoopPipeline.innerHTML = [
+    aiLoopStepTemplate("1", "Capture", data.candidates.length, "Signals from quotes, replies, savings, source leads, playbooks, and feedback."),
+    aiLoopStepTemplate("2", "Govern", data.eligible.length, "Only approved or tenant-only candidates can influence the loop."),
+    aiLoopStepTemplate("3", "Apply", `${data.influenceScore}%`, "Explainable local weighting, not hidden model training."),
+    aiLoopStepTemplate("4", "Improve", recommendations.length, "Buyer-visible recommendations with evidence and guardrails.")
+  ].join("");
+
+  els.aiLoopRecommendations.innerHTML = recommendations.map(aiLoopCardTemplate).join("");
+}
+
+function aiLoopSummaryTemplate(label, value, detail) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `;
+}
+
+function aiLoopStepTemplate(number, title, value, detail) {
+  return `
+    <article class="ai-loop-step">
+      <span>Step ${escapeHtml(number)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <h3>${escapeHtml(title)}</h3>
+      <p>${escapeHtml(detail)}</p>
+    </article>
+  `;
+}
+
+function aiLoopCardTemplate(card) {
+  return `
+    <article class="ai-loop-card ${escapeHtml(card.className)}">
+      <span>${escapeHtml(card.boundary)}</span>
+      <h3>${escapeHtml(card.title)}</h3>
+      <p>${escapeHtml(card.detail)}</p>
+      <dl>
+        <div><dt>Adjustment</dt><dd>${escapeHtml(card.score)}</dd></div>
+        <div><dt>Evidence</dt><dd>${escapeHtml(card.evidence)}</dd></div>
+        <div><dt>Action</dt><dd>${escapeHtml(card.action)}</dd></div>
+      </dl>
+      <footer>${card.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</footer>
+    </article>
+  `;
+}
+
+function aiLoopBriefText() {
+  const data = aiLoopData();
+  const recommendations = aiLoopRecommendationCards(data);
+  const rows = recommendations.map((card, index) => `${index + 1}. ${card.title}
+   Adjustment: ${card.score}
+   Boundary: ${card.boundary}
+   Evidence: ${card.evidence}
+   Action: ${card.action}`).join("\n");
+
+  return `InduScout closed-loop intelligence brief
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Governance boundary: ${state.governancePolicy.boundary}
+Evidence threshold: ${state.governancePolicy.evidence}
+
+Loop status:
+- Influence readiness: ${data.influenceScore}% (${data.statusLabel})
+- Total learning candidates: ${data.candidates.length}
+- Eligible signals: ${data.eligible.length}
+- Gated or blocked signals: ${data.gatedSignals}
+- Network-ready approved candidates: ${data.summary.networkReady}
+- Top supplier path: ${data.topSupplier}${data.topSupplierScore ? ` (${data.topSupplierScore}%)` : ""}
+
+Recommendation updates:
+${rows || "No recommendation updates yet."}
+
+Operating principle:
+Approved learning can improve local recommendations. Tenant-only and commercial signals remain controlled. Cross-organization learning should be opt-in, anonymized, aggregated, auditable, and reversible before any SaaS network layer is launched.`;
+}
+
+async function copyAiLoopBrief() {
+  const text = aiLoopBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyAiLoopBrief) {
+      els.copyAiLoopBrief.textContent = "AI loop brief copied";
+      setTimeout(() => {
+        els.copyAiLoopBrief.textContent = "Copy AI loop brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy AI loop brief", text);
+  }
+}
+
+function exportAiLoopJson() {
+  const data = aiLoopData();
+  const recommendations = aiLoopRecommendationCards(data);
+  downloadFile(
+    `InduScout-AI-Loop-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), aiLoop: { generatedAt: new Date().toISOString(), data, recommendations, generatedText: aiLoopBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -11301,7 +11599,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.1",
+    version: "5.2",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -11439,6 +11737,7 @@ function applySession(session) {
   renderReinforcementLab();
   renderGovernanceCenter();
   renderLearningQueue();
+  renderAiLoop();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();

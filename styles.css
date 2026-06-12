@@ -523,6 +523,7 @@ h1 {
 .reinforcement-band,
 .governance-band,
 .learning-queue-band,
+.ai-loop-band,
 .inbox-band,
 .scorecard-band,
 .quality-band,
@@ -3557,6 +3558,202 @@ input[type="checkbox"] {
 
 .learning-queue-actions button {
   width: 100%;
+}
+
+.ai-loop-band {
+  background: linear-gradient(180deg, #f8fbfb 0%, #ffffff 100%);
+  border-bottom: 1px solid var(--line);
+}
+
+.ai-loop-console {
+  display: grid;
+  gap: 18px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.ai-loop-summary,
+.ai-loop-pipeline,
+.ai-loop-recommendations {
+  display: grid;
+  gap: 14px;
+}
+
+.ai-loop-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ai-loop-pipeline {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ai-loop-recommendations {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ai-loop-summary article,
+.ai-loop-toolbar,
+.ai-loop-step,
+.ai-loop-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
+}
+
+.ai-loop-summary article,
+.ai-loop-step,
+.ai-loop-card {
+  min-width: 0;
+  padding: 16px;
+}
+
+.ai-loop-summary article {
+  display: grid;
+  gap: 7px;
+}
+
+.ai-loop-summary span,
+.ai-loop-toolbar span,
+.ai-loop-step span,
+.ai-loop-card span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.ai-loop-summary article > span,
+.ai-loop-step > span,
+.ai-loop-card > span {
+  color: var(--teal);
+}
+
+.ai-loop-summary strong {
+  font-size: 1.5rem;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.ai-loop-summary small,
+.ai-loop-step p,
+.ai-loop-card p {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.ai-loop-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+}
+
+.ai-loop-toolbar > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.ai-loop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ai-loop-actions button:first-child {
+  min-height: 38px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+.ai-loop-step {
+  display: grid;
+  gap: 8px;
+  border-top: 5px solid var(--teal);
+}
+
+.ai-loop-step strong {
+  color: var(--ink);
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.ai-loop-card {
+  display: grid;
+  gap: 12px;
+  border-left: 5px solid var(--teal);
+}
+
+.ai-loop-card.boost {
+  border-left-color: var(--green);
+}
+
+.ai-loop-card.hold {
+  border-left-color: var(--amber);
+}
+
+.ai-loop-card.block {
+  border-left-color: #ef4444;
+}
+
+.ai-loop-card h3 {
+  margin: 4px 0 0;
+  font-size: 1.12rem;
+}
+
+.ai-loop-card p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.ai-loop-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.ai-loop-card dl div {
+  min-width: 0;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.ai-loop-card dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.ai-loop-card dd {
+  margin: 3px 0 0;
+  color: var(--ink);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.ai-loop-card footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ai-loop-card footer span {
+  padding: 7px 9px;
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+  color: var(--teal);
+  font-size: 0.72rem;
 }
 
 .inbox-band {
@@ -8184,6 +8381,9 @@ footer a {
   .governance-matrix,
   .learning-queue-summary,
   .learning-queue-facts,
+  .ai-loop-summary,
+  .ai-loop-pipeline,
+  .ai-loop-card dl,
   .quality-stats,
   .inbox-summary,
   .scorecard-facts,
@@ -8223,7 +8423,9 @@ footer a {
   }
 
   .learning-queue-toolbar,
-  .learning-queue-card {
+  .learning-queue-card,
+  .ai-loop-toolbar,
+  .ai-loop-recommendations {
     grid-template-columns: 1fr;
   }
 
@@ -8600,6 +8802,10 @@ footer a {
   .governance-recommendations,
   .learning-queue-summary,
   .learning-queue-facts,
+  .ai-loop-summary,
+  .ai-loop-pipeline,
+  .ai-loop-recommendations,
+  .ai-loop-card dl,
   .request-grid,
   .quote-grid,
   .quote-summary,

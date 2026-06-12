@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v5.1 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.1 adds a governed Learning Review Queue so buyers and collaborators can approve, tenant-limit, or block the local signals that may influence future recommendations before any SaaS or network-learning layer exists.
+This v5.2 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.2 adds a Closed-Loop Intelligence layer that turns approved or tenant-only learning candidates into explainable local recommendation influence while unreviewed, blocked, or sensitive signals stay gated before any SaaS or network-learning layer exists.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -56,6 +56,7 @@ This v5.1 public beta is still static and lightweight, but it already demonstrat
 - Reinforcement Signals Lab with buyer feedback capture, positive/negative weighting, module and impact scoring, generated weight-change recommendations, copyable signal report, CSV export, JSON export, and playbook influence.
 - AI Governance center with learning policy simulator, readiness score, signal boundary matrix, sensitive-data guardrails, network-learning candidate count, copyable governance brief, and JSON export.
 - Learning Review Queue that turns lessons, reinforcement signals, quotes, savings records, supplier replies, playbook rules, and source leads into reviewable learning candidates with risk levels, approval status, tenant-only controls, block controls, copyable queue brief, and JSON export.
+- Closed-Loop Intelligence / AI Loop view with influence readiness, eligible/gated signal counts, supplier benchmark guidance, governed recommendation updates, copyable AI loop brief, and JSON export.
 - Version tab and Build Phases tracker with current live build, public beta mode, next major gate, completed phases, current closed-loop intelligence phase, governed SaaS foundation, and future network learning path.
 - Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
 - Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.

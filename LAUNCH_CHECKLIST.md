@@ -1,4 +1,4 @@
-# InduScout v5.1 Launch Checklist
+# InduScout v5.2 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -87,8 +87,11 @@ Use this checklist after each public GitHub Pages upload.
 - Use Approve, Tenant only, Block, and Approve safe, then confirm queue summary counts and candidate statuses update.
 - Copy one candidate, copy the queue brief, and export Learning Queue JSON; confirm approval status, risk, scope, and governance note are included.
 - Export a session JSON, import it, and confirm learning approval decisions are restored.
-- Click the top `v5.1` tab and confirm the Version & Build Phases section opens.
-- Confirm the Build Phases tracker shows current live build v5.1, release mode, v5.2 next gate, completed phases, current closed-loop intelligence with governance controls and learning approval queue, governed SaaS foundation, and future network learning layer.
+- Open AI Loop and confirm influence readiness, eligible signal count, gated signal count, top supplier, pipeline steps, and recommendation cards render.
+- Approve at least one Learning Queue candidate and confirm AI Loop eligible signal count, readiness, and recommendation cards update.
+- Copy the AI loop brief and export AI Loop JSON; confirm governance boundary, eligible/gated counts, recommendation updates, and operating principle are included.
+- Click the top `v5.2` tab and confirm the Version & Build Phases section opens.
+- Confirm the Build Phases tracker shows current live build v5.2, release mode, v5.3 next gate, completed phases, current closed-loop intelligence with explainable recommendation influence, governed SaaS foundation, and future network learning layer.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.

@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=5.1">
+    <link rel="stylesheet" href="styles.css?v=5.2">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -69,7 +69,8 @@
         <a href="#signals">Signals</a>
         <a href="#governance">Governance</a>
         <a href="#learning-queue">Learning Queue</a>
-        <a class="version-tab" href="#version">v5.1</a>
+        <a href="#ai-loop">AI Loop</a>
+        <a class="version-tab" href="#version">v5.2</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -1339,6 +1340,31 @@
         </div>
       </section>
 
+      <section class="ai-loop-band" id="ai-loop" aria-labelledby="ai-loop-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Closed-Loop Intelligence</p>
+            <h2 id="ai-loop-title">Turn approved learning into explainable recommendations</h2>
+          </div>
+          <p>See how approved learning signals can influence local product, supplier, and source guidance while blocked or unreviewed signals stay out of the recommendation path.</p>
+        </div>
+        <div class="ai-loop-console">
+          <div class="ai-loop-summary" id="aiLoopSummary"></div>
+          <div class="ai-loop-toolbar">
+            <div>
+              <strong>Recommendation influence layer</strong>
+              <span id="aiLoopStatus">Approved and tenant-only learning candidates can influence local guidance.</span>
+            </div>
+            <div class="ai-loop-actions">
+              <button type="button" id="copyAiLoopBrief">Copy AI loop brief</button>
+              <button class="ghost-button compact" type="button" id="exportAiLoopJson">Export JSON</button>
+            </div>
+          </div>
+          <div class="ai-loop-pipeline" id="aiLoopPipeline"></div>
+          <div class="ai-loop-recommendations" id="aiLoopRecommendations"></div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -1865,8 +1891,8 @@
           <div class="version-status">
             <article class="current">
               <span>Current live build</span>
-              <strong>v5.1</strong>
-              <p>Governed learning review queue for approving, tenant-limiting, or blocking candidate learning signals.</p>
+              <strong>v5.2</strong>
+              <p>Closed-loop intelligence layer that shows how approved learning can influence local recommendations.</p>
             </article>
             <article>
               <span>Release mode</span>
@@ -1875,7 +1901,7 @@
             </article>
             <article>
               <span>Next major gate</span>
-              <strong>v5.2</strong>
+              <strong>v5.3</strong>
               <p>Move toward SaaS foundations: accounts, tenant-safe APIs, audit logs, role permissions, and admin review workflows.</p>
             </article>
           </div>
@@ -1893,7 +1919,7 @@
             <article class="phase-card current">
               <span>Phase 3 / Current</span>
               <h3>Closed-loop intelligence</h3>
-              <p>Learning records, AI Playbook Lab, reinforcement signals, governance controls, learning approval queue, and local scoring guidance that improve the buyer workspace over time.</p>
+              <p>Learning records, AI Playbook Lab, reinforcement signals, governance controls, learning approval queue, and explainable local recommendation influence.</p>
             </article>
             <article class="phase-card next">
               <span>Phase 4 / Next</span>
@@ -1909,7 +1935,7 @@
           <div class="release-ledger">
             <div>
               <strong>Recent release trail</strong>
-              <span>v4.9 Version & Build Phases -> v5.0 AI Governance -> v5.1 Learning Review Queue</span>
+              <span>v5.0 AI Governance -> v5.1 Learning Review Queue -> v5.2 AI Loop</span>
             </div>
             <a href="#roadmap">Open roadmap</a>
           </div>
@@ -2086,8 +2112,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=5.1"></script>
-    <script src="back-to-top.js?v=5.1"></script>
-    <script src="app.js?v=5.1"></script>
+    <script src="catalog.js?v=5.2"></script>
+    <script src="back-to-top.js?v=5.2"></script>
+    <script src="app.js?v=5.2"></script>
   </body>
 </html>
