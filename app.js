@@ -368,6 +368,12 @@ const els = {
   integrationEndpointGrid: document.querySelector("#integrationEndpointGrid"),
   integrationControlGrid: document.querySelector("#integrationControlGrid"),
   integrationEventList: document.querySelector("#integrationEventList"),
+  saasGateSummary: document.querySelector("#saasGateSummary"),
+  saasGateStatus: document.querySelector("#saasGateStatus"),
+  copySaasGateBrief: document.querySelector("#copySaasGateBrief"),
+  exportSaasGateJson: document.querySelector("#exportSaasGateJson"),
+  saasGateGrid: document.querySelector("#saasGateGrid"),
+  saasGateSequence: document.querySelector("#saasGateSequence"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -502,6 +508,7 @@ function init() {
   renderAiLoop();
   renderTenantAdmin();
   renderIntegrationBlueprint();
+  renderSaasGate();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1255,6 +1262,7 @@ function wireEvents() {
       renderAiLoop();
       renderTenantAdmin();
       renderIntegrationBlueprint();
+      renderSaasGate();
     });
   });
   if (els.copyGovernanceBrief) {
@@ -1292,6 +1300,12 @@ function wireEvents() {
   }
   if (els.exportIntegrationJson) {
     els.exportIntegrationJson.addEventListener("click", exportIntegrationJson);
+  }
+  if (els.copySaasGateBrief) {
+    els.copySaasGateBrief.addEventListener("click", copySaasGateBrief);
+  }
+  if (els.exportSaasGateJson) {
+    els.exportSaasGateJson.addEventListener("click", exportSaasGateJson);
   }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
@@ -1613,6 +1627,7 @@ function render() {
   renderAiLoop();
   renderTenantAdmin();
   renderIntegrationBlueprint();
+  renderSaasGate();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2139,7 +2154,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.4",
+    version: "5.5",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -9132,6 +9147,9 @@ function renderGovernanceCenter() {
   if (els.integrationSummary) {
     renderIntegrationBlueprint();
   }
+  if (els.saasGateSummary) {
+    renderSaasGate();
+  }
 }
 
 function governanceSummaryTemplate(label, value, detail) {
@@ -9483,6 +9501,7 @@ function setLearningCandidateStatus(status, candidateId) {
   renderAiLoop();
   renderTenantAdmin();
   renderIntegrationBlueprint();
+  renderSaasGate();
 }
 
 function approveSafeLearningCandidates() {
@@ -9501,6 +9520,7 @@ function approveSafeLearningCandidates() {
   renderAiLoop();
   renderTenantAdmin();
   renderIntegrationBlueprint();
+  renderSaasGate();
   if (els.approveSafeLearning) {
     els.approveSafeLearning.textContent = "Safe candidates approved";
     setTimeout(() => {
@@ -10367,7 +10387,7 @@ function integrationBriefText() {
   const controls = integrationControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.status} - ${control.detail}`).join("\n");
   const events = integrationEvents(data).map((event, index) => `${index + 1}. ${event[0]} [${event[2]}] - ${event[1]}`).join("\n");
 
-  return `InduScout v5.4 API and integration blueprint
+  return `InduScout v5.5 API and integration blueprint
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10389,7 +10409,7 @@ Event stream preview:
 ${events}
 
 Important boundary:
-InduScout v5.4 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
+InduScout v5.5 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
 }
 
 async function copyIntegrationBrief() {
@@ -10412,6 +10432,216 @@ function exportIntegrationJson() {
   downloadFile(
     `InduScout-Integration-Blueprint-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), integrationBlueprint: { generatedAt: new Date().toISOString(), data, endpoints: integrationEndpointCards(data), controls: integrationControlCards(data), events: integrationEvents(data), generatedText: integrationBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function saasGateData() {
+  const tenant = tenantAdminData();
+  const integration = integrationBlueprintData();
+  const governance = governanceData();
+  const aiLoop = aiLoopData();
+  const evidenceItems = evidenceReviewItems();
+  const activityScore = Math.min(20, Math.round((state.shortlist.length + state.quotes.length + state.supplierReplies.length + state.sourceLeads.length + state.learningRecords.length) * 2.5));
+  const readiness = Math.min(92, Math.round((tenant.adminReadiness * 0.28) + (integration.readiness * 0.26) + (governance.guardrailScore * 0.22) + (aiLoop.readiness * 0.12) + activityScore + 6));
+  const blockerCount = saasGateCards({ tenant, integration, governance, aiLoop, evidenceItems, readiness }, true).filter((card) => card.status === "Blocked").length;
+  const backendRequired = saasGateCards({ tenant, integration, governance, aiLoop, evidenceItems, readiness }, true).filter((card) => card.status === "Backend required").length;
+
+  return {
+    readiness,
+    status: readiness >= 82 && !blockerCount ? "Ready for backend architecture review" : readiness >= 68 ? "Good for pilot planning, not production SaaS" : "Keep strengthening controls before backend build",
+    blockerCount,
+    backendRequired,
+    tenant,
+    integration,
+    governance,
+    aiLoop,
+    evidenceItems,
+    activityScore
+  };
+}
+
+function saasGateCards(data = saasGateData(), skipDerived = false) {
+  const source = data;
+  const hasProjectContext = Boolean(state.project.name || state.project.buyer || state.project.country);
+  const hasCommercialExamples = state.quotes.length || state.supplierReplies.length || state.savingsRecords.length;
+  const hasLearningControls = Object.keys(state.learningApprovals).length > 0 || source.governance.guardrailScore >= 80;
+  const hasIntegrationPlan = source.integration.readiness >= 70;
+  return [
+    {
+      title: "Identity and RBAC",
+      status: "Backend required",
+      score: source.tenant.adminReadiness >= 70 ? 72 : 58,
+      owner: "Platform admin",
+      detail: "Create organization accounts, role permissions, session expiry, and admin-managed access before shared buyer workspaces exist.",
+      checks: ["Buyer, reviewer, admin, supplier roles", "Server-side authorization", "No client-only permission decisions"]
+    },
+    {
+      title: "Tenant-safe data model",
+      status: hasProjectContext ? "Designed" : "Needs project context",
+      score: hasProjectContext ? 76 : 54,
+      owner: "Backend architecture",
+      detail: "Separate project, quote, supplier, learning, and export records by organization and workspace.",
+      checks: ["Tenant ID on every private record", "Commercial data never crosses organizations", "Deletion and retention policy"]
+    },
+    {
+      title: "API sandbox",
+      status: hasIntegrationPlan ? "Ready to scope" : "Needs blueprint",
+      score: hasIntegrationPlan ? 80 : 60,
+      owner: "Integration lead",
+      detail: "Turn endpoint cards into a controlled sandbox with test tokens, mock data, validation, and documented rate limits.",
+      checks: ["Search API contract", "RFQ pack endpoint", "Quote and supplier reply endpoints"]
+    },
+    {
+      title: "Persistent audit logs",
+      status: "Backend required",
+      score: source.tenant.auditEvents.length >= 4 ? 74 : 56,
+      owner: "Security and compliance",
+      detail: "Convert local audit previews into immutable server events for exports, approvals, policy changes, and API actions.",
+      checks: ["Who did what and when", "Export history", "Learning decision trace"]
+    },
+    {
+      title: "Privacy and consent",
+      status: source.governance.guardrailScore >= 80 ? "Strong preview" : "Needs policy review",
+      score: source.governance.guardrailScore,
+      owner: "Trust and legal",
+      detail: "Define what stays tenant-only, what can be exported, and what could ever be anonymized for network learning.",
+      checks: ["No raw commercial sharing", "Personal data stripping", "Opt-in learning boundary"]
+    },
+    {
+      title: "Learning governance",
+      status: hasLearningControls ? "Governed preview" : "Needs approval activity",
+      score: hasLearningControls ? Math.max(74, source.aiLoop.readiness) : 55,
+      owner: "AI governance",
+      detail: "Only approved or tenant-only signals can influence recommendations; blocked and unreviewed signals remain gated.",
+      checks: ["Approval queue", "Risk labels", "Explainable recommendation influence"]
+    },
+    {
+      title: "Commercial workflow evidence",
+      status: hasCommercialExamples ? "Workflow proven locally" : "Needs buyer examples",
+      score: hasCommercialExamples ? 78 : 52,
+      owner: "Procurement product",
+      detail: "Capture enough quote, supplier reply, cost, and award examples before designing production database tables.",
+      checks: ["Quote records", "Supplier replies", "Buyer file and award pack outputs"]
+    },
+    {
+      title: "Production operations",
+      status: "Blocked",
+      score: 42,
+      owner: "SaaS operations",
+      detail: "Production launch needs monitoring, backups, incident response, abuse controls, billing stance, and support workflows.",
+      checks: ["Monitoring and logs", "Backups and recovery", "Incident and support process"]
+    }
+  ];
+}
+
+function saasGateSequence(data = saasGateData()) {
+  return [
+    ["01", "Account model", "Define organizations, workspaces, users, roles, and invite flow."],
+    ["02", "Private data model", "Map project, quote, supplier, learning, export, and audit records to tenant-scoped tables."],
+    ["03", "API sandbox", "Build mock endpoints from the integration contracts with validation, test keys, and rate limits."],
+    ["04", "Audit and privacy", "Persist export, approval, admin, and API events with retention and deletion rules."],
+    ["05", "Pilot cohort", `Use ${data.integration.productRecords} catalog records and real buyer workflows for a controlled pilot.`]
+  ];
+}
+
+function renderSaasGate() {
+  if (!els.saasGateSummary || !els.saasGateGrid || !els.saasGateSequence) {
+    return;
+  }
+
+  const data = saasGateData();
+  els.saasGateSummary.innerHTML = [
+    tenantSummaryTemplate("SaaS readiness", `${data.readiness}%`, data.status),
+    tenantSummaryTemplate("Backend gates", saasGateCards(data).length, "Identity, data, APIs, audit, privacy"),
+    tenantSummaryTemplate("Required backend work", data.backendRequired, "Cannot be solved in static beta"),
+    tenantSummaryTemplate("Blockers", data.blockerCount, "Must clear before production")
+  ].join("");
+
+  if (els.saasGateStatus) {
+    els.saasGateStatus.textContent = `${data.status}. This is a planning gate only: no accounts, live API, server storage, billing, or shared tenant data exists yet.`;
+  }
+
+  els.saasGateGrid.innerHTML = saasGateCards(data).map(saasGateCardTemplate).join("");
+  els.saasGateSequence.innerHTML = saasGateSequence(data).map(saasGateStepTemplate).join("");
+}
+
+function saasGateCardTemplate(card) {
+  const statusClass = card.status === "Blocked" ? "blocked" : card.status === "Backend required" ? "backend" : card.score >= 75 ? "ready" : "review";
+  return `
+    <article class="saas-gate-card ${statusClass}">
+      <div>
+        <span>${escapeHtml(card.status)}</span>
+        <strong>${escapeHtml(String(card.score))}</strong>
+      </div>
+      <h3>${escapeHtml(card.title)}</h3>
+      <p>${escapeHtml(card.detail)}</p>
+      <small>${escapeHtml(card.owner)}</small>
+      <ul>${card.checks.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </article>
+  `;
+}
+
+function saasGateStepTemplate(step) {
+  const [number, title, detail] = step;
+  return `
+    <article class="saas-gate-step">
+      <span>${escapeHtml(number)}</span>
+      <div>
+        <strong>${escapeHtml(title)}</strong>
+        <p>${escapeHtml(detail)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function saasGateBriefText() {
+  const data = saasGateData();
+  const gates = saasGateCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Owner: ${card.owner}. ${card.detail}`).join("\n");
+  const sequence = saasGateSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
+
+  return `InduScout v5.5 SaaS readiness gate
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+SaaS readiness: ${data.readiness}% (${data.status})
+Backend-required gates: ${data.backendRequired}
+Production blockers: ${data.blockerCount}
+Governance score: ${data.governance.guardrailScore}%
+Integration readiness: ${data.integration.readiness}%
+Admin readiness: ${data.tenant.adminReadiness}%
+
+Launch gates:
+${gates}
+
+Backend migration sequence:
+${sequence}
+
+Operating rule:
+InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.5 is a planning and readiness simulator, not a live SaaS backend.`;
+}
+
+async function copySaasGateBrief() {
+  const text = saasGateBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copySaasGateBrief) {
+      els.copySaasGateBrief.textContent = "SaaS gate brief copied";
+      setTimeout(() => {
+        els.copySaasGateBrief.textContent = "Copy SaaS gate brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy SaaS gate brief", text);
+  }
+}
+
+function exportSaasGateJson() {
+  const data = saasGateData();
+  downloadFile(
+    `InduScout-SaaS-Gate-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), saasGate: { generatedAt: new Date().toISOString(), data, gates: saasGateCards(data), sequence: saasGateSequence(data), generatedText: saasGateBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -12176,7 +12406,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.4",
+    version: "5.5",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -12317,6 +12547,7 @@ function applySession(session) {
   renderAiLoop();
   renderTenantAdmin();
   renderIntegrationBlueprint();
+  renderSaasGate();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();

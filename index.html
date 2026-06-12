@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=5.4">
+    <link rel="stylesheet" href="styles.css?v=5.5">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -72,7 +72,8 @@
         <a href="#ai-loop">AI Loop</a>
         <a href="#tenant-admin">Admin</a>
         <a href="#integrations">Integrations</a>
-        <a class="version-tab" href="#version">v5.4</a>
+        <a href="#saas-gate">SaaS Gate</a>
+        <a class="version-tab" href="#version">v5.5</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -1431,6 +1432,37 @@
         </div>
       </section>
 
+      <section class="saas-gate-band" id="saas-gate" aria-labelledby="saas-gate-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SaaS Readiness Gate</p>
+            <h2 id="saas-gate-title">Decide what must pass before backend launch</h2>
+          </div>
+          <p>Turn the static beta into a disciplined SaaS migration plan: identity, tenant isolation, API sandbox, audit logs, privacy controls, learning governance, and operational launch gates.</p>
+        </div>
+        <div class="saas-gate-console">
+          <div class="saas-gate-summary" id="saasGateSummary"></div>
+          <div class="saas-gate-toolbar">
+            <div>
+              <strong>Backend launch readiness simulator</strong>
+              <span id="saasGateStatus">Local-only readiness model. It does not create accounts, servers, APIs, or shared storage.</span>
+            </div>
+            <div class="saas-gate-actions">
+              <button type="button" id="copySaasGateBrief">Copy SaaS gate brief</button>
+              <button class="ghost-button compact" type="button" id="exportSaasGateJson">Export JSON</button>
+            </div>
+          </div>
+          <div class="saas-gate-grid" id="saasGateGrid"></div>
+          <div class="saas-gate-roadmap">
+            <div>
+              <strong>Backend migration sequence</strong>
+              <span>Recommended order for turning InduScout from public static beta into tenant-safe SaaS.</span>
+            </div>
+            <div class="saas-gate-sequence" id="saasGateSequence"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -1957,8 +1989,8 @@
           <div class="version-status">
             <article class="current">
               <span>Current live build</span>
-              <strong>v5.4</strong>
-              <p>Integration blueprint with future API contracts, event flows, connector readiness, and tenant-safe data boundaries.</p>
+              <strong>v5.5</strong>
+              <p>SaaS readiness gate with backend launch checks, risk blockers, API sandbox sequence, and copyable migration brief.</p>
             </article>
             <article>
               <span>Release mode</span>
@@ -1967,8 +1999,8 @@
             </article>
             <article>
               <span>Next major gate</span>
-              <strong>v5.5</strong>
-              <p>Move toward backend readiness: account identity, persistent audit logs, API sandbox design, permissions, and admin review workflows.</p>
+              <strong>v5.6</strong>
+              <p>Move toward a buyer-facing pilot package: pilot onboarding, data room checklist, partner API scope, and early adopter feedback loop.</p>
             </article>
           </div>
           <div class="phase-grid">
@@ -2001,7 +2033,7 @@
           <div class="release-ledger">
             <div>
               <strong>Recent release trail</strong>
-              <span>v5.2 AI Loop -> v5.3 Tenant Admin -> v5.4 Integrations</span>
+              <span>v5.3 Tenant Admin -> v5.4 Integrations -> v5.5 SaaS Gate</span>
             </div>
             <a href="#roadmap">Open roadmap</a>
           </div>
@@ -2178,8 +2210,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=5.4"></script>
-    <script src="back-to-top.js?v=5.4"></script>
-    <script src="app.js?v=5.4"></script>
+    <script src="catalog.js?v=5.5"></script>
+    <script src="back-to-top.js?v=5.5"></script>
+    <script src="app.js?v=5.5"></script>
   </body>
 </html>

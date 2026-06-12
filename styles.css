@@ -526,6 +526,7 @@ h1 {
 .ai-loop-band,
 .tenant-admin-band,
 .integration-band,
+.saas-gate-band,
 .inbox-band,
 .scorecard-band,
 .quality-band,
@@ -3759,13 +3760,15 @@ input[type="checkbox"] {
 }
 
 .tenant-admin-band,
-.integration-band {
+.integration-band,
+.saas-gate-band {
   background: #ffffff;
   border-bottom: 1px solid var(--line);
 }
 
 .tenant-admin-console,
-.integration-console {
+.integration-console,
+.saas-gate-console {
   display: grid;
   gap: 18px;
   max-width: 1180px;
@@ -3777,13 +3780,17 @@ input[type="checkbox"] {
 .tenant-control-grid,
 .integration-summary,
 .integration-endpoint-grid,
-.integration-control-grid {
+.integration-control-grid,
+.saas-gate-summary,
+.saas-gate-grid,
+.saas-gate-sequence {
   display: grid;
   gap: 14px;
 }
 
 .tenant-admin-summary,
-.integration-summary {
+.integration-summary,
+.saas-gate-summary {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
@@ -3803,6 +3810,14 @@ input[type="checkbox"] {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.saas-gate-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.saas-gate-sequence {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .tenant-admin-summary article,
 .tenant-admin-toolbar,
 .tenant-role-card,
@@ -3812,7 +3827,12 @@ input[type="checkbox"] {
 .integration-toolbar,
 .integration-endpoint-card,
 .integration-control-card,
-.integration-event-panel {
+.integration-event-panel,
+.saas-gate-summary article,
+.saas-gate-toolbar,
+.saas-gate-card,
+.saas-gate-roadmap,
+.saas-gate-step {
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -3824,13 +3844,17 @@ input[type="checkbox"] {
 .tenant-control-card,
 .integration-summary article,
 .integration-endpoint-card,
-.integration-control-card {
+.integration-control-card,
+.saas-gate-summary article,
+.saas-gate-card,
+.saas-gate-step {
   min-width: 0;
   padding: 16px;
 }
 
 .tenant-admin-summary article,
-.integration-summary article {
+.integration-summary article,
+.saas-gate-summary article {
   display: grid;
   gap: 7px;
 }
@@ -3846,7 +3870,12 @@ input[type="checkbox"] {
 .integration-endpoint-card span,
 .integration-control-card span,
 .integration-event-panel span,
-.integration-event span {
+.integration-event span,
+.saas-gate-summary span,
+.saas-gate-toolbar span,
+.saas-gate-card span,
+.saas-gate-roadmap span,
+.saas-gate-step span {
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 900;
@@ -3857,12 +3886,15 @@ input[type="checkbox"] {
 .tenant-role-card > span,
 .tenant-control-card > span,
 .integration-summary article > span,
-.integration-control-card > span {
+.integration-control-card > span,
+.saas-gate-summary article > span,
+.saas-gate-card > div:first-child span {
   color: var(--teal);
 }
 
 .tenant-admin-summary strong,
-.integration-summary strong {
+.integration-summary strong,
+.saas-gate-summary strong {
   font-size: 1.5rem;
   line-height: 1.05;
   overflow-wrap: anywhere;
@@ -3875,13 +3907,17 @@ input[type="checkbox"] {
 .integration-summary small,
 .integration-endpoint-card p,
 .integration-control-card p,
-.integration-event p {
+.integration-event p,
+.saas-gate-summary small,
+.saas-gate-card p,
+.saas-gate-step p {
   color: var(--muted);
   font-size: 0.84rem;
 }
 
 .tenant-admin-toolbar,
-.integration-toolbar {
+.integration-toolbar,
+.saas-gate-toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
@@ -3890,13 +3926,15 @@ input[type="checkbox"] {
 }
 
 .tenant-admin-toolbar > div:first-child,
-.integration-toolbar > div:first-child {
+.integration-toolbar > div:first-child,
+.saas-gate-toolbar > div:first-child {
   display: grid;
   gap: 3px;
 }
 
 .tenant-admin-actions,
-.integration-actions {
+.integration-actions,
+.saas-gate-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -3904,7 +3942,8 @@ input[type="checkbox"] {
 }
 
 .tenant-admin-actions button:first-child,
-.integration-actions button:first-child {
+.integration-actions button:first-child,
+.saas-gate-actions button:first-child {
   min-height: 38px;
   padding: 0 18px;
   color: #ffffff;
@@ -3917,7 +3956,8 @@ input[type="checkbox"] {
 .tenant-role-card,
 .tenant-control-card,
 .integration-endpoint-card,
-.integration-control-card {
+.integration-control-card,
+.saas-gate-card {
   display: grid;
   align-content: start;
   gap: 9px;
@@ -3930,6 +3970,33 @@ input[type="checkbox"] {
 
 .integration-control-card {
   border-top-color: var(--green);
+}
+
+.saas-gate-card {
+  border-top-color: var(--amber);
+}
+
+.saas-gate-card.ready {
+  border-top-color: var(--green);
+}
+
+.saas-gate-card.backend {
+  border-top-color: #38bdf8;
+}
+
+.saas-gate-card.blocked {
+  border-top-color: #ef4444;
+}
+
+.saas-gate-card > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.saas-gate-card > div:first-child strong {
+  font-size: 1.45rem;
 }
 
 .integration-endpoint-card > div:first-child {
@@ -3997,7 +4064,8 @@ input[type="checkbox"] {
 .tenant-role-card h3,
 .tenant-control-card h3,
 .integration-endpoint-card h3,
-.integration-control-card h3 {
+.integration-control-card h3,
+.saas-gate-card h3 {
   margin: 0;
   font-size: 1.08rem;
 }
@@ -4005,14 +4073,17 @@ input[type="checkbox"] {
 .tenant-role-card p,
 .tenant-control-card p,
 .integration-endpoint-card p,
-.integration-control-card p {
+.integration-control-card p,
+.saas-gate-card p,
+.saas-gate-step p {
   margin: 0;
   line-height: 1.55;
 }
 
 .tenant-role-card ul,
 .tenant-control-card ul,
-.integration-control-card ul {
+.integration-control-card ul,
+.saas-gate-card ul {
   display: grid;
   gap: 6px;
   margin: 0;
@@ -4021,15 +4092,23 @@ input[type="checkbox"] {
   font-size: 0.84rem;
 }
 
+.saas-gate-card small {
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
 .tenant-audit-panel,
-.integration-event-panel {
+.integration-event-panel,
+.saas-gate-roadmap {
   display: grid;
   gap: 12px;
   padding: 18px;
 }
 
 .tenant-audit-panel > div:first-child,
-.integration-event-panel > div:first-child {
+.integration-event-panel > div:first-child,
+.saas-gate-roadmap > div:first-child {
   display: grid;
   gap: 3px;
 }
@@ -4054,6 +4133,28 @@ input[type="checkbox"] {
 
 .integration-event {
   grid-template-columns: 160px minmax(0, 1fr);
+}
+
+.saas-gate-step {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  background: #f8fafc;
+}
+
+.saas-gate-step > span {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: #ffffff;
+  background: var(--ink);
+  border-radius: 50%;
+}
+
+.saas-gate-step strong {
+  display: block;
+  margin-bottom: 4px;
 }
 
 .tenant-audit-event strong {
@@ -8708,6 +8809,9 @@ footer a {
   .integration-summary,
   .integration-endpoint-grid,
   .integration-control-grid,
+  .saas-gate-summary,
+  .saas-gate-grid,
+  .saas-gate-sequence,
   .quality-stats,
   .inbox-summary,
   .scorecard-facts,
@@ -8751,7 +8855,8 @@ footer a {
   .ai-loop-toolbar,
   .ai-loop-recommendations,
   .tenant-admin-toolbar,
-  .integration-toolbar {
+  .integration-toolbar,
+  .saas-gate-toolbar {
     grid-template-columns: 1fr;
   }
 
@@ -9138,6 +9243,9 @@ footer a {
   .integration-summary,
   .integration-endpoint-grid,
   .integration-control-grid,
+  .saas-gate-summary,
+  .saas-gate-grid,
+  .saas-gate-sequence,
   .request-grid,
   .quote-grid,
   .quote-summary,
