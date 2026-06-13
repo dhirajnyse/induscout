@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v5.7 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.7 adds a Demo & Stakeholder Proof Pack that turns the product into a guided buyer, partner, and investor conversation with stakeholder value maps, proof points, objection handling, and follow-up actions before any SaaS account system, live API, shared storage, or network-learning layer exists.
+This v5.8 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.8 adds a Value Proof Board that turns quotes, savings, learning, pilot, SaaS, and demo signals into an executive business-case narrative before any SaaS account system, live API, shared storage, or network-learning layer exists.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -62,6 +62,7 @@ This v5.7 public beta is still static and lightweight, but it already demonstrat
 - SaaS Readiness Gate with backend launch score, identity/RBAC checks, tenant data model checks, API sandbox readiness, persistent audit log requirements, privacy gates, learning governance checks, migration sequence, copyable SaaS gate brief, and JSON export.
 - Pilot Launch Pack with early-adopter scope, onboarding plan, workflow proof, data-room evidence, success metrics, feedback loop, partner/API story, pilot boundaries, copyable pilot brief, and JSON export.
 - Demo & Stakeholder Proof Pack with demo readiness score, stakeholder value map, guided demo flow, objection handling, copyable demo brief, and JSON export.
+- Value Proof Board with value readiness score, quoted-value signal, accepted and pipeline savings summary, commercial proof cards, buyer value path, evidence posture notes, copyable value brief, and JSON export.
 - Version tab and Build Phases tracker with current live build, public beta mode, next major gate, completed phases, current closed-loop intelligence phase, governed SaaS foundation, and future network learning path.
 - Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
 - Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.

@@ -4326,6 +4326,230 @@ input[type="checkbox"] {
   font-weight: 900;
 }
 
+.value-proof-band {
+  background: linear-gradient(180deg, #f8fbfb 0%, #ffffff 100%);
+  border-bottom: 1px solid var(--line);
+}
+
+.value-proof-console {
+  display: grid;
+  gap: 18px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.value-proof-summary,
+.value-proof-grid,
+.value-proof-path,
+.value-proof-evidence {
+  display: grid;
+  gap: 14px;
+}
+
+.value-proof-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.value-proof-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.value-proof-path {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.value-proof-evidence {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.value-proof-summary article,
+.value-proof-toolbar,
+.value-proof-card,
+.value-proof-board,
+.value-proof-step,
+.value-proof-evidence-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
+}
+
+.value-proof-summary article,
+.value-proof-card,
+.value-proof-step,
+.value-proof-evidence-card {
+  min-width: 0;
+  padding: 16px;
+}
+
+.value-proof-summary article {
+  display: grid;
+  gap: 7px;
+}
+
+.value-proof-toolbar,
+.value-proof-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+}
+
+.value-proof-board {
+  grid-template-columns: 230px minmax(0, 1fr);
+  align-items: start;
+}
+
+.value-proof-toolbar > div:first-child,
+.value-proof-board > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.value-proof-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.value-proof-actions button:first-child {
+  min-height: 38px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+.value-proof-summary span,
+.value-proof-toolbar span,
+.value-proof-board span,
+.value-proof-card span,
+.value-proof-step span,
+.value-proof-evidence-card span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.value-proof-summary article > span,
+.value-proof-card > div:first-child span,
+.value-proof-evidence-card > span {
+  color: var(--teal);
+}
+
+.value-proof-summary strong {
+  font-size: 1.5rem;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.value-proof-summary small,
+.value-proof-card p,
+.value-proof-step p,
+.value-proof-evidence-card p,
+.value-proof-evidence-card small {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.value-proof-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  border-top: 5px solid #38bdf8;
+}
+
+.value-proof-card.ready {
+  border-top-color: var(--green);
+}
+
+.value-proof-card.review {
+  border-top-color: var(--amber);
+}
+
+.value-proof-card.needs {
+  border-top-color: #ef4444;
+}
+
+.value-proof-card > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.value-proof-card > div:first-child strong {
+  font-size: 1.45rem;
+}
+
+.value-proof-card h3,
+.value-proof-evidence-card strong {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.value-proof-card p,
+.value-proof-step p,
+.value-proof-evidence-card p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.value-proof-card ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+  font-size: 0.84rem;
+}
+
+.value-proof-card em {
+  color: #334155;
+  font-size: 0.84rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.value-proof-step {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  background: #f8fafc;
+}
+
+.value-proof-step > span {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: #ffffff;
+  background: var(--ink);
+  border-radius: 50%;
+}
+
+.value-proof-step strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.value-proof-evidence-card {
+  display: grid;
+  gap: 8px;
+  border-left: 5px solid var(--teal);
+}
+
+.value-proof-evidence-card small {
+  color: var(--teal);
+  font-weight: 900;
+}
+
 .tenant-audit-event strong {
   color: var(--ink);
   overflow-wrap: anywhere;
@@ -8987,6 +9211,10 @@ footer a {
   .demo-proof-summary,
   .demo-proof-grid,
   .demo-proof-sequence,
+  .value-proof-summary,
+  .value-proof-grid,
+  .value-proof-path,
+  .value-proof-evidence,
   .quality-stats,
   .inbox-summary,
   .scorecard-facts,
@@ -9033,7 +9261,9 @@ footer a {
   .integration-toolbar,
   .saas-gate-toolbar,
   .pilot-pack-toolbar,
-  .demo-proof-toolbar {
+  .demo-proof-toolbar,
+  .value-proof-toolbar,
+  .value-proof-board {
     grid-template-columns: 1fr;
   }
 
@@ -9270,6 +9500,7 @@ footer a {
   .signal-export-actions,
   .signal-card-actions,
   .governance-actions,
+  .value-proof-actions,
   .quote-actions,
   .quote-export-actions,
   .quote-card-actions,
@@ -9324,6 +9555,7 @@ footer a {
   .savings-actions > *,
   .savings-export-actions > *,
   .savings-card-actions > *,
+  .value-proof-actions > *,
   .quote-actions > *,
   .quote-export-actions > *,
   .quote-card-actions > *,
@@ -9433,6 +9665,11 @@ footer a {
   .demo-proof-summary,
   .demo-proof-grid,
   .demo-proof-sequence,
+  .value-proof-summary,
+  .value-proof-grid,
+  .value-proof-path,
+  .value-proof-evidence,
+  .value-proof-board,
   .request-grid,
   .quote-grid,
   .quote-summary,

@@ -387,6 +387,13 @@ const els = {
   demoProofGrid: document.querySelector("#demoProofGrid"),
   demoProofSequence: document.querySelector("#demoProofSequence"),
   demoProofObjections: document.querySelector("#demoProofObjections"),
+  valueProofSummary: document.querySelector("#valueProofSummary"),
+  valueProofStatus: document.querySelector("#valueProofStatus"),
+  copyValueProofBrief: document.querySelector("#copyValueProofBrief"),
+  exportValueProofJson: document.querySelector("#exportValueProofJson"),
+  valueProofGrid: document.querySelector("#valueProofGrid"),
+  valueProofPath: document.querySelector("#valueProofPath"),
+  valueProofEvidence: document.querySelector("#valueProofEvidence"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -524,6 +531,7 @@ function init() {
   renderSaasGate();
   renderPilotPack();
   renderDemoProofPack();
+  renderValueProofPack();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1280,6 +1288,7 @@ function wireEvents() {
       renderSaasGate();
       renderPilotPack();
       renderDemoProofPack();
+      renderValueProofPack();
     });
   });
   if (els.copyGovernanceBrief) {
@@ -1335,6 +1344,12 @@ function wireEvents() {
   }
   if (els.exportDemoProofJson) {
     els.exportDemoProofJson.addEventListener("click", exportDemoProofJson);
+  }
+  if (els.copyValueProofBrief) {
+    els.copyValueProofBrief.addEventListener("click", copyValueProofBrief);
+  }
+  if (els.exportValueProofJson) {
+    els.exportValueProofJson.addEventListener("click", exportValueProofJson);
   }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
@@ -1659,6 +1674,7 @@ function render() {
   renderSaasGate();
   renderPilotPack();
   renderDemoProofPack();
+  renderValueProofPack();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2185,7 +2201,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.7",
+    version: "5.8",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -7182,10 +7198,12 @@ function renderSavingsRegister() {
         Save negotiated outcomes here after supplier replies. Use it to show accepted savings, pending targets, rejected asks, and buyer evidence.
       </div>
     `;
+    renderValueProofPack();
     return;
   }
 
   els.savingsList.innerHTML = state.savingsRecords.map(savingsCardTemplate).join("");
+  renderValueProofPack();
 }
 
 function savingsSummaryData() {
@@ -7671,10 +7689,12 @@ function renderLearningLoop() {
         Save supplier outcomes, buyer decisions, and lessons here. This is the first step toward a closed-loop procurement learning system.
       </div>
     `;
+    renderValueProofPack();
     return;
   }
 
   els.learningList.innerHTML = state.learningRecords.map(learningRecordTemplate).join("");
+  renderValueProofPack();
 }
 
 function learningSummaryData() {
@@ -9187,6 +9207,9 @@ function renderGovernanceCenter() {
   if (els.demoProofSummary) {
     renderDemoProofPack();
   }
+  if (els.valueProofSummary) {
+    renderValueProofPack();
+  }
 }
 
 function governanceSummaryTemplate(label, value, detail) {
@@ -9541,6 +9564,7 @@ function setLearningCandidateStatus(status, candidateId) {
   renderSaasGate();
   renderPilotPack();
   renderDemoProofPack();
+  renderValueProofPack();
 }
 
 function approveSafeLearningCandidates() {
@@ -9562,6 +9586,7 @@ function approveSafeLearningCandidates() {
   renderSaasGate();
   renderPilotPack();
   renderDemoProofPack();
+  renderValueProofPack();
   if (els.approveSafeLearning) {
     els.approveSafeLearning.textContent = "Safe candidates approved";
     setTimeout(() => {
@@ -10428,7 +10453,7 @@ function integrationBriefText() {
   const controls = integrationControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.status} - ${control.detail}`).join("\n");
   const events = integrationEvents(data).map((event, index) => `${index + 1}. ${event[0]} [${event[2]}] - ${event[1]}`).join("\n");
 
-  return `InduScout v5.7 API and integration blueprint
+  return `InduScout v5.8 API and integration blueprint
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10450,7 +10475,7 @@ Event stream preview:
 ${events}
 
 Important boundary:
-InduScout v5.7 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
+InduScout v5.8 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
 }
 
 async function copyIntegrationBrief() {
@@ -10641,7 +10666,7 @@ function saasGateBriefText() {
   const gates = saasGateCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Owner: ${card.owner}. ${card.detail}`).join("\n");
   const sequence = saasGateSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.7 SaaS readiness gate
+  return `InduScout v5.8 SaaS readiness gate
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10660,7 +10685,7 @@ Backend migration sequence:
 ${sequence}
 
 Operating rule:
-InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.7 is a planning and readiness simulator, not a live SaaS backend.`;
+InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.8 is a planning and readiness simulator, not a live SaaS backend.`;
 }
 
 async function copySaasGateBrief() {
@@ -10860,7 +10885,7 @@ function pilotPackBriefText() {
   const cards = pilotPackCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Output: ${card.output}. ${card.detail}`).join("\n");
   const sequence = pilotPackSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.7 Pilot Launch Pack
+  return `InduScout v5.8 Pilot Launch Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10878,7 +10903,7 @@ Pilot operating plan:
 ${sequence}
 
 Boundary:
-InduScout v5.7 is suitable for curated public-beta pilot conversations, demos, and buyer workflow validation. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
+InduScout v5.8 is suitable for curated public-beta pilot conversations, demos, and buyer workflow validation. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
 }
 
 async function copyPilotPackBrief() {
@@ -11018,7 +11043,7 @@ function demoProofObjections(data = demoProofData()) {
     },
     {
       objection: "Where is the live backend or API?",
-      response: "The current release is intentionally static. v5.4-v5.7 show the integration, SaaS, pilot, and demo plans before shared data is introduced.",
+      response: "The current release is intentionally static. v5.4-v5.8 show the integration, SaaS, pilot, demo, and value-proof plans before shared data is introduced.",
       proof: "Integration Blueprint, SaaS Gate, Security baseline, and Privacy Center."
     },
     {
@@ -11105,7 +11130,7 @@ function demoProofBriefText() {
   const sequence = demoProofSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
   const objections = demoProofObjections(data).map((item, index) => `${index + 1}. ${item.objection}\nResponse: ${item.response}\nProof: ${item.proof}`).join("\n\n");
 
-  return `InduScout v5.7 Demo and Stakeholder Proof Pack
+  return `InduScout v5.8 Demo and Stakeholder Proof Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -11127,7 +11152,7 @@ Objection handling:
 ${objections}
 
 Boundary:
-InduScout v5.7 is ready for guided stakeholder conversations and controlled public-beta demos. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
+InduScout v5.8 is ready for guided stakeholder conversations, controlled public-beta demos, and value-proof discussions. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
 }
 
 async function copyDemoProofBrief() {
@@ -11150,6 +11175,284 @@ function exportDemoProofJson() {
   downloadFile(
     `InduScout-Demo-Proof-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), demoProof: { generatedAt: new Date().toISOString(), data, stakeholders: demoProofCards(data), sequence: demoProofSequence(data), objections: demoProofObjections(data), generatedText: demoProofBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function valueProofData() {
+  const savings = savingsSummaryData();
+  const demo = demoProofData();
+  const pilot = pilotPackData();
+  const saas = saasGateData();
+  const decision = quoteDecisionInsights();
+  const learning = learningSummaryData();
+  const acceptedRows = state.savingsRecords
+    .map((record) => ({ record, metrics: savingsMetrics(record) }))
+    .filter(({ record }) => ["Accepted", "Partially accepted"].includes(record.status));
+  const pipelineRows = state.savingsRecords
+    .map((record) => ({ record, metrics: savingsMetrics(record) }))
+    .filter(({ record }) => ["Target set", "Supplier pending"].includes(record.status));
+  const comparableQuotes = decision.scoredQuotes.filter((item) => item.priceTotal).length;
+  const quoteRiskCount = decision.scoredQuotes.filter((item) => item.flags.length).length;
+  const acceptedSavingsLabel = formatCurrencyTotals(sumSavingsByCurrency(acceptedRows));
+  const pipelineSavingsLabel = formatCurrencyTotals(sumSavingsByCurrency(pipelineRows));
+  const commercialSignals = [
+    products.length >= 60,
+    sourceDirectory.length >= 20,
+    state.shortlist.length > 0,
+    state.compare.length > 0,
+    state.quotes.length > 0,
+    comparableQuotes >= 2,
+    state.supplierReplies.length > 0,
+    state.savingsRecords.length > 0,
+    acceptedRows.length > 0,
+    state.learningRecords.length > 0,
+    demo.readiness >= 84,
+    pilot.readiness >= 82
+  ].filter(Boolean).length;
+  const readiness = Math.min(98, Math.round(
+    (demo.readiness * 0.2)
+    + (pilot.readiness * 0.18)
+    + (saas.readiness * 0.12)
+    + (commercialSignals * 4)
+    + Math.min(10, state.quotes.length * 2)
+    + Math.min(10, acceptedRows.length * 5)
+  ));
+
+  return {
+    readiness,
+    status: readiness >= 84 ? "Executive value story ready" : readiness >= 70 ? "Good for pilot value discussion" : "Needs more quote and savings proof",
+    commercialSignals,
+    catalogRecords: products.length,
+    sourcePaths: products.reduce((count, product) => count + (Array.isArray(product.sources) ? product.sources.length : 0), 0),
+    shortlistItems: state.shortlist.length,
+    compareItems: state.compare.length,
+    quoteRecords: state.quotes.length,
+    comparableQuotes,
+    quoteRiskCount,
+    supplierReplies: state.supplierReplies.length,
+    savingsRecords: state.savingsRecords.length,
+    acceptedSavingsCount: acceptedRows.length,
+    acceptedSavingsLabel,
+    pipelineSavingsLabel,
+    largestSavingsLabel: savings.largestLabel,
+    largestSavingsSupplier: savings.largestSupplier,
+    learningRecords: state.learningRecords.length,
+    learningWinRate: learning.winRateLabel,
+    topLearningPattern: learning.topPattern || "TBC",
+    recommendedSupplier: decision.recommended ? `${decision.recommended.quote.supplier} (${decision.recommended.score})` : "Add quote data",
+    lowestPrice: decision.lowestPrice ? quoteTotalLabel(decision.lowestPrice.quote) : "TBC",
+    fastestLead: decision.fastestLead ? `${decision.fastestLead.days} days` : "TBC",
+    quotedValue: workspaceValueSummary(),
+    demo,
+    pilot,
+    saas
+  };
+}
+
+function valueProofCards(data = valueProofData()) {
+  return [
+    {
+      title: "Search-to-RFQ acceleration",
+      status: data.shortlistItems || data.quoteRecords ? "Workflow evidence" : "Catalog demo",
+      score: Math.min(94, 62 + data.shortlistItems * 5 + data.quoteRecords * 4 + Math.min(12, data.catalogRecords / 10)),
+      detail: "Shows how buyers move from product search into shortlist, RFQ text, procurement brief, and buyer-controlled exports.",
+      proof: [`${data.catalogRecords} product records`, `${data.shortlistItems} shortlisted`, `${data.quoteRecords} quotes`],
+      action: "Run a timed pilot: unknown item to RFQ-ready shortlist."
+    },
+    {
+      title: "Quote decision discipline",
+      status: data.comparableQuotes >= 2 ? "Comparable quotes" : "Needs more quotes",
+      score: Math.min(92, 58 + data.comparableQuotes * 12 + (data.recommendedSupplier !== "Add quote data" ? 10 : 0)),
+      detail: "Compares supplier price, lead time, payment terms, validity, and review flags before buyer recommendation.",
+      proof: [`Decision lead: ${data.recommendedSupplier}`, `Lowest price: ${data.lowestPrice}`, `${data.quoteRiskCount} quote flags`],
+      action: "Collect at least two supplier replies for the same procurement lane."
+    },
+    {
+      title: "Savings evidence",
+      status: data.acceptedSavingsCount ? "Accepted value" : data.savingsRecords ? "Pipeline value" : "Needs savings records",
+      score: Math.min(93, 55 + data.savingsRecords * 7 + data.acceptedSavingsCount * 10),
+      detail: "Tracks target, pending, partially accepted, and accepted savings so procurement can show buyer-side value.",
+      proof: [`Accepted: ${data.acceptedSavingsLabel}`, `Pipeline: ${data.pipelineSavingsLabel}`, `Largest: ${data.largestSavingsLabel}`],
+      action: "Save one accepted savings record with supplier evidence."
+    },
+    {
+      title: "Risk and verification control",
+      status: data.quoteRiskCount ? "Review flags visible" : "Verification visible",
+      score: Math.min(91, 66 + data.demo.proofSignals * 2 + Math.min(10, data.quoteRiskCount * 2)),
+      detail: "Keeps final buying validation with the buyer while surfacing certificates, datasheets, lifecycle, source path, and supplier risks.",
+      proof: [`${data.demo.proofSignals} proof signals`, `${data.sourcePaths} source links`, `${data.quoteRiskCount} quote risks`],
+      action: "Use the compliance and buyer file outputs in the pilot review."
+    },
+    {
+      title: "Closed-loop learning maturity",
+      status: data.learningRecords ? "Learning started" : "Ready to capture outcomes",
+      score: Math.min(90, 58 + data.learningRecords * 6 + (data.topLearningPattern !== "TBC" ? 8 : 0)),
+      detail: "Turns buyer outcomes into local learning, playbook candidates, governance decisions, and future opt-in network intelligence.",
+      proof: [`${data.learningRecords} learning records`, `Win / placed: ${data.learningWinRate}`, `Top pattern: ${data.topLearningPattern}`],
+      action: "Capture one post-RFQ lesson after each pilot event."
+    },
+    {
+      title: "Pilot conversion proof",
+      status: data.pilot.readiness >= 82 ? "Pilot-ready" : "Needs pilot proof",
+      score: data.pilot.readiness,
+      detail: "Connects the public beta to an early-adopter pilot with scope, success metrics, demo proof, SaaS gates, and safety boundaries.",
+      proof: [`Pilot readiness: ${data.pilot.readiness}%`, `Demo readiness: ${data.demo.readiness}%`, `SaaS gate: ${data.saas.readiness}%`],
+      action: "Invite one friendly buyer into a bounded, non-confidential pilot."
+    }
+  ];
+}
+
+function valueProofPath(data = valueProofData()) {
+  return [
+    ["01", "Show buyer pain", "Start with fragmented industrial sourcing, scattered source paths, and slow RFQ preparation."],
+    ["02", "Demonstrate workflow", `Use ${data.catalogRecords} records and ${data.sourcePaths} source links to move from search into RFQ, compare, and buyer file.`],
+    ["03", "Capture commercial proof", "Log supplier quotes, replies, negotiated targets, savings outcomes, and follow-up risks."],
+    ["04", "Turn proof into management story", `Explain quoted value (${data.quotedValue}), accepted savings (${data.acceptedSavingsLabel}), and decision lead (${data.recommendedSupplier}).`],
+    ["05", "Close the learning loop", "Convert buyer outcomes into local learning, playbooks, governance review, and explainable improvement signals."],
+    ["06", "Scale safely", "Use SaaS gate, privacy notes, and pilot boundaries before introducing accounts, APIs, shared storage, or network learning."]
+  ];
+}
+
+function valueProofEvidence(data = valueProofData()) {
+  return [
+    {
+      title: "What we can prove today",
+      detail: `${data.catalogRecords} product records, ${data.sourcePaths} source links, ${data.commercialSignals} commercial proof signals, and ${data.demo.readiness}% demo readiness.`,
+      next: "Use this for public-beta demos and internal buyer conversations."
+    },
+    {
+      title: "What improves with pilot usage",
+      detail: "More quotes, supplier replies, accepted savings, missing-product requests, data corrections, and learning records will make the value score stronger.",
+      next: "Run one controlled procurement lane and review outcomes weekly."
+    },
+    {
+      title: "What must wait for SaaS",
+      detail: "Shared tenant data, live supplier submissions, API integrations, confidential tender storage, billing, and cross-organization learning require secure backend controls.",
+      next: "Keep public-beta examples non-confidential until the governed backend exists."
+    }
+  ];
+}
+
+function renderValueProofPack() {
+  if (!els.valueProofSummary || !els.valueProofGrid || !els.valueProofPath || !els.valueProofEvidence) {
+    return;
+  }
+
+  const data = valueProofData();
+  els.valueProofSummary.innerHTML = [
+    tenantSummaryTemplate("Value readiness", `${data.readiness}%`, data.status),
+    tenantSummaryTemplate("Quoted value", data.quotedValue, `${data.quoteRecords} quote records`),
+    tenantSummaryTemplate("Accepted savings", data.acceptedSavingsLabel, `${data.acceptedSavingsCount} accepted records`),
+    tenantSummaryTemplate("Proof signals", data.commercialSignals, "Workflow + commercial evidence")
+  ].join("");
+
+  if (els.valueProofStatus) {
+    els.valueProofStatus.textContent = `${data.status}. Use this for business-case discussions; keep financial claims tied to buyer-controlled evidence.`;
+  }
+
+  els.valueProofGrid.innerHTML = valueProofCards(data).map(valueProofCardTemplate).join("");
+  els.valueProofPath.innerHTML = valueProofPath(data).map(valueProofStepTemplate).join("");
+  els.valueProofEvidence.innerHTML = valueProofEvidence(data).map(valueProofEvidenceTemplate).join("");
+}
+
+function valueProofCardTemplate(card) {
+  const statusClass = card.score >= 84 ? "ready" : card.score >= 70 ? "review" : "needs";
+  return `
+    <article class="value-proof-card ${statusClass}">
+      <div>
+        <span>${escapeHtml(card.status)}</span>
+        <strong>${escapeHtml(String(Math.round(card.score)))}</strong>
+      </div>
+      <h3>${escapeHtml(card.title)}</h3>
+      <p>${escapeHtml(card.detail)}</p>
+      <ul>${card.proof.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+      <em>${escapeHtml(card.action)}</em>
+    </article>
+  `;
+}
+
+function valueProofStepTemplate(step) {
+  const [number, title, detail] = step;
+  return `
+    <article class="value-proof-step">
+      <span>${escapeHtml(number)}</span>
+      <div>
+        <strong>${escapeHtml(title)}</strong>
+        <p>${escapeHtml(detail)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function valueProofEvidenceTemplate(item) {
+  return `
+    <article class="value-proof-evidence-card">
+      <span>Evidence note</span>
+      <strong>${escapeHtml(item.title)}</strong>
+      <p>${escapeHtml(item.detail)}</p>
+      <small>${escapeHtml(item.next)}</small>
+    </article>
+  `;
+}
+
+function valueProofBriefText() {
+  const data = valueProofData();
+  const cards = valueProofCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${Math.round(card.score)}. ${card.detail} Action: ${card.action}`).join("\n");
+  const path = valueProofPath(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
+  const evidence = valueProofEvidence(data).map((item, index) => `${index + 1}. ${item.title}: ${item.detail} Next: ${item.next}`).join("\n");
+
+  return `InduScout v5.8 Value Proof Board
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Value readiness: ${data.readiness}% (${data.status})
+Commercial proof signals: ${data.commercialSignals}
+Catalog base: ${data.catalogRecords} product records, ${data.sourcePaths} source links
+Quoted value: ${data.quotedValue}
+Decision lead: ${data.recommendedSupplier}
+Lowest price signal: ${data.lowestPrice}
+Fastest lead signal: ${data.fastestLead}
+Accepted savings: ${data.acceptedSavingsLabel}
+Pipeline savings: ${data.pipelineSavingsLabel}
+Learning records: ${data.learningRecords}
+Pilot readiness: ${data.pilot.readiness}%
+Demo readiness: ${data.demo.readiness}%
+
+Executive value cards:
+${cards}
+
+Buyer value path:
+${path}
+
+Evidence posture:
+${evidence}
+
+Boundary:
+InduScout v5.8 is a public-beta value proof and RFQ workflow aid. Treat all savings, supplier, and quote claims as buyer-controlled evidence that must be validated against current supplier documents, stock, pricing, compatibility, warranty path, and internal approval. Shared tenant data, live supplier integrations, confidential tender storage, billing, and network learning must wait for governed SaaS controls.`;
+}
+
+async function copyValueProofBrief() {
+  const text = valueProofBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyValueProofBrief) {
+      els.copyValueProofBrief.textContent = "Value brief copied";
+      setTimeout(() => {
+        els.copyValueProofBrief.textContent = "Copy value brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy value brief", text);
+  }
+}
+
+function exportValueProofJson() {
+  const data = valueProofData();
+  downloadFile(
+    `InduScout-Value-Proof-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), valueProof: { generatedAt: new Date().toISOString(), data, cards: valueProofCards(data), path: valueProofPath(data), evidence: valueProofEvidence(data), generatedText: valueProofBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -11354,6 +11657,7 @@ function renderQuoteTracker() {
     renderLandedCostDesk();
     renderNegotiationDesk();
     renderSavingsRegister();
+    renderValueProofPack();
     return;
   }
 
@@ -11364,6 +11668,7 @@ function renderQuoteTracker() {
   renderLandedCostDesk();
   renderNegotiationDesk();
   renderSavingsRegister();
+  renderValueProofPack();
 }
 
 function quoteDecisionPanel(decision) {
@@ -12914,7 +13219,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.7",
+    version: "5.8",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -13058,6 +13363,7 @@ function applySession(session) {
   renderSaasGate();
   renderPilotPack();
   renderDemoProofPack();
+  renderValueProofPack();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();
