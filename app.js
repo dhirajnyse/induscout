@@ -24,6 +24,7 @@ const state = {
   productRequests: loadProductRequests(),
   sourceLeads: loadSourceLeads(),
   launchPartners: loadLaunchPartners(),
+  pilotRuns: loadPilotRuns(),
   quotes: loadQuoteRecords(),
   savingsRecords: loadSavingsRecords(),
   supplierReplies: loadSupplierReplies(),
@@ -416,6 +417,28 @@ const els = {
   exportPartnerJson: document.querySelector("#exportPartnerJson"),
   clearPartners: document.querySelector("#clearPartners"),
   partnerList: document.querySelector("#partnerList"),
+  pilotOpsSummary: document.querySelector("#pilotOpsSummary"),
+  pilotOpsStatus: document.querySelector("#pilotOpsStatus"),
+  pilotOpsForm: document.querySelector("#pilotOpsForm"),
+  pilotOpsId: document.querySelector("#pilotOpsId"),
+  pilotOpsPartner: document.querySelector("#pilotOpsPartner"),
+  pilotOpsLane: document.querySelector("#pilotOpsLane"),
+  pilotOpsStage: document.querySelector("#pilotOpsStage"),
+  pilotOpsOwner: document.querySelector("#pilotOpsOwner"),
+  pilotOpsStartDate: document.querySelector("#pilotOpsStartDate"),
+  pilotOpsTargetDate: document.querySelector("#pilotOpsTargetDate"),
+  pilotOpsSuccessMetric: document.querySelector("#pilotOpsSuccessMetric"),
+  pilotOpsRisk: document.querySelector("#pilotOpsRisk"),
+  pilotOpsOutcome: document.querySelector("#pilotOpsOutcome"),
+  pilotOpsNotes: document.querySelector("#pilotOpsNotes"),
+  savePilotOps: document.querySelector("#savePilotOps"),
+  copyPilotOpsBrief: document.querySelector("#copyPilotOpsBrief"),
+  clearPilotOpsForm: document.querySelector("#clearPilotOpsForm"),
+  copyPilotOpsReport: document.querySelector("#copyPilotOpsReport"),
+  exportPilotOpsCsv: document.querySelector("#exportPilotOpsCsv"),
+  exportPilotOpsJson: document.querySelector("#exportPilotOpsJson"),
+  clearPilotOps: document.querySelector("#clearPilotOps"),
+  pilotOpsList: document.querySelector("#pilotOpsList"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -556,6 +579,8 @@ function init() {
   renderValueProofPack();
   hydrateLaunchPartnerForm();
   renderLaunchPartnerPipeline();
+  hydratePilotOpsForm();
+  renderPilotOpsBoard();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1415,6 +1440,46 @@ function wireEvents() {
       }
     });
   }
+  if (els.savePilotOps) {
+    els.savePilotOps.addEventListener("click", savePilotRunFromForm);
+  }
+  if (els.copyPilotOpsBrief) {
+    els.copyPilotOpsBrief.addEventListener("click", copyPilotRunBrief);
+  }
+  if (els.clearPilotOpsForm) {
+    els.clearPilotOpsForm.addEventListener("click", () => hydratePilotOpsForm());
+  }
+  if (els.copyPilotOpsReport) {
+    els.copyPilotOpsReport.addEventListener("click", copyPilotOpsReport);
+  }
+  if (els.exportPilotOpsCsv) {
+    els.exportPilotOpsCsv.addEventListener("click", exportPilotOpsCsv);
+  }
+  if (els.exportPilotOpsJson) {
+    els.exportPilotOpsJson.addEventListener("click", exportPilotOpsJson);
+  }
+  if (els.clearPilotOps) {
+    els.clearPilotOps.addEventListener("click", clearPilotRuns);
+  }
+  if (els.pilotOpsList) {
+    els.pilotOpsList.addEventListener("click", (event) => {
+      const loadButton = event.target.closest("[data-load-pilot-run]");
+      const copyButton = event.target.closest("[data-copy-pilot-run]");
+      const removeButton = event.target.closest("[data-remove-pilot-run]");
+
+      if (loadButton) {
+        loadPilotRunToForm(loadButton.dataset.loadPilotRun);
+      }
+
+      if (copyButton) {
+        copySavedPilotRunBrief(copyButton.dataset.copyPilotRun, copyButton);
+      }
+
+      if (removeButton) {
+        removePilotRun(removeButton.dataset.removePilotRun);
+      }
+    });
+  }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
       const actionButton = event.target.closest("[data-learning-queue-action]");
@@ -1740,6 +1805,7 @@ function render() {
   renderDemoProofPack();
   renderValueProofPack();
   renderLaunchPartnerPipeline();
+  renderPilotOpsBoard();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -10518,7 +10584,7 @@ function integrationBriefText() {
   const controls = integrationControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.status} - ${control.detail}`).join("\n");
   const events = integrationEvents(data).map((event, index) => `${index + 1}. ${event[0]} [${event[2]}] - ${event[1]}`).join("\n");
 
-  return `InduScout v5.9 API and integration blueprint
+  return `InduScout v6.0 API and integration blueprint
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10540,7 +10606,7 @@ Event stream preview:
 ${events}
 
 Important boundary:
-InduScout v5.9 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
+InduScout v6.0 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
 }
 
 async function copyIntegrationBrief() {
@@ -10731,7 +10797,7 @@ function saasGateBriefText() {
   const gates = saasGateCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Owner: ${card.owner}. ${card.detail}`).join("\n");
   const sequence = saasGateSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.9 SaaS readiness gate
+  return `InduScout v6.0 SaaS readiness gate
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10750,7 +10816,7 @@ Backend migration sequence:
 ${sequence}
 
 Operating rule:
-InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.9 is a planning and readiness simulator, not a live SaaS backend.`;
+InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v6.0 is a planning and readiness simulator, not a live SaaS backend.`;
 }
 
 async function copySaasGateBrief() {
@@ -10950,7 +11016,7 @@ function pilotPackBriefText() {
   const cards = pilotPackCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Output: ${card.output}. ${card.detail}`).join("\n");
   const sequence = pilotPackSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.9 Pilot Launch Pack
+  return `InduScout v6.0 Pilot Launch Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10968,7 +11034,7 @@ Pilot operating plan:
 ${sequence}
 
 Boundary:
-InduScout v5.9 is suitable for curated public-beta pilot conversations, demos, buyer workflow validation, and launch-partner qualification. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
+InduScout v6.0 is suitable for curated public-beta pilot conversations, demos, buyer workflow validation, launch-partner qualification, and pilot ops tracking. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
 }
 
 async function copyPilotPackBrief() {
@@ -11108,7 +11174,7 @@ function demoProofObjections(data = demoProofData()) {
     },
     {
       objection: "Where is the live backend or API?",
-      response: "The current release is intentionally static. v5.4-v5.9 show the integration, SaaS, pilot, demo, value-proof, and launch-partner plans before shared data is introduced.",
+      response: "The current release is intentionally static. v5.4-v6.0 show the integration, SaaS, pilot, demo, value-proof, launch-partner, and pilot-ops plans before shared data is introduced.",
       proof: "Integration Blueprint, SaaS Gate, Security baseline, and Privacy Center."
     },
     {
@@ -11195,7 +11261,7 @@ function demoProofBriefText() {
   const sequence = demoProofSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
   const objections = demoProofObjections(data).map((item, index) => `${index + 1}. ${item.objection}\nResponse: ${item.response}\nProof: ${item.proof}`).join("\n\n");
 
-  return `InduScout v5.9 Demo and Stakeholder Proof Pack
+  return `InduScout v6.0 Demo and Stakeholder Proof Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -11217,7 +11283,7 @@ Objection handling:
 ${objections}
 
 Boundary:
-InduScout v5.9 is ready for guided stakeholder conversations, controlled public-beta demos, value-proof discussions, and launch-partner outreach. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
+InduScout v6.0 is ready for guided stakeholder conversations, controlled public-beta demos, value-proof discussions, launch-partner outreach, and pilot ops review. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
 }
 
 async function copyDemoProofBrief() {
@@ -11467,7 +11533,7 @@ function valueProofBriefText() {
   const path = valueProofPath(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
   const evidence = valueProofEvidence(data).map((item, index) => `${index + 1}. ${item.title}: ${item.detail} Next: ${item.next}`).join("\n");
 
-  return `InduScout v5.9 Value Proof Board
+  return `InduScout v6.0 Value Proof Board
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -11495,7 +11561,7 @@ Evidence posture:
 ${evidence}
 
 Boundary:
-InduScout v5.9 is a public-beta value proof, launch-partner, and RFQ workflow aid. Treat all savings, supplier, quote, and partner-fit claims as buyer-controlled evidence that must be validated against current supplier documents, stock, pricing, compatibility, warranty path, and internal approval. Shared tenant data, live supplier integrations, confidential tender storage, billing, and network learning must wait for governed SaaS controls.`;
+InduScout v6.0 is a public-beta value proof, launch-partner, pilot-ops, and RFQ workflow aid. Treat all savings, supplier, quote, partner-fit, and pilot outcome claims as buyer-controlled evidence that must be validated against current supplier documents, stock, pricing, compatibility, warranty path, and internal approval. Shared tenant data, live supplier integrations, confidential tender storage, billing, and network learning must wait for governed SaaS controls.`;
 }
 
 async function copyValueProofBrief() {
@@ -11740,6 +11806,7 @@ function saveLaunchPartnerFromForm() {
   saveLaunchPartners();
   hydrateLaunchPartnerForm(partner);
   renderLaunchPartnerPipeline();
+  renderPilotOpsBoard();
   if (els.partnerPipelineStatus) {
     els.partnerPipelineStatus.textContent = `Saved ${partner.company}. Qualification score ${launchPartnerScore(partner)}.`;
   }
@@ -11764,6 +11831,7 @@ function removeLaunchPartner(id) {
     hydrateLaunchPartnerForm();
   }
   renderLaunchPartnerPipeline();
+  renderPilotOpsBoard();
   if (els.partnerPipelineStatus && partner) {
     els.partnerPipelineStatus.textContent = `Removed ${partner.company} from the local launch pipeline.`;
   }
@@ -11785,6 +11853,7 @@ function clearLaunchPartners() {
   saveLaunchPartners();
   hydrateLaunchPartnerForm();
   renderLaunchPartnerPipeline();
+  renderPilotOpsBoard();
   if (els.partnerPipelineStatus) {
     els.partnerPipelineStatus.textContent = "Launch partner pipeline cleared locally.";
   }
@@ -11876,7 +11945,7 @@ function launchPartnerReportText() {
     ? partners.map((partner, index) => `${index + 1}. ${partner.company} - ${partner.segment}, ${partner.status}, ${partner.fit}, score ${partner.score} (${partner.label}). Region: ${partner.region || "TBC"}. Pilot lane: ${partner.pilotLane || "TBC"}. Next: ${partner.nextDate || "TBC"}. Notes: ${partner.notes || "None"}`).join("\n")
     : "No launch partners saved yet.";
 
-  return `InduScout v5.9 Launch Partner Pipeline
+  return `InduScout v6.0 Launch Partner Pipeline
 Prepared on ${formatCopyDate()}
 
 Pipeline readiness: ${summary.pipelineReadiness}% (${summary.status})
@@ -11960,6 +12029,471 @@ function exportLaunchPartnerJson() {
   );
   if (els.partnerPipelineStatus) {
     els.partnerPipelineStatus.textContent = "Launch partner JSON exported.";
+  }
+}
+
+function defaultPilotRun() {
+  return {
+    id: "",
+    partnerId: "",
+    partnerName: "",
+    lane: "",
+    stage: "Planned",
+    owner: "",
+    startDate: "",
+    targetDate: "",
+    successMetric: "",
+    risk: "Low risk",
+    outcome: "",
+    notes: ""
+  };
+}
+
+function pilotRunFieldValue(element, fallback = "") {
+  const value = String(element?.value || "").trim();
+  return value || fallback;
+}
+
+function populatePilotPartnerOptions(selectedId = els.pilotOpsPartner?.value || "") {
+  if (!els.pilotOpsPartner) {
+    return;
+  }
+
+  const current = selectedId;
+  els.pilotOpsPartner.innerHTML = "";
+  const noneOption = document.createElement("option");
+  noneOption.value = "";
+  noneOption.textContent = "No partner selected";
+  els.pilotOpsPartner.appendChild(noneOption);
+
+  state.launchPartners.forEach((partner) => {
+    const option = document.createElement("option");
+    option.value = partner.id;
+    option.textContent = `${partner.company} - ${partner.segment}`;
+    els.pilotOpsPartner.appendChild(option);
+  });
+
+  if (current && state.launchPartners.some((partner) => partner.id === current)) {
+    els.pilotOpsPartner.value = current;
+  } else {
+    els.pilotOpsPartner.value = "";
+  }
+}
+
+function selectedPilotPartner(id = els.pilotOpsPartner?.value || "") {
+  return state.launchPartners.find((partner) => partner.id === id) || null;
+}
+
+function pilotRunSnapshot() {
+  const existing = state.pilotRuns.find((run) => run.id === els.pilotOpsId?.value);
+  const partner = selectedPilotPartner();
+  const lane = pilotRunFieldValue(els.pilotOpsLane, partner?.pilotLane || "Pilot lane TBC");
+  return sanitizePilotRun({
+    id: pilotRunFieldValue(els.pilotOpsId, `${Date.now()}-${safeFilenamePart(`${partner?.company || lane}-pilot`) || "pilot-run"}`),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    partnerId: partner?.id || "",
+    partnerName: partner?.company || "",
+    lane,
+    stage: pilotRunFieldValue(els.pilotOpsStage, "Planned"),
+    owner: pilotRunFieldValue(els.pilotOpsOwner, ""),
+    startDate: pilotRunFieldValue(els.pilotOpsStartDate, ""),
+    targetDate: pilotRunFieldValue(els.pilotOpsTargetDate, ""),
+    successMetric: pilotRunFieldValue(els.pilotOpsSuccessMetric, ""),
+    risk: pilotRunFieldValue(els.pilotOpsRisk, "Low risk"),
+    outcome: pilotRunFieldValue(els.pilotOpsOutcome, ""),
+    notes: pilotRunFieldValue(els.pilotOpsNotes, "")
+  });
+}
+
+function hydratePilotOpsForm(run = defaultPilotRun()) {
+  if (!els.pilotOpsForm) {
+    return;
+  }
+
+  const isBlank = !run.id && !run.partnerId && !run.lane && !run.owner && !run.startDate && !run.targetDate && !run.successMetric && !run.outcome && !run.notes;
+  const cleanRun = isBlank ? defaultPilotRun() : sanitizePilotRun({ ...defaultPilotRun(), ...run }) || defaultPilotRun();
+  populatePilotPartnerOptions(cleanRun.partnerId || "");
+  els.pilotOpsId.value = cleanRun.id || "";
+  els.pilotOpsLane.value = cleanRun.lane === "Pilot lane TBC" ? "" : cleanRun.lane;
+  els.pilotOpsStage.value = cleanRun.stage || "Planned";
+  els.pilotOpsOwner.value = cleanRun.owner || "";
+  els.pilotOpsStartDate.value = cleanRun.startDate || "";
+  els.pilotOpsTargetDate.value = cleanRun.targetDate || "";
+  els.pilotOpsSuccessMetric.value = cleanRun.successMetric || "";
+  els.pilotOpsRisk.value = cleanRun.risk || "Low risk";
+  els.pilotOpsOutcome.value = cleanRun.outcome || "";
+  els.pilotOpsNotes.value = cleanRun.notes || "";
+  if (els.pilotOpsStatus) {
+    els.pilotOpsStatus.textContent = cleanRun.id
+      ? "Editing saved pilot run. Changes stay local until exported or copied."
+      : "Stored locally in this browser. Use controlled, non-confidential pilot context during public beta.";
+  }
+}
+
+function pilotRunScore(run, data = valueProofData()) {
+  const stageBoost = {
+    Planned: 8,
+    "Kickoff booked": 18,
+    "In progress": 28,
+    "Evidence review": 36,
+    Completed: 42,
+    Converted: 48,
+    Paused: -8
+  };
+  const riskBoost = {
+    "Low risk": 12,
+    "Missing buyer time": 2,
+    "Needs source evidence": 0,
+    "Needs workflow proof": 0,
+    "Security review needed": -8,
+    "Commercial blocker": -10
+  };
+  const partner = run.partnerId ? state.launchPartners.find((item) => item.id === run.partnerId) : null;
+  let score = 30;
+  score += stageBoost[run.stage] ?? 0;
+  score += riskBoost[run.risk] ?? 0;
+  if (partner) score += Math.min(18, Math.round(launchPartnerScore(partner, data) / 6));
+  if (run.lane && run.lane !== "Pilot lane TBC") score += 6;
+  if (run.owner) score += 6;
+  if (run.startDate) score += 4;
+  if (run.targetDate) score += 5;
+  if (run.successMetric) score += 9;
+  if (run.outcome) score += 8;
+  if (run.notes) score += 5;
+  if (Number(data.readiness) >= 80) score += 4;
+  return Math.max(1, Math.min(100, Math.round(score)));
+}
+
+function pilotRunScoreLabel(score) {
+  if (score >= 84) return "Board-ready proof";
+  if (score >= 70) return "Strong pilot";
+  if (score >= 55) return "Needs evidence";
+  return "Early draft";
+}
+
+function pilotOpsSummaryData() {
+  const data = valueProofData();
+  const runs = state.pilotRuns.map((run) => ({ ...run, score: pilotRunScore(run, data) }));
+  const total = runs.length;
+  const active = runs.filter((run) => ["Kickoff booked", "In progress", "Evidence review"].includes(run.stage)).length;
+  const completed = runs.filter((run) => ["Completed", "Converted"].includes(run.stage)).length;
+  const risks = runs.filter((run) => !["Low risk", "Missing buyer time"].includes(run.risk)).length;
+  const averageScore = total ? Math.round(runs.reduce((sum, run) => sum + run.score, 0) / total) : 0;
+  const partnerSummary = launchPartnerSummaryData();
+  const opsReadiness = total
+    ? Math.min(98, Math.round(averageScore * 0.45 + partnerSummary.pipelineReadiness * 0.25 + (Number(data.readiness) || 65) * 0.2 + Math.min(10, completed * 5)))
+    : Math.max(28, Math.round(partnerSummary.pipelineReadiness * 0.55));
+  const topRun = runs.sort((a, b) => b.score - a.score)[0];
+  return {
+    total,
+    active,
+    completed,
+    risks,
+    averageScore,
+    opsReadiness,
+    topRun,
+    status: opsReadiness >= 84 ? "Pilot proof ready" : opsReadiness >= 70 ? "Pilot motion healthy" : "Needs controlled pilot evidence"
+  };
+}
+
+function renderPilotOpsBoard() {
+  if (!els.pilotOpsSummary || !els.pilotOpsList) {
+    return;
+  }
+
+  populatePilotPartnerOptions();
+  const summary = pilotOpsSummaryData();
+  els.pilotOpsSummary.innerHTML = [
+    tenantSummaryTemplate("Pilot ops readiness", `${summary.opsReadiness}%`, summary.status),
+    tenantSummaryTemplate("Pilot runs", summary.total, summary.total ? `${summary.active} active` : "Add first pilot run"),
+    tenantSummaryTemplate("Completed proof", summary.completed, "Completed or converted"),
+    tenantSummaryTemplate("Open risks", summary.risks, summary.risks ? "Needs launch attention" : "No major risk flagged")
+  ].join("");
+
+  if (!state.pilotRuns.length) {
+    els.pilotOpsList.innerHTML = `
+      <article class="pilot-ops-empty">
+        <strong>No pilot runs saved yet</strong>
+        <p>Create a controlled pilot run from a launch partner, a product lane, or a buyer workflow. Use non-confidential sample data until the secure SaaS backend exists.</p>
+      </article>
+    `;
+    return;
+  }
+
+  const data = valueProofData();
+  const sorted = [...state.pilotRuns].sort((a, b) => pilotRunScore(b, data) - pilotRunScore(a, data));
+  els.pilotOpsList.innerHTML = sorted.map((run) => pilotRunCardTemplate(run, data)).join("");
+}
+
+function pilotRunCardTemplate(run, data = valueProofData()) {
+  const score = pilotRunScore(run, data);
+  const label = pilotRunScoreLabel(score);
+  const statusClass = score >= 84 ? "ready" : score >= 70 ? "review" : score >= 55 ? "needs" : "risk";
+  const partner = run.partnerName || selectedPilotPartner(run.partnerId)?.company || "Partner TBC";
+  return `
+    <article class="pilot-ops-card ${statusClass}">
+      <div class="pilot-ops-card-head">
+        <div>
+          <span>${escapeHtml(run.stage)}</span>
+          <h3>${escapeHtml(run.lane)}</h3>
+          <p>${escapeHtml(partner)}</p>
+        </div>
+        <div class="pilot-ops-score">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(String(score))}</strong>
+        </div>
+      </div>
+      <dl class="pilot-ops-facts">
+        <div><dt>Owner</dt><dd>${escapeHtml(run.owner || "Owner TBC")}</dd></div>
+        <div><dt>Start</dt><dd>${escapeHtml(run.startDate || "TBC")}</dd></div>
+        <div><dt>Review</dt><dd>${escapeHtml(run.targetDate || "TBC")}</dd></div>
+        <div><dt>Metric</dt><dd>${escapeHtml(run.successMetric || "Metric TBC")}</dd></div>
+        <div><dt>Risk</dt><dd>${escapeHtml(run.risk)}</dd></div>
+      </dl>
+      ${run.outcome ? `<p class="pilot-ops-notes"><strong>Outcome:</strong> ${escapeHtml(run.outcome)}</p>` : ""}
+      ${run.notes ? `<p class="pilot-ops-notes">${escapeHtml(run.notes)}</p>` : ""}
+      <div class="pilot-ops-card-actions">
+        <button type="button" data-load-pilot-run="${escapeHtml(run.id)}">Load</button>
+        <button type="button" data-copy-pilot-run="${escapeHtml(run.id)}">Copy brief</button>
+        <button type="button" data-remove-pilot-run="${escapeHtml(run.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function savePilotRunFromForm() {
+  const run = pilotRunSnapshot();
+  if (!run) {
+    return;
+  }
+
+  const existingIndex = state.pilotRuns.findIndex((item) => item.id === run.id);
+  if (existingIndex >= 0) {
+    state.pilotRuns.splice(existingIndex, 1, run);
+  } else {
+    state.pilotRuns.unshift(run);
+  }
+  state.pilotRuns = state.pilotRuns.map(sanitizePilotRun).filter(Boolean).slice(0, 120);
+  savePilotRuns();
+  hydratePilotOpsForm(run);
+  renderPilotOpsBoard();
+  if (els.pilotOpsStatus) {
+    els.pilotOpsStatus.textContent = `Saved ${run.lane}. Pilot score ${pilotRunScore(run)}.`;
+  }
+}
+
+function loadPilotRunToForm(id) {
+  const run = state.pilotRuns.find((item) => item.id === id);
+  if (!run) {
+    return;
+  }
+  hydratePilotOpsForm(run);
+  if (els.pilotOpsForm) {
+    els.pilotOpsForm.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function removePilotRun(id) {
+  const run = state.pilotRuns.find((item) => item.id === id);
+  state.pilotRuns = state.pilotRuns.filter((item) => item.id !== id);
+  savePilotRuns();
+  if (els.pilotOpsId?.value === id) {
+    hydratePilotOpsForm();
+  }
+  renderPilotOpsBoard();
+  if (els.pilotOpsStatus && run) {
+    els.pilotOpsStatus.textContent = `Removed ${run.lane} from the local pilot board.`;
+  }
+}
+
+function clearPilotRuns() {
+  if (!state.pilotRuns.length) {
+    if (els.pilotOpsStatus) {
+      els.pilotOpsStatus.textContent = "No pilot runs to clear.";
+    }
+    return;
+  }
+
+  const confirmed = window.confirm("Clear all locally saved pilot runs?");
+  if (!confirmed) {
+    return;
+  }
+  state.pilotRuns = [];
+  savePilotRuns();
+  hydratePilotOpsForm();
+  renderPilotOpsBoard();
+  if (els.pilotOpsStatus) {
+    els.pilotOpsStatus.textContent = "Pilot ops board cleared locally.";
+  }
+}
+
+function pilotRunBriefText(run = pilotRunSnapshot()) {
+  const summary = pilotOpsSummaryData();
+  const partner = run?.partnerId ? state.launchPartners.find((item) => item.id === run.partnerId) : null;
+  const score = run ? pilotRunScore(run) : 0;
+  return `InduScout v6.0 Pilot Run Brief
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Pilot partner: ${run?.partnerName || partner?.company || "Partner TBC"}
+Pilot lane: ${run?.lane || "TBC"}
+Stage: ${run?.stage || "Planned"}
+Owner: ${run?.owner || "TBC"}
+Start date: ${run?.startDate || "TBC"}
+Target review date: ${run?.targetDate || "TBC"}
+Success metric: ${run?.successMetric || "TBC"}
+Primary risk: ${run?.risk || "TBC"}
+Pilot score: ${score}/100 (${pilotRunScoreLabel(score)})
+
+Current outcome:
+${run?.outcome || "No outcome captured yet."}
+
+Pilot notes:
+${run?.notes || "No pilot notes captured yet."}
+
+Pilot ops context:
+- Pilot ops readiness: ${summary.opsReadiness}% (${summary.status})
+- Saved pilot runs: ${summary.total}
+- Active pilots: ${summary.active}
+- Completed proof runs: ${summary.completed}
+- Open risks: ${summary.risks}
+
+Recommended next action:
+Confirm the pilot scope, run one controlled non-confidential workflow, capture buyer friction, record source and quote evidence, then decide whether the result supports secure SaaS backend prioritization.
+
+Public beta boundary:
+Do not store confidential tender data, credentials, payment data, regulated personal data, or private supplier commercials in this static beta. Use sample data and buyer-approved public-source evidence until tenant isolation, audit logs, deletion controls, and secure backend storage are live.`;
+}
+
+async function copyPilotRunBrief() {
+  const text = pilotRunBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyPilotOpsBrief) {
+      els.copyPilotOpsBrief.textContent = "Brief copied";
+      setTimeout(() => {
+        els.copyPilotOpsBrief.textContent = "Copy pilot brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy pilot run brief", text);
+  }
+}
+
+async function copySavedPilotRunBrief(id, triggerButton) {
+  const run = state.pilotRuns.find((item) => item.id === id);
+  if (!run) {
+    return;
+  }
+
+  const text = pilotRunBriefText(run);
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = "Copied";
+      setTimeout(() => {
+        triggerButton.textContent = "Copy brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy pilot run brief", text);
+  }
+}
+
+function pilotOpsReportText() {
+  const summary = pilotOpsSummaryData();
+  const data = valueProofData();
+  const runs = state.pilotRuns.map((run) => ({
+    ...run,
+    score: pilotRunScore(run, data)
+  })).map((run) => ({
+    ...run,
+    label: pilotRunScoreLabel(run.score)
+  })).sort((a, b) => b.score - a.score);
+  const lines = runs.length
+    ? runs.map((run, index) => `${index + 1}. ${run.lane} - ${run.partnerName || "Partner TBC"}, ${run.stage}, score ${run.score} (${run.label}). Owner: ${run.owner || "TBC"}. Metric: ${run.successMetric || "TBC"}. Risk: ${run.risk}. Outcome: ${run.outcome || "None"}`).join("\n")
+    : "No pilot runs saved yet.";
+
+  return `InduScout v6.0 Pilot Ops Board
+Prepared on ${formatCopyDate()}
+
+Pilot ops readiness: ${summary.opsReadiness}% (${summary.status})
+Pilot runs: ${summary.total}
+Active pilots: ${summary.active}
+Completed or converted pilots: ${summary.completed}
+Open risks: ${summary.risks}
+Average pilot score: ${summary.averageScore || 0}
+
+Pilot register:
+${lines}
+
+Launch interpretation:
+Use this board to separate genuine pilot proof from friendly interest. Strong runs should show a named partner or buyer lane, owner, success metric, current outcome, and explicit risk. Completed or converted pilots become evidence for the v6 secure backend sequence.
+
+Boundary:
+This is a local-only public beta operations board. It does not replace buyer validation, supplier due diligence, security review, tenant controls, or production support readiness.`;
+}
+
+async function copyPilotOpsReport() {
+  const text = pilotOpsReportText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyPilotOpsReport) {
+      els.copyPilotOpsReport.textContent = "Report copied";
+      setTimeout(() => {
+        els.copyPilotOpsReport.textContent = "Copy pilot report";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy pilot ops report", text);
+  }
+}
+
+function pilotOpsExportTable() {
+  const data = valueProofData();
+  const headers = ["Partner", "Pilot Lane", "Stage", "Owner", "Start Date", "Target Review Date", "Success Metric", "Risk", "Score", "Qualification", "Outcome", "Notes", "Saved At", "Updated At"];
+  const rows = state.pilotRuns.map((run) => {
+    const score = pilotRunScore(run, data);
+    return [
+      run.partnerName,
+      run.lane,
+      run.stage,
+      run.owner,
+      run.startDate,
+      run.targetDate,
+      run.successMetric,
+      run.risk,
+      score,
+      pilotRunScoreLabel(score),
+      run.outcome,
+      run.notes,
+      run.savedAt,
+      run.updatedAt
+    ];
+  });
+  return { headers, rows };
+}
+
+function exportPilotOpsCsv() {
+  const { headers, rows } = pilotOpsExportTable();
+  const csv = [headers, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
+  downloadFile(`InduScout-Pilot-Ops-${new Date().toISOString().slice(0, 10)}.csv`, csv, "text/csv;charset=utf-8");
+  if (els.pilotOpsStatus) {
+    els.pilotOpsStatus.textContent = "Pilot ops CSV exported.";
+  }
+}
+
+function exportPilotOpsJson() {
+  const summary = pilotOpsSummaryData();
+  downloadFile(
+    `InduScout-Pilot-Ops-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), pilotOpsBoard: { generatedAt: new Date().toISOString(), summary, runs: state.pilotRuns, generatedText: pilotOpsReportText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+  if (els.pilotOpsStatus) {
+    els.pilotOpsStatus.textContent = "Pilot ops JSON exported.";
   }
 }
 
@@ -13725,7 +14259,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.9",
+    version: "6.0",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -13752,6 +14286,7 @@ function createSessionSnapshot() {
     productRequests: state.productRequests,
     sourceLeads: state.sourceLeads,
     launchPartners: state.launchPartners,
+    pilotRuns: state.pilotRuns,
     quotes: state.quotes,
     savingsRecords: state.savingsRecords,
     learningRecords: state.learningRecords,
@@ -13787,6 +14322,9 @@ function applySession(session) {
   state.launchPartners = Array.isArray(session.launchPartners)
     ? session.launchPartners.map(sanitizeLaunchPartner).filter(Boolean).slice(0, 120)
     : state.launchPartners;
+  state.pilotRuns = Array.isArray(session.pilotRuns)
+    ? session.pilotRuns.map(sanitizePilotRun).filter(Boolean).slice(0, 120)
+    : state.pilotRuns;
   state.quotes = Array.isArray(session.quotes) ? session.quotes.map(sanitizeQuoteRecord).filter(Boolean).slice(0, 80) : state.quotes;
   state.savingsRecords = Array.isArray(session.savingsRecords)
     ? session.savingsRecords.map(sanitizeSavingsRecord).filter(Boolean).slice(0, 120)
@@ -13837,6 +14375,7 @@ function applySession(session) {
   saveProductRequests();
   saveSourceLeads();
   saveLaunchPartners();
+  savePilotRuns();
   saveQuoteRecords();
   saveSavingsRecords();
   saveLearningRecords();
@@ -13877,6 +14416,8 @@ function applySession(session) {
   renderValueProofPack();
   hydrateLaunchPartnerForm();
   renderLaunchPartnerPipeline();
+  hydratePilotOpsForm();
+  renderPilotOpsBoard();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();
@@ -15727,6 +16268,23 @@ function saveLaunchPartners() {
   }
 }
 
+function loadPilotRuns() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutPilotRuns") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizePilotRun).filter(Boolean).slice(0, 120) : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePilotRuns() {
+  try {
+    window.localStorage.setItem("induscoutPilotRuns", JSON.stringify(state.pilotRuns));
+  } catch {
+    // Pilot ops tracking is a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
 function loadQuoteRecords() {
   try {
     const saved = JSON.parse(window.localStorage.getItem("induscoutQuoteRecords") || "[]");
@@ -15954,6 +16512,32 @@ function sanitizeLaunchPartner(record) {
     fit: allowedFits.includes(record.fit) ? record.fit : "High strategic fit",
     nextDate: cleanText(record.nextDate || "", 40),
     notes: cleanText(record.notes || "", 1800)
+  };
+}
+
+function sanitizePilotRun(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const allowedStages = ["Planned", "Kickoff booked", "In progress", "Evidence review", "Completed", "Converted", "Paused"];
+  const allowedRisks = ["Low risk", "Missing buyer time", "Needs source evidence", "Needs workflow proof", "Security review needed", "Commercial blocker"];
+  const fallbackLane = cleanText(record.lane || "Pilot lane TBC", 180);
+  return {
+    id: cleanText(record.id || `${Date.now()}-${safeFilenamePart(fallbackLane) || "pilot-run"}`, 90),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(record.updatedAt || record.savedAt || new Date().toISOString(), 40),
+    partnerId: cleanText(record.partnerId || "", 90),
+    partnerName: cleanText(record.partnerName || "", 180),
+    lane: fallbackLane,
+    stage: allowedStages.includes(record.stage) ? record.stage : "Planned",
+    owner: cleanText(record.owner || "", 160),
+    startDate: cleanText(record.startDate || "", 40),
+    targetDate: cleanText(record.targetDate || "", 40),
+    successMetric: cleanText(record.successMetric || "", 240),
+    risk: allowedRisks.includes(record.risk) ? record.risk : "Low risk",
+    outcome: cleanText(record.outcome || "", 1800),
+    notes: cleanText(record.notes || "", 2200)
   };
 }
 

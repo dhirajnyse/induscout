@@ -4831,6 +4831,290 @@ input[type="checkbox"] {
   box-shadow: none;
 }
 
+.pilot-ops-band {
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f8fbfb 100%);
+  border-bottom: 1px solid var(--line);
+}
+
+.pilot-ops-console {
+  display: grid;
+  gap: 18px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.pilot-ops-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pilot-ops-summary article,
+.pilot-ops-form,
+.pilot-ops-register,
+.pilot-ops-card,
+.pilot-ops-empty {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
+}
+
+.pilot-ops-summary article {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 16px;
+}
+
+.pilot-ops-summary span,
+.pilot-ops-form-head span,
+.pilot-ops-register span,
+.pilot-ops-card-head span,
+.pilot-ops-score span,
+.pilot-ops-facts dt {
+  color: var(--teal);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pilot-ops-summary strong {
+  font-size: 1.5rem;
+  line-height: 1.05;
+}
+
+.pilot-ops-summary small,
+.pilot-ops-form-head span,
+.pilot-ops-register span,
+.pilot-ops-card-head p,
+.pilot-ops-empty p,
+.pilot-ops-notes {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.pilot-ops-form,
+.pilot-ops-register {
+  overflow: hidden;
+}
+
+.pilot-ops-form-head,
+.pilot-ops-register > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+
+.pilot-ops-form-head > div:first-child,
+.pilot-ops-register > div:first-child > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.pilot-ops-form-head strong,
+.pilot-ops-register strong {
+  font-size: 1rem;
+}
+
+.pilot-ops-actions,
+.pilot-ops-export-actions,
+.pilot-ops-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pilot-ops-actions button,
+.pilot-ops-export-actions button,
+.pilot-ops-card-actions button {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-weight: 900;
+}
+
+.pilot-ops-actions button:first-child {
+  color: #ffffff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+}
+
+.pilot-ops-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px;
+}
+
+.pilot-ops-grid label,
+.pilot-ops-form .note-field {
+  display: grid;
+  gap: 7px;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.pilot-ops-grid input,
+.pilot-ops-grid select,
+.pilot-ops-form textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+.pilot-ops-form .note-field {
+  margin: 0 18px 18px;
+}
+
+.pilot-ops-form textarea {
+  resize: vertical;
+}
+
+.pilot-ops-export-actions {
+  justify-content: flex-start;
+  padding: 0 18px 18px;
+}
+
+.pilot-ops-list {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.pilot-ops-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border-left: 5px solid #38bdf8;
+}
+
+.pilot-ops-card.ready {
+  border-left-color: var(--green);
+}
+
+.pilot-ops-card.review {
+  border-left-color: var(--teal);
+}
+
+.pilot-ops-card.needs {
+  border-left-color: var(--amber);
+}
+
+.pilot-ops-card.risk {
+  border-left-color: var(--danger);
+}
+
+.pilot-ops-card-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.pilot-ops-card h3,
+.pilot-ops-card p {
+  margin: 0;
+}
+
+.pilot-ops-card h3 {
+  font-size: 1.12rem;
+}
+
+.pilot-ops-score {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  min-width: 96px;
+}
+
+.pilot-ops-score strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.pilot-ops-facts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.pilot-ops-facts div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.pilot-ops-facts dt {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.pilot-ops-facts dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.pilot-ops-notes {
+  margin: 0;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.pilot-ops-notes strong {
+  color: var(--ink);
+}
+
+.pilot-ops-card-actions {
+  justify-content: flex-start;
+}
+
+.pilot-ops-card-actions button {
+  color: var(--teal);
+  background: #ecfeff;
+  border: 1px solid #99f6e4;
+  font-size: 0.82rem;
+}
+
+.pilot-ops-card-actions button:last-child {
+  color: #991b1b;
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.pilot-ops-empty {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  background: #f8fafc;
+  border-style: dashed;
+  box-shadow: none;
+}
+
 .tenant-audit-event strong {
   color: var(--ink);
   overflow-wrap: anywhere;
@@ -9499,6 +9783,9 @@ footer a {
   .partner-summary,
   .partner-grid,
   .partner-facts,
+  .pilot-ops-summary,
+  .pilot-ops-grid,
+  .pilot-ops-facts,
   .quality-stats,
   .inbox-summary,
   .scorecard-facts,
@@ -9548,7 +9835,8 @@ footer a {
   .demo-proof-toolbar,
   .value-proof-toolbar,
   .value-proof-board,
-  .partner-card-head {
+  .partner-card-head,
+  .pilot-ops-card-head {
     grid-template-columns: 1fr;
   }
 
@@ -9766,7 +10054,10 @@ footer a {
 
   .partner-form-head,
   .partner-register > div:first-child,
-  .partner-card-head {
+  .partner-card-head,
+  .pilot-ops-form-head,
+  .pilot-ops-register > div:first-child,
+  .pilot-ops-card-head {
     align-items: flex-start;
     grid-template-columns: 1fr;
   }
@@ -9796,6 +10087,9 @@ footer a {
   .partner-actions,
   .partner-export-actions,
   .partner-card-actions,
+  .pilot-ops-actions,
+  .pilot-ops-export-actions,
+  .pilot-ops-card-actions,
   .quote-actions,
   .quote-export-actions,
   .quote-card-actions,
@@ -9854,6 +10148,9 @@ footer a {
   .partner-actions > *,
   .partner-export-actions > *,
   .partner-card-actions > *,
+  .pilot-ops-actions > *,
+  .pilot-ops-export-actions > *,
+  .pilot-ops-card-actions > *,
   .quote-actions > *,
   .quote-export-actions > *,
   .quote-card-actions > *,
@@ -9971,6 +10268,9 @@ footer a {
   .partner-summary,
   .partner-grid,
   .partner-facts,
+  .pilot-ops-summary,
+  .pilot-ops-grid,
+  .pilot-ops-facts,
   .request-grid,
   .quote-grid,
   .quote-summary,
@@ -10027,6 +10327,11 @@ footer a {
   }
 
   .partner-form .note-field {
+    margin-right: 18px;
+    margin-left: 18px;
+  }
+
+  .pilot-ops-form .note-field {
     margin-right: 18px;
     margin-left: 18px;
   }

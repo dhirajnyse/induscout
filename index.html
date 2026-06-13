@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=5.9.1">
+    <link rel="stylesheet" href="styles.css?v=6.0">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -77,7 +77,8 @@
         <a href="#demo-proof">Demo</a>
         <a href="#value-proof">Value Proof</a>
         <a href="#partners">Partners</a>
-        <a class="version-tab" href="#version">v5.9</a>
+        <a href="#pilot-ops">Pilot Ops</a>
+        <a class="version-tab" href="#version">v6.0</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -1651,6 +1652,93 @@
         </div>
       </section>
 
+      <section class="pilot-ops-band" id="pilot-ops" aria-labelledby="pilot-ops-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Pilot Ops Board</p>
+            <h2 id="pilot-ops-title">Run beta pilots like a controlled launch program</h2>
+          </div>
+          <p>Convert partner interest into measurable pilot runs with clear owner, lane, success metric, risk, outcome, next date, and exportable evidence for buyer and leadership review.</p>
+        </div>
+        <div class="pilot-ops-console">
+          <div class="pilot-ops-summary" id="pilotOpsSummary"></div>
+          <form class="pilot-ops-form" id="pilotOpsForm">
+            <input id="pilotOpsId" type="hidden">
+            <div class="pilot-ops-form-head">
+              <div>
+                <strong>Add pilot run</strong>
+                <span id="pilotOpsStatus">Stored locally in this browser. Use controlled, non-confidential pilot context during public beta.</span>
+              </div>
+              <div class="pilot-ops-actions">
+                <button type="button" id="savePilotOps">Save pilot</button>
+                <button class="ghost-button compact" type="button" id="copyPilotOpsBrief">Copy pilot brief</button>
+                <button class="ghost-button compact" type="button" id="clearPilotOpsForm">Clear form</button>
+              </div>
+            </div>
+            <div class="pilot-ops-grid">
+              <label>Launch partner
+                <select id="pilotOpsPartner"></select>
+              </label>
+              <label>Pilot lane
+                <input id="pilotOpsLane" type="text" placeholder="e.g. sensors RFQ, quote comparison, MRO sourcing">
+              </label>
+              <label>Stage
+                <select id="pilotOpsStage">
+                  <option>Planned</option>
+                  <option>Kickoff booked</option>
+                  <option>In progress</option>
+                  <option>Evidence review</option>
+                  <option>Completed</option>
+                  <option>Converted</option>
+                  <option>Paused</option>
+                </select>
+              </label>
+              <label>Owner
+                <input id="pilotOpsOwner" type="text" placeholder="Pilot owner or internal lead">
+              </label>
+              <label>Start date
+                <input id="pilotOpsStartDate" type="date">
+              </label>
+              <label>Target review date
+                <input id="pilotOpsTargetDate" type="date">
+              </label>
+              <label>Success metric
+                <input id="pilotOpsSuccessMetric" type="text" placeholder="e.g. RFQ pack accepted, 3 quote paths compared">
+              </label>
+              <label>Primary risk
+                <select id="pilotOpsRisk">
+                  <option>Low risk</option>
+                  <option>Missing buyer time</option>
+                  <option>Needs source evidence</option>
+                  <option>Needs workflow proof</option>
+                  <option>Security review needed</option>
+                  <option>Commercial blocker</option>
+                </select>
+              </label>
+            </div>
+            <label class="note-field">Outcome / current finding
+              <textarea id="pilotOpsOutcome" rows="3" placeholder="Capture the current result, buyer reaction, adoption signal, objection, or conversion evidence"></textarea>
+            </label>
+            <label class="note-field">Pilot notes
+              <textarea id="pilotOpsNotes" rows="4" placeholder="Add scope, products, sample workflow, meeting notes, buyer feedback, action items, or data boundaries"></textarea>
+            </label>
+            <div class="pilot-ops-export-actions">
+              <button class="ghost-button compact" type="button" id="copyPilotOpsReport">Copy pilot report</button>
+              <button class="ghost-button compact" type="button" id="exportPilotOpsCsv">Export CSV</button>
+              <button class="ghost-button compact" type="button" id="exportPilotOpsJson">Export JSON</button>
+              <button class="ghost-button compact" type="button" id="clearPilotOps">Clear pilots</button>
+            </div>
+          </form>
+          <div class="pilot-ops-register">
+            <div>
+              <strong>Pilot register</strong>
+              <span>Readiness score uses partner fit, stage, success metric, owner, dates, risk, outcome, and current value proof.</span>
+            </div>
+            <div class="pilot-ops-list" id="pilotOpsList"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -2177,8 +2265,8 @@
           <div class="version-status">
             <article class="current">
               <span>Current live build</span>
-              <strong>v5.9</strong>
-              <p>Launch partner pipeline with candidate qualification, pilot status tracking, outreach copy, pipeline report, CSV export, and JSON export.</p>
+              <strong>v6.0</strong>
+              <p>Pilot Ops Board with controlled pilot runs, partner-linked workflows, success metrics, risk tracking, copyable pilot briefs, pilot report, CSV export, and JSON export.</p>
             </article>
             <article>
               <span>Release mode</span>
@@ -2187,7 +2275,7 @@
             </article>
             <article>
               <span>Next major gate</span>
-              <strong>v6.0</strong>
+              <strong>v6.1</strong>
               <p>Move toward secure backend foundation: account model, tenant data boundaries, server validation, audit logs, and production deployment planning.</p>
             </article>
           </div>
@@ -2204,8 +2292,8 @@
             </article>
             <article class="phase-card current">
               <span>Phase 3 / Current</span>
-              <h3>Closed-loop intelligence</h3>
-              <p>Learning records, AI Playbook Lab, reinforcement signals, governance controls, learning approval queue, and explainable local recommendation influence.</p>
+              <h3>Pilot proof operations</h3>
+              <p>Launch partners, pilot runs, success metrics, outcomes, learning records, governance controls, and explainable local recommendation influence.</p>
             </article>
             <article class="phase-card next">
               <span>Phase 4 / Next</span>
@@ -2221,7 +2309,7 @@
           <div class="release-ledger">
             <div>
               <strong>Recent release trail</strong>
-              <span>v5.7 Demo Proof -> v5.8 Value Proof -> v5.9 Launch Partners</span>
+              <span>v5.8 Value Proof -> v5.9 Launch Partners -> v6.0 Pilot Ops</span>
             </div>
             <a href="#roadmap">Open roadmap</a>
           </div>
@@ -2398,8 +2486,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=5.9"></script>
-    <script src="back-to-top.js?v=5.9.1"></script>
-    <script src="app.js?v=5.9.1"></script>
+    <script src="catalog.js?v=6.0"></script>
+    <script src="back-to-top.js?v=6.0"></script>
+    <script src="app.js?v=6.0"></script>
   </body>
 </html>
