@@ -1,4 +1,4 @@
-# InduScout v6.0 Launch Checklist
+# InduScout v6.1 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -97,6 +97,9 @@ Use this checklist after each public GitHub Pages upload.
 - Copy the integration brief and export Integration JSON; confirm future endpoint contracts, data boundaries, event stream preview, and no-live-API warning are included.
 - Open SaaS Gate and confirm SaaS readiness, backend gates, required backend work, blockers, gate cards, status labels, owners, checks, and backend migration sequence render.
 - Copy the SaaS gate brief and export SaaS Gate JSON; confirm identity/RBAC, tenant data model, API sandbox, audit logs, privacy, learning governance, commercial evidence, operations, and migration sequence are included.
+- Open SaaS Plan and confirm foundation readiness, controls design-ready, open blockers, pilot proof, foundation form, control matrix, and backend build sequence render.
+- Change identity/RBAC, tenant data, audit, operations, learning boundary, backend target, owner, date, and notes; confirm readiness and status update locally.
+- Copy the foundation brief and export Foundation JSON; confirm owner/date/notes, control matrix, SaaS gate, governance, pilot ops, and operating boundary are included.
 - Open Pilot and confirm pilot readiness, pilot card count, catalog base, proof signals, pilot cards, card outputs, and pilot operating plan render.
 - Copy the pilot brief and export Pilot Pack JSON; confirm pilot scope, buyer onboarding, workflow proof, data room, success metrics, feedback loop, partner/API story, pilot boundaries, and operating sequence are included.
 - Open Demo and confirm demo readiness, stakeholder count, proof signals, guided steps, stakeholder cards, guided demo flow, and objection handling render.
@@ -109,8 +112,8 @@ Use this checklist after each public GitHub Pages upload.
 - Open Pilot Ops and confirm pilot ops readiness, pilot run count, completed proof, open risks, pilot form, and empty state or saved pilot cards render.
 - Save one pilot run linked to a launch partner, load it back into the form, copy the pilot brief, copy the pilot report, export CSV, export JSON, then remove the saved pilot.
 - Export a session JSON, import it, and confirm saved pilot runs are restored.
-- Click the top `v6.0` tab and confirm the Version & Build Phases section opens.
-- Confirm the Build Phases tracker shows current live build v6.0, release mode, v6.1 next gate, completed phases, current pilot proof operations, governed SaaS foundation, and future network learning layer.
+- Click the top `v6.1` tab and confirm the Version & Build Phases section opens.
+- Confirm the Build Phases tracker shows current live build v6.1, release mode, v6.2 next gate, completed pilot proof operations, current governed SaaS foundation, and future network learning layer.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.
@@ -172,5 +175,5 @@ Use this checklist after each public GitHub Pages upload.
 - Add richer regional availability notes.
 - Build supplier submission review rules.
 - Grow Supplier Intake into a governed review workflow before public supplier submissions.
-- Use the v6.0 Pilot Ops Board for curated stakeholder walkthroughs, then convert partner, pilot, demo, and value feedback into secure backend priorities.
+- Use the v6.1 Secure SaaS Foundation Planner for curated stakeholder walkthroughs, then convert partner, pilot, demo, value, and security feedback into secure backend priorities.
 - Plan backend search only after static catalog workflow is stable.

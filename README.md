@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v6.0 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v6.0 adds a Pilot Ops Board that turns launch partner interest into controlled pilot runs with owners, success metrics, risk, outcomes, copyable pilot briefs, and exportable evidence before any SaaS account system, live API, shared storage, or network-learning layer exists.
+This v6.1 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v6.1 adds a Secure SaaS Foundation Planner that turns backend ambition into visible controls for identity, tenant data, audit logs, operations, learning boundaries, target architecture, copyable security foundation briefs, and exportable planning evidence before any SaaS account system, live API, shared storage, or network-learning layer exists.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -65,7 +65,8 @@ This v6.0 public beta is still static and lightweight, but it already demonstrat
 - Value Proof Board with value readiness score, quoted-value signal, accepted and pipeline savings summary, commercial proof cards, buyer value path, evidence posture notes, copyable value brief, and JSON export.
 - Launch Partner Pipeline with partner candidate qualification, pilot lane tracking, status and fit scoring, copyable outreach, copyable pipeline report, CSV export, and JSON export.
 - Pilot Ops Board with partner-linked pilot runs, stages, owners, start/review dates, success metrics, risk tracking, outcomes, copyable pilot briefs, copyable pilot report, CSV export, and JSON export.
-- Version tab and Build Phases tracker with current live build, public beta mode, next major gate, completed phases, current closed-loop intelligence phase, governed SaaS foundation, and future network learning path.
+- Secure SaaS Foundation Planner with identity/RBAC maturity, tenant data model maturity, audit logging maturity, operations readiness, learning-boundary planning, backend target, owner/date/notes, control matrix, copyable foundation brief, and JSON export.
+- Version tab and Build Phases tracker with current live build, public beta mode, next major gate, completed procurement and pilot-proof phases, current governed SaaS foundation phase, and future network learning path.
 - Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
 - Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.
 - Security baseline with session import size checks, sanitized imported records, safe external-link handling, spreadsheet formula-injection protection, and safer downloaded filenames.
@@ -74,7 +75,7 @@ This v6.0 public beta is still static and lightweight, but it already demonstrat
 - Product detail RFQ drawer includes a Track quote action that opens the selected product in the quote form.
 - Copyable product data update/report request.
 - Browser-saved buyer notes for each product.
-- Save/load session desk for project profile, spec match requirements, alternate review setup, substitution approval setup, landed cost scenario, negotiation plan, savings register, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, filters, shortlist, compare list, source intake, quote records, supplier replies, and notes, with JSON export/import for moving work between browsers or machines.
+- Save/load session desk for project profile, spec match requirements, alternate review setup, substitution approval setup, landed cost scenario, negotiation plan, savings register, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, SaaS foundation plan, filters, shortlist, compare list, source intake, quote records, supplier replies, and notes, with JSON export/import for moving work between browsers or machines.
 - Saved missing-product requests are included in session JSON export/import.
 - Compare desk for up to four selected products.
 - Shortlist drawer with exportable RFQ-style summary.
@@ -153,7 +154,7 @@ InduScout is a discovery and procurement workflow aid. Buyers must verify pricin
 
 ## Security And Privacy Note
 
-The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, no live API endpoints, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, tenant admin previews, integration blueprint previews, SaaS readiness gate previews, pilot launch pack previews, demo proof pack previews, and sessions are stored locally in the user's browser unless exported by the user.
+The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, no live API endpoints, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, tenant admin previews, integration blueprint previews, SaaS readiness gate previews, SaaS foundation planner previews, pilot launch pack previews, demo proof pack previews, and sessions are stored locally in the user's browser unless exported by the user.
 
 - Do not enter confidential tender data, passwords, access tokens, payment details, or sensitive personal data into the public beta.
 - Session JSON import is limited and sanitized before it is loaded into the app.

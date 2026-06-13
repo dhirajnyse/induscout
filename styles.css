@@ -21,12 +21,17 @@ html {
   scroll-behavior: smooth;
 }
 
+[id] {
+  scroll-margin-top: 96px;
+}
+
 body {
   margin: 0;
   color: var(--ink);
   background: var(--soft);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.5;
+  overflow-x: hidden;
 }
 
 a {
@@ -527,6 +532,7 @@ h1 {
 .tenant-admin-band,
 .integration-band,
 .saas-gate-band,
+.foundation-band,
 .pilot-pack-band,
 .demo-proof-band,
 .inbox-band,
@@ -4266,6 +4272,12 @@ input[type="checkbox"] {
   grid-template-columns: 160px minmax(0, 1fr);
 }
 
+.tenant-audit-event strong,
+.integration-event strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .saas-gate-step,
 .pilot-pack-step,
 .demo-proof-step {
@@ -4324,6 +4336,258 @@ input[type="checkbox"] {
   margin-top: 8px;
   color: var(--teal);
   font-weight: 900;
+}
+
+.foundation-band {
+  background: linear-gradient(180deg, #f8fbfb 0%, #ffffff 100%);
+  border-bottom: 1px solid var(--line);
+}
+
+.foundation-console {
+  display: grid;
+  gap: 18px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.foundation-summary,
+.foundation-grid,
+.foundation-matrix,
+.foundation-steps {
+  display: grid;
+  gap: 14px;
+}
+
+.foundation-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.foundation-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 18px;
+}
+
+.foundation-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.foundation-matrix {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.foundation-steps {
+  gap: 10px;
+}
+
+.foundation-summary article,
+.foundation-form,
+.foundation-card,
+.foundation-roadmap,
+.foundation-step {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
+}
+
+.foundation-summary article,
+.foundation-card,
+.foundation-step {
+  min-width: 0;
+  padding: 16px;
+}
+
+.foundation-summary article {
+  display: grid;
+  gap: 7px;
+}
+
+.foundation-summary span,
+.foundation-form-head span,
+.foundation-card span,
+.foundation-roadmap span,
+.foundation-step span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.foundation-summary article > span,
+.foundation-card > div:first-child span,
+.foundation-roadmap span {
+  color: var(--teal);
+}
+
+.foundation-summary strong {
+  font-size: 1.5rem;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.foundation-summary small,
+.foundation-card p,
+.foundation-step p,
+.foundation-form-head span {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.foundation-form {
+  overflow: hidden;
+}
+
+.foundation-form-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.foundation-form-head > div:first-child,
+.foundation-roadmap > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.foundation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.foundation-actions button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+.foundation-actions button:first-child {
+  color: #ffffff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+}
+
+.foundation-grid label,
+.foundation-form .note-field {
+  display: grid;
+  gap: 7px;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.foundation-grid select,
+.foundation-grid input,
+.foundation-form textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+.foundation-form .note-field {
+  margin: 0 18px 18px;
+}
+
+.foundation-form textarea {
+  resize: vertical;
+}
+
+.foundation-card {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  border-top: 5px solid var(--amber);
+}
+
+.foundation-card.ready {
+  border-top-color: var(--green);
+}
+
+.foundation-card.review {
+  border-top-color: var(--teal);
+}
+
+.foundation-card.blocked {
+  border-top-color: #ef4444;
+}
+
+.foundation-card > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.foundation-card > div:first-child strong {
+  font-size: 1.45rem;
+}
+
+.foundation-card h3 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.foundation-card p,
+.foundation-step p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.foundation-card small {
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.foundation-card ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+  font-size: 0.84rem;
+}
+
+.foundation-roadmap {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.foundation-step {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  background: #f8fafc;
+}
+
+.foundation-step > span {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: #ffffff;
+  background: var(--ink);
+  border-radius: 50%;
+}
+
+.foundation-step strong {
+  display: block;
+  margin-bottom: 4px;
 }
 
 .value-proof-band {
@@ -9770,6 +10034,10 @@ footer a {
   .saas-gate-summary,
   .saas-gate-grid,
   .saas-gate-sequence,
+  .foundation-summary,
+  .foundation-grid,
+  .foundation-matrix,
+  .foundation-steps,
   .pilot-pack-summary,
   .pilot-pack-grid,
   .pilot-pack-sequence,
@@ -9812,6 +10080,10 @@ footer a {
     grid-template-columns: 1fr;
   }
 
+  .foundation-layout {
+    grid-template-columns: 1fr;
+  }
+
   .privacy-actions {
     grid-template-columns: 1fr;
   }
@@ -9831,6 +10103,7 @@ footer a {
   .tenant-admin-toolbar,
   .integration-toolbar,
   .saas-gate-toolbar,
+  .foundation-form-head,
   .pilot-pack-toolbar,
   .demo-proof-toolbar,
   .value-proof-toolbar,
@@ -10057,7 +10330,8 @@ footer a {
   .partner-card-head,
   .pilot-ops-form-head,
   .pilot-ops-register > div:first-child,
-  .pilot-ops-card-head {
+  .pilot-ops-card-head,
+  .foundation-form-head {
     align-items: flex-start;
     grid-template-columns: 1fr;
   }
@@ -10090,6 +10364,7 @@ footer a {
   .pilot-ops-actions,
   .pilot-ops-export-actions,
   .pilot-ops-card-actions,
+  .foundation-actions,
   .quote-actions,
   .quote-export-actions,
   .quote-card-actions,
@@ -10151,6 +10426,7 @@ footer a {
   .pilot-ops-actions > *,
   .pilot-ops-export-actions > *,
   .pilot-ops-card-actions > *,
+  .foundation-actions > *,
   .quote-actions > *,
   .quote-export-actions > *,
   .quote-card-actions > *,
@@ -10254,6 +10530,11 @@ footer a {
   .saas-gate-summary,
   .saas-gate-grid,
   .saas-gate-sequence,
+  .foundation-summary,
+  .foundation-grid,
+  .foundation-layout,
+  .foundation-matrix,
+  .foundation-steps,
   .pilot-pack-summary,
   .pilot-pack-grid,
   .pilot-pack-sequence,

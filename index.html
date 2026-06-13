@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=6.0">
+    <link rel="stylesheet" href="styles.css?v=6.1">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -73,12 +73,13 @@
         <a href="#tenant-admin">Admin</a>
         <a href="#integrations">Integrations</a>
         <a href="#saas-gate">SaaS Gate</a>
+        <a href="#foundation">SaaS Plan</a>
         <a href="#pilot-pack">Pilot</a>
         <a href="#demo-proof">Demo</a>
         <a href="#value-proof">Value Proof</a>
         <a href="#partners">Partners</a>
         <a href="#pilot-ops">Pilot Ops</a>
-        <a class="version-tab" href="#version">v6.0</a>
+        <a class="version-tab" href="#version">v6.1</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -261,7 +262,7 @@
             <div class="session-tools" aria-label="Session tools">
               <div>
                 <strong>Session desk</strong>
-                <span id="sessionStatus">Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, governance policy, learning approvals, supplier inbox, and notes locally.</span>
+                <span id="sessionStatus">Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, governance policy, learning approvals, SaaS foundation plan, supplier inbox, and notes locally.</span>
               </div>
               <div class="session-actions">
                 <button class="ghost-button compact" id="saveSession" type="button">Save session</button>
@@ -1468,6 +1469,102 @@
         </div>
       </section>
 
+      <section class="foundation-band" id="foundation" aria-labelledby="foundation-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Secure SaaS Foundation</p>
+            <h2 id="foundation-title">Turn readiness into an accountable backend plan</h2>
+          </div>
+          <p>Map the controls InduScout needs before real accounts, tenant storage, APIs, audit logs, and governed learning move beyond this static public beta.</p>
+        </div>
+        <div class="foundation-console">
+          <div class="foundation-summary" id="foundationSummary"></div>
+          <form class="foundation-form" id="foundationForm">
+            <div class="foundation-form-head">
+              <div>
+                <strong>SaaS foundation plan</strong>
+                <span id="foundationStatus">Local-only planning model. No backend, accounts, shared storage, or live integrations are created here.</span>
+              </div>
+              <div class="foundation-actions">
+                <button type="button" id="saveFoundationPlan">Save plan</button>
+                <button class="ghost-button compact" type="button" id="copyFoundationBrief">Copy foundation brief</button>
+                <button class="ghost-button compact" type="button" id="exportFoundationJson">Export JSON</button>
+                <button class="ghost-button compact" type="button" id="resetFoundationPlan">Reset</button>
+              </div>
+            </div>
+            <div class="foundation-grid">
+              <label>Identity and RBAC
+                <select id="foundationIdentity">
+                  <option>Not started</option>
+                  <option>Role map drafted</option>
+                  <option>Organization accounts designed</option>
+                  <option>SSO-ready plan</option>
+                </select>
+              </label>
+              <label>Tenant data model
+                <select id="foundationDataModel">
+                  <option>Local-only beta</option>
+                  <option>Tenant schema drafted</option>
+                  <option>Encryption and backups planned</option>
+                  <option>Deletion workflow approved</option>
+                </select>
+              </label>
+              <label>Audit logging
+                <select id="foundationAudit">
+                  <option>Preview only</option>
+                  <option>Event taxonomy drafted</option>
+                  <option>Retention rules planned</option>
+                  <option>Immutable log design ready</option>
+                </select>
+              </label>
+              <label>Operations
+                <select id="foundationOps">
+                  <option>Not started</option>
+                  <option>Support owner named</option>
+                  <option>Incident runbook drafted</option>
+                  <option>Monitoring and backup plan ready</option>
+                </select>
+              </label>
+              <label>Learning boundary
+                <select id="foundationLearning">
+                  <option>Local only</option>
+                  <option>Tenant-only rules drafted</option>
+                  <option>Opt-in anonymization design</option>
+                  <option>DPA and consent review ready</option>
+                </select>
+              </label>
+              <label>Backend target
+                <select id="foundationDeployment">
+                  <option>Architecture discovery</option>
+                  <option>Private API sandbox</option>
+                  <option>Controlled tenant beta</option>
+                  <option>Production SaaS</option>
+                </select>
+              </label>
+              <label>Security owner
+                <input id="foundationOwner" type="text" placeholder="Security, platform, or compliance owner">
+              </label>
+              <label>Target review date
+                <input id="foundationTargetDate" type="date">
+              </label>
+            </div>
+            <label class="note-field">Backend foundation notes
+              <textarea id="foundationNotes" rows="4" placeholder="Capture architecture assumptions, tenant boundaries, data retention decisions, vendor reviews, legal/privacy notes, or pilot blockers"></textarea>
+            </label>
+          </form>
+          <div class="foundation-layout">
+            <div class="foundation-matrix" id="foundationMatrix"></div>
+            <article class="foundation-roadmap">
+              <div>
+                <span>Build sequence</span>
+                <strong>Recommended backend order</strong>
+              </div>
+              <div class="foundation-steps" id="foundationRoadmap"></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section class="pilot-pack-band" id="pilot-pack" aria-labelledby="pilot-pack-title">
         <div class="section-heading">
           <div>
@@ -2265,8 +2362,8 @@
           <div class="version-status">
             <article class="current">
               <span>Current live build</span>
-              <strong>v6.0</strong>
-              <p>Pilot Ops Board with controlled pilot runs, partner-linked workflows, success metrics, risk tracking, copyable pilot briefs, pilot report, CSV export, and JSON export.</p>
+              <strong>v6.1</strong>
+              <p>Secure SaaS Foundation Planner with identity, tenant data, audit, operations, learning-boundary, backend target, readiness, control matrix, copyable brief, and JSON export.</p>
             </article>
             <article>
               <span>Release mode</span>
@@ -2275,8 +2372,8 @@
             </article>
             <article>
               <span>Next major gate</span>
-              <strong>v6.1</strong>
-              <p>Move toward secure backend foundation: account model, tenant data boundaries, server validation, audit logs, and production deployment planning.</p>
+              <strong>v6.2</strong>
+              <p>Move toward private backend architecture: account model, tenant data boundaries, server validation, audit logs, and API sandbox planning.</p>
             </article>
           </div>
           <div class="phase-grid">
@@ -2290,15 +2387,15 @@
               <h3>Procurement workflow suite</h3>
               <p>Shortlist, RFQ pack, compare, quote tracker, landed cost, negotiation, savings, supplier inbox, scorecard, and buyer file.</p>
             </article>
-            <article class="phase-card current">
-              <span>Phase 3 / Current</span>
+            <article class="phase-card done">
+              <span>Phase 3 / Complete</span>
               <h3>Pilot proof operations</h3>
               <p>Launch partners, pilot runs, success metrics, outcomes, learning records, governance controls, and explainable local recommendation influence.</p>
             </article>
-            <article class="phase-card next">
-              <span>Phase 4 / Next</span>
+            <article class="phase-card current">
+              <span>Phase 4 / Current</span>
               <h3>Governed SaaS foundation</h3>
-              <p>Tenant admin controls, account roles, organizations, permissions, secure storage, APIs, source review queues, audit logs, and deletion workflows.</p>
+              <p>Tenant admin controls, account roles, organizations, permissions, secure storage planning, APIs, source review queues, audit logs, and deletion workflows.</p>
             </article>
             <article class="phase-card future">
               <span>Phase 5 / Future</span>
@@ -2309,7 +2406,7 @@
           <div class="release-ledger">
             <div>
               <strong>Recent release trail</strong>
-              <span>v5.8 Value Proof -> v5.9 Launch Partners -> v6.0 Pilot Ops</span>
+              <span>v5.9 Launch Partners -> v6.0 Pilot Ops -> v6.1 SaaS Foundation</span>
             </div>
             <a href="#roadmap">Open roadmap</a>
           </div>
@@ -2486,8 +2583,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=6.0"></script>
-    <script src="back-to-top.js?v=6.0"></script>
-    <script src="app.js?v=6.0"></script>
+    <script src="catalog.js?v=6.1"></script>
+    <script src="back-to-top.js?v=6.1"></script>
+    <script src="app.js?v=6.1"></script>
   </body>
 </html>

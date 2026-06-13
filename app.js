@@ -40,6 +40,7 @@ const state = {
   reinforcementSignals: loadReinforcementSignals(),
   governancePolicy: loadGovernancePolicy(),
   learningApprovals: loadLearningApprovals(),
+  backendFoundation: loadBackendFoundation(),
   activeProductId: null
 };
 
@@ -376,6 +377,24 @@ const els = {
   exportSaasGateJson: document.querySelector("#exportSaasGateJson"),
   saasGateGrid: document.querySelector("#saasGateGrid"),
   saasGateSequence: document.querySelector("#saasGateSequence"),
+  foundationSummary: document.querySelector("#foundationSummary"),
+  foundationStatus: document.querySelector("#foundationStatus"),
+  foundationForm: document.querySelector("#foundationForm"),
+  foundationIdentity: document.querySelector("#foundationIdentity"),
+  foundationDataModel: document.querySelector("#foundationDataModel"),
+  foundationAudit: document.querySelector("#foundationAudit"),
+  foundationOps: document.querySelector("#foundationOps"),
+  foundationLearning: document.querySelector("#foundationLearning"),
+  foundationDeployment: document.querySelector("#foundationDeployment"),
+  foundationOwner: document.querySelector("#foundationOwner"),
+  foundationTargetDate: document.querySelector("#foundationTargetDate"),
+  foundationNotes: document.querySelector("#foundationNotes"),
+  saveFoundationPlan: document.querySelector("#saveFoundationPlan"),
+  copyFoundationBrief: document.querySelector("#copyFoundationBrief"),
+  exportFoundationJson: document.querySelector("#exportFoundationJson"),
+  resetFoundationPlan: document.querySelector("#resetFoundationPlan"),
+  foundationMatrix: document.querySelector("#foundationMatrix"),
+  foundationRoadmap: document.querySelector("#foundationRoadmap"),
   pilotPackSummary: document.querySelector("#pilotPackSummary"),
   pilotPackStatus: document.querySelector("#pilotPackStatus"),
   copyPilotPackBrief: document.querySelector("#copyPilotPackBrief"),
@@ -574,6 +593,8 @@ function init() {
   renderTenantAdmin();
   renderIntegrationBlueprint();
   renderSaasGate();
+  hydrateFoundationControls();
+  renderFoundationPlanner();
   renderPilotPack();
   renderDemoProofPack();
   renderValueProofPack();
@@ -585,6 +606,7 @@ function init() {
   renderSupplierInbox();
   renderSupplierScorecard();
   render();
+  setupHashNavigation();
 }
 
 function hydrateFromUrl() {
@@ -1335,6 +1357,7 @@ function wireEvents() {
       renderTenantAdmin();
       renderIntegrationBlueprint();
       renderSaasGate();
+      renderFoundationPlanner();
       renderPilotPack();
       renderDemoProofPack();
       renderValueProofPack();
@@ -1381,6 +1404,46 @@ function wireEvents() {
   }
   if (els.exportSaasGateJson) {
     els.exportSaasGateJson.addEventListener("click", exportSaasGateJson);
+  }
+  foundationControlInputs().forEach((input) => {
+    input.addEventListener("change", () => {
+      state.backendFoundation = foundationPlanFromFields();
+      saveBackendFoundation();
+      renderFoundationPlanner();
+    });
+  });
+  if (els.foundationOwner) {
+    els.foundationOwner.addEventListener("input", () => {
+      state.backendFoundation = foundationPlanFromFields();
+      saveBackendFoundation();
+      renderFoundationPlanner();
+    });
+  }
+  if (els.foundationTargetDate) {
+    els.foundationTargetDate.addEventListener("change", () => {
+      state.backendFoundation = foundationPlanFromFields();
+      saveBackendFoundation();
+      renderFoundationPlanner();
+    });
+  }
+  if (els.foundationNotes) {
+    els.foundationNotes.addEventListener("input", () => {
+      state.backendFoundation = foundationPlanFromFields();
+      saveBackendFoundation();
+      renderFoundationPlanner();
+    });
+  }
+  if (els.saveFoundationPlan) {
+    els.saveFoundationPlan.addEventListener("click", saveFoundationPlanFromForm);
+  }
+  if (els.copyFoundationBrief) {
+    els.copyFoundationBrief.addEventListener("click", copyFoundationBrief);
+  }
+  if (els.exportFoundationJson) {
+    els.exportFoundationJson.addEventListener("click", exportFoundationJson);
+  }
+  if (els.resetFoundationPlan) {
+    els.resetFoundationPlan.addEventListener("click", resetFoundationPlan);
   }
   if (els.copyPilotPackBrief) {
     els.copyPilotPackBrief.addEventListener("click", copyPilotPackBrief);
@@ -1801,6 +1864,7 @@ function render() {
   renderTenantAdmin();
   renderIntegrationBlueprint();
   renderSaasGate();
+  renderFoundationPlanner();
   renderPilotPack();
   renderDemoProofPack();
   renderValueProofPack();
@@ -1825,6 +1889,48 @@ function render() {
   }
 
   els.results.innerHTML = matches.map(productTemplate).join("");
+}
+
+function setupHashNavigation() {
+  window.addEventListener("hashchange", () => queueHashScroll({ smooth: true }));
+  window.addEventListener("load", () => queueHashScroll());
+  queueHashScroll();
+}
+
+function queueHashScroll(options = {}) {
+  if (!window.location.hash || window.location.hash === "#") {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => scrollToCurrentHash(options));
+  });
+  [120, 360, 900, 1600].forEach((delay) => {
+    window.setTimeout(() => scrollToCurrentHash(options), delay);
+  });
+}
+
+function scrollToCurrentHash(options = {}) {
+  if (!window.location.hash || window.location.hash === "#") {
+    return;
+  }
+
+  let targetId = window.location.hash.slice(1);
+  try {
+    targetId = decodeURIComponent(targetId);
+  } catch {
+    // Keep the raw hash when decoding fails.
+  }
+
+  const target = document.getElementById(targetId);
+  if (!target) {
+    return;
+  }
+
+  target.scrollIntoView({
+    behavior: options.smooth ? "smooth" : "auto",
+    block: "start"
+  });
 }
 
 function matchesFilters(product) {
@@ -9199,6 +9305,7 @@ function governanceData() {
     policy,
     counts,
     readinessScore,
+    guardrailScore: readinessScore,
     readinessLabel: governanceReadinessLabel(readinessScore),
     totalSignals,
     sensitiveCount,
@@ -9874,6 +9981,7 @@ function aiLoopData() {
     topType,
     localEvidence,
     influenceScore,
+    readiness: influenceScore,
     statusLabel: aiLoopStatusLabel(influenceScore),
     networkAllowed,
     gatedSignals: summary.needsReview + summary.blocked,
@@ -10584,7 +10692,7 @@ function integrationBriefText() {
   const controls = integrationControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.status} - ${control.detail}`).join("\n");
   const events = integrationEvents(data).map((event, index) => `${index + 1}. ${event[0]} [${event[2]}] - ${event[1]}`).join("\n");
 
-  return `InduScout v6.0 API and integration blueprint
+  return `InduScout v6.1 API and integration blueprint
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10606,7 +10714,7 @@ Event stream preview:
 ${events}
 
 Important boundary:
-InduScout v6.0 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
+InduScout v6.1 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
 }
 
 async function copyIntegrationBrief() {
@@ -10797,7 +10905,7 @@ function saasGateBriefText() {
   const gates = saasGateCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Owner: ${card.owner}. ${card.detail}`).join("\n");
   const sequence = saasGateSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v6.0 SaaS readiness gate
+  return `InduScout v6.1 SaaS readiness gate
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10816,7 +10924,7 @@ Backend migration sequence:
 ${sequence}
 
 Operating rule:
-InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v6.0 is a planning and readiness simulator, not a live SaaS backend.`;
+InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v6.1 is a planning and readiness simulator, not a live SaaS backend.`;
 }
 
 async function copySaasGateBrief() {
@@ -10839,6 +10947,363 @@ function exportSaasGateJson() {
   downloadFile(
     `InduScout-SaaS-Gate-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), saasGate: { generatedAt: new Date().toISOString(), data, gates: saasGateCards(data), sequence: saasGateSequence(data), generatedText: saasGateBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function defaultBackendFoundation() {
+  return {
+    identity: "Not started",
+    dataModel: "Local-only beta",
+    audit: "Preview only",
+    ops: "Not started",
+    learning: "Local only",
+    deployment: "Architecture discovery",
+    owner: "",
+    targetDate: "",
+    notes: ""
+  };
+}
+
+function foundationControlInputs() {
+  return [
+    els.foundationIdentity,
+    els.foundationDataModel,
+    els.foundationAudit,
+    els.foundationOps,
+    els.foundationLearning,
+    els.foundationDeployment
+  ].filter(Boolean);
+}
+
+function hydrateFoundationControls(plan = state.backendFoundation) {
+  if (!els.foundationForm) {
+    return;
+  }
+
+  const sanitized = sanitizeBackendFoundation(plan);
+  els.foundationIdentity.value = sanitized.identity;
+  els.foundationDataModel.value = sanitized.dataModel;
+  els.foundationAudit.value = sanitized.audit;
+  els.foundationOps.value = sanitized.ops;
+  els.foundationLearning.value = sanitized.learning;
+  els.foundationDeployment.value = sanitized.deployment;
+  els.foundationOwner.value = sanitized.owner;
+  els.foundationTargetDate.value = sanitized.targetDate;
+  els.foundationNotes.value = sanitized.notes;
+}
+
+function foundationPlanFromFields() {
+  return sanitizeBackendFoundation({
+    identity: els.foundationIdentity?.value,
+    dataModel: els.foundationDataModel?.value,
+    audit: els.foundationAudit?.value,
+    ops: els.foundationOps?.value,
+    learning: els.foundationLearning?.value,
+    deployment: els.foundationDeployment?.value,
+    owner: els.foundationOwner?.value,
+    targetDate: els.foundationTargetDate?.value,
+    notes: els.foundationNotes?.value
+  });
+}
+
+function foundationScoreFor(area, value) {
+  const scores = {
+    identity: {
+      "Not started": 20,
+      "Role map drafted": 45,
+      "Organization accounts designed": 72,
+      "SSO-ready plan": 88
+    },
+    dataModel: {
+      "Local-only beta": 22,
+      "Tenant schema drafted": 50,
+      "Encryption and backups planned": 74,
+      "Deletion workflow approved": 90
+    },
+    audit: {
+      "Preview only": 20,
+      "Event taxonomy drafted": 48,
+      "Retention rules planned": 72,
+      "Immutable log design ready": 88
+    },
+    ops: {
+      "Not started": 18,
+      "Support owner named": 43,
+      "Incident runbook drafted": 68,
+      "Monitoring and backup plan ready": 86
+    },
+    learning: {
+      "Local only": 42,
+      "Tenant-only rules drafted": 64,
+      "Opt-in anonymization design": 78,
+      "DPA and consent review ready": 90
+    },
+    deployment: {
+      "Architecture discovery": 38,
+      "Private API sandbox": 64,
+      "Controlled tenant beta": 80,
+      "Production SaaS": 92
+    }
+  };
+  return scores[area]?.[value] || 20;
+}
+
+function foundationStatusLabel(score, blockers) {
+  if (score >= 84 && blockers === 0) return "Ready for architecture review";
+  if (score >= 72) return "Strong planning base";
+  if (score >= 58) return "Needs security design depth";
+  return "Early foundation draft";
+}
+
+function foundationPlanData() {
+  const plan = sanitizeBackendFoundation(state.backendFoundation);
+  const scores = {
+    identity: foundationScoreFor("identity", plan.identity),
+    dataModel: foundationScoreFor("dataModel", plan.dataModel),
+    audit: foundationScoreFor("audit", plan.audit),
+    ops: foundationScoreFor("ops", plan.ops),
+    learning: foundationScoreFor("learning", plan.learning),
+    deployment: foundationScoreFor("deployment", plan.deployment)
+  };
+  const maturityAverage = Math.round(Object.values(scores).reduce((sum, score) => sum + score, 0) / Object.values(scores).length);
+  const saas = saasGateData();
+  const governance = governanceData();
+  const pilot = pilotOpsSummaryData();
+  const ownerBoost = plan.owner ? 3 : 0;
+  const reviewBoost = plan.targetDate ? 3 : 0;
+  const notesBoost = plan.notes ? 2 : 0;
+  const readiness = Math.min(98, Math.round(
+    maturityAverage * 0.46 +
+    saas.readiness * 0.25 +
+    governance.guardrailScore * 0.14 +
+    pilot.opsReadiness * 0.08 +
+    ownerBoost +
+    reviewBoost +
+    notesBoost
+  ));
+  const controls = foundationControlCards({ plan, scores, saas, governance, pilot, readiness });
+  const blockers = controls.filter((control) => control.status === "Blocked").length;
+  const designReady = controls.filter((control) => control.score >= 72).length;
+  return {
+    plan,
+    scores,
+    maturityAverage,
+    saas,
+    governance,
+    pilot,
+    readiness,
+    blockers,
+    designReady,
+    controls,
+    status: foundationStatusLabel(readiness, blockers)
+  };
+}
+
+function foundationControlCards(data = foundationPlanData()) {
+  const { plan, scores, saas, governance, pilot } = data;
+  const statusFor = (score) => score >= 82 ? "Ready to design" : score >= 68 ? "Needs detail" : score >= 45 ? "Architecture draft" : "Blocked";
+  return [
+    {
+      title: "Identity and access",
+      status: statusFor(scores.identity),
+      score: scores.identity,
+      owner: plan.owner || "Security owner TBC",
+      detail: "Define organizations, workspaces, user roles, invite flow, session expiry, and server-side authorization before shared buyer data exists.",
+      checks: ["No client-only permissions", "Admin-managed user lifecycle", "Buyer, reviewer, supplier, and platform roles"]
+    },
+    {
+      title: "Tenant data boundary",
+      status: statusFor(scores.dataModel),
+      score: scores.dataModel,
+      owner: "Backend architecture",
+      detail: "Design tenant-scoped project, quote, supplier, pilot, learning, export, and audit records with deletion and retention rules.",
+      checks: ["Tenant ID on private records", "Encrypted storage plan", "Deletion and retention workflow"]
+    },
+    {
+      title: "Audit and evidence trail",
+      status: statusFor(scores.audit),
+      score: scores.audit,
+      owner: "Security and compliance",
+      detail: "Convert local export, approval, learning, policy, and admin events into persistent audit records suitable for buyer review.",
+      checks: ["Event taxonomy", "Retention policy", "Tamper-resistant logs"]
+    },
+    {
+      title: "API validation layer",
+      status: saas.integration.readiness >= 74 && scores.deployment >= 64 ? "Ready to scope" : "Needs sandbox design",
+      score: Math.round((saas.integration.readiness + scores.deployment) / 2),
+      owner: "Platform engineering",
+      detail: "Move from static blueprints to a private sandbox with auth, validation, rate limits, mock supplier data, and safe test keys.",
+      checks: ["Input validation", "Rate limits", "No production secrets in client code"]
+    },
+    {
+      title: "Operations and resilience",
+      status: statusFor(scores.ops),
+      score: scores.ops,
+      owner: plan.owner || "Operations owner TBC",
+      detail: "Prepare support ownership, incident response, monitoring, backups, recovery, abuse controls, and launch communications.",
+      checks: ["Incident runbook", "Monitoring and alerting", "Backup and restore test"]
+    },
+    {
+      title: "Governed learning boundary",
+      status: governance.guardrailScore >= 80 && scores.learning >= 64 ? "Governed preview" : "Needs policy depth",
+      score: Math.round((governance.guardrailScore + scores.learning) / 2),
+      owner: "AI governance",
+      detail: "Keep learning tenant-safe until consent, anonymization, approval queue, data processing terms, and audit traces are ready.",
+      checks: ["Tenant-only default", "Opt-in network learning", "Blocked signals stay gated"]
+    },
+    {
+      title: "Pilot evidence loop",
+      status: pilot.total && pilot.opsReadiness >= 60 ? "Evidence forming" : "Needs pilot proof",
+      score: pilot.total ? pilot.opsReadiness : 44,
+      owner: "Product and pilot lead",
+      detail: "Use controlled pilots to decide which backend records, permissions, exports, and supplier workflows deserve production build priority.",
+      checks: ["Pilot owner", "Success metric", "Outcome and risk captured"]
+    }
+  ];
+}
+
+function foundationRoadmapSteps(data = foundationPlanData()) {
+  return [
+    ["01", "Security ownership", `Assign ${data.plan.owner || "a named owner"} and agree the backend review date ${data.plan.targetDate || "before private beta"}.`],
+    ["02", "Tenant model", "Write the organization, workspace, role, invite, project, quote, supplier, learning, export, and audit entity map."],
+    ["03", "Private sandbox", "Build a non-public API sandbox with validation, test tokens, mock data, and rate limits before storing real buyer data."],
+    ["04", "Audit and deletion", "Implement export logs, approval logs, policy logs, retention windows, deletion requests, and restore testing."],
+    ["05", "Controlled beta", `Use ${data.pilot.total || "curated"} pilot runs and SaaS Gate blockers to decide whether to open tenant accounts.`]
+  ];
+}
+
+function renderFoundationPlanner() {
+  if (!els.foundationSummary || !els.foundationMatrix || !els.foundationRoadmap) {
+    return;
+  }
+
+  const data = foundationPlanData();
+  els.foundationSummary.innerHTML = [
+    tenantSummaryTemplate("Foundation readiness", `${data.readiness}%`, data.status),
+    tenantSummaryTemplate("Controls design-ready", data.designReady, `${data.controls.length} backend controls`),
+    tenantSummaryTemplate("Open blockers", data.blockers, data.blockers ? "Must clear before beta accounts" : "No blocked controls"),
+    tenantSummaryTemplate("Pilot proof", data.pilot.total, `${data.pilot.completed} completed / ${data.pilot.active} active`)
+  ].join("");
+  if (els.foundationStatus) {
+    els.foundationStatus.textContent = `${data.status}. Local-only planning model: no backend, tenant storage, accounts, billing, or shared learning exists yet.`;
+  }
+  els.foundationMatrix.innerHTML = data.controls.map(foundationControlCardTemplate).join("");
+  els.foundationRoadmap.innerHTML = foundationRoadmapSteps(data).map(foundationStepTemplate).join("");
+}
+
+function foundationControlCardTemplate(control) {
+  const statusClass = control.status === "Blocked" ? "blocked" : control.score >= 82 ? "ready" : control.score >= 68 ? "review" : "draft";
+  return `
+    <article class="foundation-card ${statusClass}">
+      <div>
+        <span>${escapeHtml(control.status)}</span>
+        <strong>${escapeHtml(String(control.score))}</strong>
+      </div>
+      <h3>${escapeHtml(control.title)}</h3>
+      <p>${escapeHtml(control.detail)}</p>
+      <small>${escapeHtml(control.owner)}</small>
+      <ul>${control.checks.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </article>
+  `;
+}
+
+function foundationStepTemplate(step) {
+  const [number, title, detail] = step;
+  return `
+    <article class="foundation-step">
+      <span>${escapeHtml(number)}</span>
+      <div>
+        <strong>${escapeHtml(title)}</strong>
+        <p>${escapeHtml(detail)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function saveFoundationPlanFromForm() {
+  state.backendFoundation = foundationPlanFromFields();
+  saveBackendFoundation();
+  renderFoundationPlanner();
+  if (els.foundationStatus) {
+    const data = foundationPlanData();
+    els.foundationStatus.textContent = `Saved SaaS foundation plan. Readiness ${data.readiness}%: ${data.status}.`;
+  }
+}
+
+function resetFoundationPlan() {
+  state.backendFoundation = defaultBackendFoundation();
+  saveBackendFoundation();
+  hydrateFoundationControls();
+  renderFoundationPlanner();
+  if (els.foundationStatus) {
+    els.foundationStatus.textContent = "SaaS foundation plan reset to the public beta baseline.";
+  }
+}
+
+function foundationBriefText() {
+  state.backendFoundation = foundationPlanFromFields();
+  const data = foundationPlanData();
+  const controls = data.controls.map((control, index) => `${index + 1}. ${control.title}: ${control.status}, score ${control.score}. Owner: ${control.owner}. ${control.detail}`).join("\n");
+  const sequence = foundationRoadmapSteps(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
+
+  return `InduScout v6.1 Secure SaaS Foundation Brief
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Security owner: ${data.plan.owner || "TBC"}
+Target review date: ${data.plan.targetDate || "TBC"}
+Foundation readiness: ${data.readiness}% (${data.status})
+Open blockers: ${data.blockers}
+Design-ready controls: ${data.designReady}/${data.controls.length}
+SaaS gate readiness: ${data.saas.readiness}%
+Governance score: ${data.governance.guardrailScore}%
+Pilot ops readiness: ${data.pilot.opsReadiness}%
+
+Current foundation settings:
+- Identity and RBAC: ${data.plan.identity}
+- Tenant data model: ${data.plan.dataModel}
+- Audit logging: ${data.plan.audit}
+- Operations: ${data.plan.ops}
+- Learning boundary: ${data.plan.learning}
+- Backend target: ${data.plan.deployment}
+
+Backend control matrix:
+${controls}
+
+Recommended build sequence:
+${sequence}
+
+Foundation notes:
+${data.plan.notes || "No foundation notes captured yet."}
+
+Operating boundary:
+InduScout v6.1 is still a static public beta. Do not store confidential tender data, payment details, credentials, regulated personal data, private contracts, or sensitive supplier commercials in the public beta. Backend work should begin only after identity, tenant isolation, server-side validation, audit logs, privacy controls, deletion workflows, backups, monitoring, incident response, and learning governance are designed and tested.`;
+}
+
+async function copyFoundationBrief() {
+  const text = foundationBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyFoundationBrief) {
+      els.copyFoundationBrief.textContent = "Foundation brief copied";
+      setTimeout(() => {
+        els.copyFoundationBrief.textContent = "Copy foundation brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy foundation brief", text);
+  }
+}
+
+function exportFoundationJson() {
+  state.backendFoundation = foundationPlanFromFields();
+  saveBackendFoundation();
+  const data = foundationPlanData();
+  downloadFile(
+    `InduScout-SaaS-Foundation-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), saasFoundation: { generatedAt: new Date().toISOString(), data, controls: data.controls, roadmap: foundationRoadmapSteps(data), generatedText: foundationBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -11016,7 +11481,7 @@ function pilotPackBriefText() {
   const cards = pilotPackCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Output: ${card.output}. ${card.detail}`).join("\n");
   const sequence = pilotPackSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v6.0 Pilot Launch Pack
+  return `InduScout v6.1 Pilot Launch Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -11034,7 +11499,7 @@ Pilot operating plan:
 ${sequence}
 
 Boundary:
-InduScout v6.0 is suitable for curated public-beta pilot conversations, demos, buyer workflow validation, launch-partner qualification, and pilot ops tracking. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
+InduScout v6.1 is suitable for curated public-beta pilot conversations, demos, buyer workflow validation, launch-partner qualification, pilot ops tracking, and secure SaaS foundation planning. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
 }
 
 async function copyPilotPackBrief() {
@@ -11174,7 +11639,7 @@ function demoProofObjections(data = demoProofData()) {
     },
     {
       objection: "Where is the live backend or API?",
-      response: "The current release is intentionally static. v5.4-v6.0 show the integration, SaaS, pilot, demo, value-proof, launch-partner, and pilot-ops plans before shared data is introduced.",
+      response: "The current release is intentionally static. v5.4-v6.1 show the integration, SaaS, foundation, pilot, demo, value-proof, launch-partner, and pilot-ops plans before shared data is introduced.",
       proof: "Integration Blueprint, SaaS Gate, Security baseline, and Privacy Center."
     },
     {
@@ -11261,7 +11726,7 @@ function demoProofBriefText() {
   const sequence = demoProofSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
   const objections = demoProofObjections(data).map((item, index) => `${index + 1}. ${item.objection}\nResponse: ${item.response}\nProof: ${item.proof}`).join("\n\n");
 
-  return `InduScout v6.0 Demo and Stakeholder Proof Pack
+  return `InduScout v6.1 Demo and Stakeholder Proof Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -11283,7 +11748,7 @@ Objection handling:
 ${objections}
 
 Boundary:
-InduScout v6.0 is ready for guided stakeholder conversations, controlled public-beta demos, value-proof discussions, launch-partner outreach, and pilot ops review. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
+InduScout v6.1 is ready for guided stakeholder conversations, controlled public-beta demos, value-proof discussions, launch-partner outreach, pilot ops review, and backend foundation planning. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
 }
 
 async function copyDemoProofBrief() {
@@ -11533,7 +11998,7 @@ function valueProofBriefText() {
   const path = valueProofPath(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
   const evidence = valueProofEvidence(data).map((item, index) => `${index + 1}. ${item.title}: ${item.detail} Next: ${item.next}`).join("\n");
 
-  return `InduScout v6.0 Value Proof Board
+  return `InduScout v6.1 Value Proof Board
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -11561,7 +12026,7 @@ Evidence posture:
 ${evidence}
 
 Boundary:
-InduScout v6.0 is a public-beta value proof, launch-partner, pilot-ops, and RFQ workflow aid. Treat all savings, supplier, quote, partner-fit, and pilot outcome claims as buyer-controlled evidence that must be validated against current supplier documents, stock, pricing, compatibility, warranty path, and internal approval. Shared tenant data, live supplier integrations, confidential tender storage, billing, and network learning must wait for governed SaaS controls.`;
+InduScout v6.1 is a public-beta value proof, launch-partner, pilot-ops, SaaS-foundation, and RFQ workflow aid. Treat all savings, supplier, quote, partner-fit, and pilot outcome claims as buyer-controlled evidence that must be validated against current supplier documents, stock, pricing, compatibility, warranty path, and internal approval. Shared tenant data, live supplier integrations, confidential tender storage, billing, and network learning must wait for governed SaaS controls.`;
 }
 
 async function copyValueProofBrief() {
@@ -11945,7 +12410,7 @@ function launchPartnerReportText() {
     ? partners.map((partner, index) => `${index + 1}. ${partner.company} - ${partner.segment}, ${partner.status}, ${partner.fit}, score ${partner.score} (${partner.label}). Region: ${partner.region || "TBC"}. Pilot lane: ${partner.pilotLane || "TBC"}. Next: ${partner.nextDate || "TBC"}. Notes: ${partner.notes || "None"}`).join("\n")
     : "No launch partners saved yet.";
 
-  return `InduScout v6.0 Launch Partner Pipeline
+  return `InduScout v6.1 Launch Partner Pipeline
 Prepared on ${formatCopyDate()}
 
 Pipeline readiness: ${summary.pipelineReadiness}% (${summary.status})
@@ -12278,6 +12743,7 @@ function savePilotRunFromForm() {
   savePilotRuns();
   hydratePilotOpsForm(run);
   renderPilotOpsBoard();
+  renderFoundationPlanner();
   if (els.pilotOpsStatus) {
     els.pilotOpsStatus.textContent = `Saved ${run.lane}. Pilot score ${pilotRunScore(run)}.`;
   }
@@ -12302,6 +12768,7 @@ function removePilotRun(id) {
     hydratePilotOpsForm();
   }
   renderPilotOpsBoard();
+  renderFoundationPlanner();
   if (els.pilotOpsStatus && run) {
     els.pilotOpsStatus.textContent = `Removed ${run.lane} from the local pilot board.`;
   }
@@ -12323,6 +12790,7 @@ function clearPilotRuns() {
   savePilotRuns();
   hydratePilotOpsForm();
   renderPilotOpsBoard();
+  renderFoundationPlanner();
   if (els.pilotOpsStatus) {
     els.pilotOpsStatus.textContent = "Pilot ops board cleared locally.";
   }
@@ -12332,7 +12800,7 @@ function pilotRunBriefText(run = pilotRunSnapshot()) {
   const summary = pilotOpsSummaryData();
   const partner = run?.partnerId ? state.launchPartners.find((item) => item.id === run.partnerId) : null;
   const score = run ? pilotRunScore(run) : 0;
-  return `InduScout v6.0 Pilot Run Brief
+  return `InduScout v6.1 Pilot Run Brief
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -12416,7 +12884,7 @@ function pilotOpsReportText() {
     ? runs.map((run, index) => `${index + 1}. ${run.lane} - ${run.partnerName || "Partner TBC"}, ${run.stage}, score ${run.score} (${run.label}). Owner: ${run.owner || "TBC"}. Metric: ${run.successMetric || "TBC"}. Risk: ${run.risk}. Outcome: ${run.outcome || "None"}`).join("\n")
     : "No pilot runs saved yet.";
 
-  return `InduScout v6.0 Pilot Ops Board
+  return `InduScout v6.1 Pilot Ops Board
 Prepared on ${formatCopyDate()}
 
 Pilot ops readiness: ${summary.opsReadiness}% (${summary.status})
@@ -14259,7 +14727,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "6.0",
+    version: "6.1",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -14294,6 +14762,7 @@ function createSessionSnapshot() {
     reinforcementSignals: state.reinforcementSignals,
     governancePolicy: state.governancePolicy,
     learningApprovals: state.learningApprovals,
+    backendFoundation: state.backendFoundation,
     supplierReplies: state.supplierReplies
   };
 }
@@ -14340,6 +14809,7 @@ function applySession(session) {
     : state.reinforcementSignals;
   state.governancePolicy = sanitizeGovernancePolicy(session.governancePolicy || state.governancePolicy);
   state.learningApprovals = sanitizeLearningApprovals(session.learningApprovals || state.learningApprovals);
+  state.backendFoundation = sanitizeBackendFoundation(session.backendFoundation || state.backendFoundation);
   state.supplierReplies = Array.isArray(session.supplierReplies)
     ? session.supplierReplies.map(sanitizeSupplierReply).filter(Boolean).slice(0, 120)
     : state.supplierReplies;
@@ -14384,6 +14854,7 @@ function applySession(session) {
   saveReinforcementSignals();
   saveGovernancePolicy();
   saveLearningApprovals();
+  saveBackendFoundation();
   saveSupplierReplies();
   saveProjectProfile();
   saveSpecRequirements();
@@ -14411,6 +14882,8 @@ function applySession(session) {
   renderTenantAdmin();
   renderIntegrationBlueprint();
   renderSaasGate();
+  hydrateFoundationControls();
+  renderFoundationPlanner();
   renderPilotPack();
   renderDemoProofPack();
   renderValueProofPack();
@@ -14480,7 +14953,7 @@ function importSessionFile(event) {
 function setSessionStatus(message) {
   els.sessionStatus.textContent = message;
   setTimeout(() => {
-    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, governance policy, learning approvals, supplier inbox, and notes locally.";
+    els.sessionStatus.textContent = "Save project, filters, shortlist, spec, alternate, approval, quote, cost, negotiation, savings, learning, playbooks, signals, governance policy, learning approvals, SaaS foundation plan, supplier inbox, and notes locally.";
   }, 1800);
 }
 
@@ -16285,6 +16758,22 @@ function savePilotRuns() {
   }
 }
 
+function loadBackendFoundation() {
+  try {
+    return sanitizeBackendFoundation(JSON.parse(window.localStorage.getItem("induscoutBackendFoundation") || "{}"));
+  } catch {
+    return defaultBackendFoundation();
+  }
+}
+
+function saveBackendFoundation() {
+  try {
+    window.localStorage.setItem("induscoutBackendFoundation", JSON.stringify(state.backendFoundation));
+  } catch {
+    // Foundation planning is a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
 function loadQuoteRecords() {
   try {
     const saved = JSON.parse(window.localStorage.getItem("induscoutQuoteRecords") || "[]");
@@ -16537,6 +17026,32 @@ function sanitizePilotRun(record) {
     successMetric: cleanText(record.successMetric || "", 240),
     risk: allowedRisks.includes(record.risk) ? record.risk : "Low risk",
     outcome: cleanText(record.outcome || "", 1800),
+    notes: cleanText(record.notes || "", 2200)
+  };
+}
+
+function sanitizeBackendFoundation(record) {
+  const base = defaultBackendFoundation();
+  if (!record || typeof record !== "object") {
+    return base;
+  }
+
+  const identityOptions = ["Not started", "Role map drafted", "Organization accounts designed", "SSO-ready plan"];
+  const dataOptions = ["Local-only beta", "Tenant schema drafted", "Encryption and backups planned", "Deletion workflow approved"];
+  const auditOptions = ["Preview only", "Event taxonomy drafted", "Retention rules planned", "Immutable log design ready"];
+  const opsOptions = ["Not started", "Support owner named", "Incident runbook drafted", "Monitoring and backup plan ready"];
+  const learningOptions = ["Local only", "Tenant-only rules drafted", "Opt-in anonymization design", "DPA and consent review ready"];
+  const deploymentOptions = ["Architecture discovery", "Private API sandbox", "Controlled tenant beta", "Production SaaS"];
+
+  return {
+    identity: identityOptions.includes(record.identity) ? record.identity : base.identity,
+    dataModel: dataOptions.includes(record.dataModel) ? record.dataModel : base.dataModel,
+    audit: auditOptions.includes(record.audit) ? record.audit : base.audit,
+    ops: opsOptions.includes(record.ops) ? record.ops : base.ops,
+    learning: learningOptions.includes(record.learning) ? record.learning : base.learning,
+    deployment: deploymentOptions.includes(record.deployment) ? record.deployment : base.deployment,
+    owner: cleanText(record.owner || "", 180),
+    targetDate: cleanText(record.targetDate || "", 40),
     notes: cleanText(record.notes || "", 2200)
   };
 }
