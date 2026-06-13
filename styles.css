@@ -528,6 +528,7 @@ h1 {
 .integration-band,
 .saas-gate-band,
 .pilot-pack-band,
+.demo-proof-band,
 .inbox-band,
 .scorecard-band,
 .quality-band,
@@ -3763,7 +3764,8 @@ input[type="checkbox"] {
 .tenant-admin-band,
 .integration-band,
 .saas-gate-band,
-.pilot-pack-band {
+.pilot-pack-band,
+.demo-proof-band {
   background: #ffffff;
   border-bottom: 1px solid var(--line);
 }
@@ -3771,7 +3773,8 @@ input[type="checkbox"] {
 .tenant-admin-console,
 .integration-console,
 .saas-gate-console,
-.pilot-pack-console {
+.pilot-pack-console,
+.demo-proof-console {
   display: grid;
   gap: 18px;
   max-width: 1180px;
@@ -3789,7 +3792,10 @@ input[type="checkbox"] {
 .saas-gate-sequence,
 .pilot-pack-summary,
 .pilot-pack-grid,
-.pilot-pack-sequence {
+.pilot-pack-sequence,
+.demo-proof-summary,
+.demo-proof-grid,
+.demo-proof-sequence {
   display: grid;
   gap: 14px;
 }
@@ -3797,7 +3803,8 @@ input[type="checkbox"] {
 .tenant-admin-summary,
 .integration-summary,
 .saas-gate-summary,
-.pilot-pack-summary {
+.pilot-pack-summary,
+.demo-proof-summary {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
@@ -3825,8 +3832,13 @@ input[type="checkbox"] {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.demo-proof-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .saas-gate-sequence,
-.pilot-pack-sequence {
+.pilot-pack-sequence,
+.demo-proof-sequence {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
@@ -3849,7 +3861,13 @@ input[type="checkbox"] {
 .pilot-pack-toolbar,
 .pilot-pack-card,
 .pilot-pack-roadmap,
-.pilot-pack-step {
+.pilot-pack-step,
+.demo-proof-summary article,
+.demo-proof-toolbar,
+.demo-proof-card,
+.demo-proof-roadmap,
+.demo-proof-step,
+.demo-proof-objection {
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -3867,7 +3885,11 @@ input[type="checkbox"] {
 .saas-gate-step,
 .pilot-pack-summary article,
 .pilot-pack-card,
-.pilot-pack-step {
+.pilot-pack-step,
+.demo-proof-summary article,
+.demo-proof-card,
+.demo-proof-step,
+.demo-proof-objection {
   min-width: 0;
   padding: 16px;
 }
@@ -3875,7 +3897,8 @@ input[type="checkbox"] {
 .tenant-admin-summary article,
 .integration-summary article,
 .saas-gate-summary article,
-.pilot-pack-summary article {
+.pilot-pack-summary article,
+.demo-proof-summary article {
   display: grid;
   gap: 7px;
 }
@@ -3901,7 +3924,13 @@ input[type="checkbox"] {
 .pilot-pack-toolbar span,
 .pilot-pack-card span,
 .pilot-pack-roadmap span,
-.pilot-pack-step span {
+.pilot-pack-step span,
+.demo-proof-summary span,
+.demo-proof-toolbar span,
+.demo-proof-card span,
+.demo-proof-roadmap span,
+.demo-proof-step span,
+.demo-proof-objection span {
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 900;
@@ -3916,14 +3945,17 @@ input[type="checkbox"] {
 .saas-gate-summary article > span,
 .saas-gate-card > div:first-child span,
 .pilot-pack-summary article > span,
-.pilot-pack-card > div:first-child span {
+.pilot-pack-card > div:first-child span,
+.demo-proof-summary article > span,
+.demo-proof-card > div:first-child span {
   color: var(--teal);
 }
 
 .tenant-admin-summary strong,
 .integration-summary strong,
 .saas-gate-summary strong,
-.pilot-pack-summary strong {
+.pilot-pack-summary strong,
+.demo-proof-summary strong {
   font-size: 1.5rem;
   line-height: 1.05;
   overflow-wrap: anywhere;
@@ -3942,7 +3974,12 @@ input[type="checkbox"] {
 .saas-gate-step p,
 .pilot-pack-summary small,
 .pilot-pack-card p,
-.pilot-pack-step p {
+.pilot-pack-step p,
+.demo-proof-summary small,
+.demo-proof-card p,
+.demo-proof-step p,
+.demo-proof-objection p,
+.demo-proof-objection small {
   color: var(--muted);
   font-size: 0.84rem;
 }
@@ -3950,7 +3987,8 @@ input[type="checkbox"] {
 .tenant-admin-toolbar,
 .integration-toolbar,
 .saas-gate-toolbar,
-.pilot-pack-toolbar {
+.pilot-pack-toolbar,
+.demo-proof-toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
@@ -3961,7 +3999,8 @@ input[type="checkbox"] {
 .tenant-admin-toolbar > div:first-child,
 .integration-toolbar > div:first-child,
 .saas-gate-toolbar > div:first-child,
-.pilot-pack-toolbar > div:first-child {
+.pilot-pack-toolbar > div:first-child,
+.demo-proof-toolbar > div:first-child {
   display: grid;
   gap: 3px;
 }
@@ -3969,7 +4008,8 @@ input[type="checkbox"] {
 .tenant-admin-actions,
 .integration-actions,
 .saas-gate-actions,
-.pilot-pack-actions {
+.pilot-pack-actions,
+.demo-proof-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -3979,7 +4019,8 @@ input[type="checkbox"] {
 .tenant-admin-actions button:first-child,
 .integration-actions button:first-child,
 .saas-gate-actions button:first-child,
-.pilot-pack-actions button:first-child {
+.pilot-pack-actions button:first-child,
+.demo-proof-actions button:first-child {
   min-height: 38px;
   padding: 0 18px;
   color: #ffffff;
@@ -3994,7 +4035,8 @@ input[type="checkbox"] {
 .integration-endpoint-card,
 .integration-control-card,
 .saas-gate-card,
-.pilot-pack-card {
+.pilot-pack-card,
+.demo-proof-card {
   display: grid;
   align-content: start;
   gap: 9px;
@@ -4041,8 +4083,25 @@ input[type="checkbox"] {
   border-top-color: #ef4444;
 }
 
+.demo-proof-card {
+  border-top-color: #38bdf8;
+}
+
+.demo-proof-card.ready {
+  border-top-color: var(--green);
+}
+
+.demo-proof-card.review {
+  border-top-color: var(--amber);
+}
+
+.demo-proof-card.needs {
+  border-top-color: #ef4444;
+}
+
 .saas-gate-card > div:first-child,
-.pilot-pack-card > div:first-child {
+.pilot-pack-card > div:first-child,
+.demo-proof-card > div:first-child {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4050,7 +4109,8 @@ input[type="checkbox"] {
 }
 
 .saas-gate-card > div:first-child strong,
-.pilot-pack-card > div:first-child strong {
+.pilot-pack-card > div:first-child strong,
+.demo-proof-card > div:first-child strong {
   font-size: 1.45rem;
 }
 
@@ -4121,7 +4181,8 @@ input[type="checkbox"] {
 .integration-endpoint-card h3,
 .integration-control-card h3,
 .saas-gate-card h3,
-.pilot-pack-card h3 {
+.pilot-pack-card h3,
+.demo-proof-card h3 {
   margin: 0;
   font-size: 1.08rem;
 }
@@ -4133,7 +4194,10 @@ input[type="checkbox"] {
 .saas-gate-card p,
 .saas-gate-step p,
 .pilot-pack-card p,
-.pilot-pack-step p {
+.pilot-pack-step p,
+.demo-proof-card p,
+.demo-proof-step p,
+.demo-proof-objection p {
   margin: 0;
   line-height: 1.55;
 }
@@ -4142,7 +4206,8 @@ input[type="checkbox"] {
 .tenant-control-card ul,
 .integration-control-card ul,
 .saas-gate-card ul,
-.pilot-pack-card ul {
+.pilot-pack-card ul,
+.demo-proof-card ul {
   display: grid;
   gap: 6px;
   margin: 0;
@@ -4152,7 +4217,8 @@ input[type="checkbox"] {
 }
 
 .saas-gate-card small,
-.pilot-pack-card small {
+.pilot-pack-card small,
+.demo-proof-card small {
   color: var(--teal);
   font-size: 0.78rem;
   font-weight: 900;
@@ -4161,7 +4227,9 @@ input[type="checkbox"] {
 .tenant-audit-panel,
 .integration-event-panel,
 .saas-gate-roadmap,
-.pilot-pack-roadmap {
+.pilot-pack-roadmap,
+.demo-proof-roadmap,
+.demo-proof-objections {
   display: grid;
   gap: 12px;
   padding: 18px;
@@ -4170,7 +4238,8 @@ input[type="checkbox"] {
 .tenant-audit-panel > div:first-child,
 .integration-event-panel > div:first-child,
 .saas-gate-roadmap > div:first-child,
-.pilot-pack-roadmap > div:first-child {
+.pilot-pack-roadmap > div:first-child,
+.demo-proof-roadmap > div:first-child {
   display: grid;
   gap: 3px;
 }
@@ -4198,7 +4267,8 @@ input[type="checkbox"] {
 }
 
 .saas-gate-step,
-.pilot-pack-step {
+.pilot-pack-step,
+.demo-proof-step {
   display: grid;
   gap: 10px;
   align-content: start;
@@ -4206,7 +4276,8 @@ input[type="checkbox"] {
 }
 
 .saas-gate-step > span,
-.pilot-pack-step > span {
+.pilot-pack-step > span,
+.demo-proof-step > span {
   display: inline-grid;
   place-items: center;
   width: 34px;
@@ -4217,9 +4288,42 @@ input[type="checkbox"] {
 }
 
 .saas-gate-step strong,
-.pilot-pack-step strong {
+.pilot-pack-step strong,
+.demo-proof-step strong {
   display: block;
   margin-bottom: 4px;
+}
+
+.demo-proof-card em {
+  color: #334155;
+  font-size: 0.84rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.demo-proof-objections {
+  gap: 12px;
+  padding: 18px;
+}
+
+.demo-proof-objection {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 14px;
+  background: #f8fafc;
+}
+
+.demo-proof-objection strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.demo-proof-objection small {
+  display: block;
+  margin-top: 8px;
+  color: var(--teal);
+  font-weight: 900;
 }
 
 .tenant-audit-event strong {
@@ -8880,6 +8984,9 @@ footer a {
   .pilot-pack-summary,
   .pilot-pack-grid,
   .pilot-pack-sequence,
+  .demo-proof-summary,
+  .demo-proof-grid,
+  .demo-proof-sequence,
   .quality-stats,
   .inbox-summary,
   .scorecard-facts,
@@ -8925,7 +9032,8 @@ footer a {
   .tenant-admin-toolbar,
   .integration-toolbar,
   .saas-gate-toolbar,
-  .pilot-pack-toolbar {
+  .pilot-pack-toolbar,
+  .demo-proof-toolbar {
     grid-template-columns: 1fr;
   }
 
@@ -9231,6 +9339,10 @@ footer a {
     grid-template-columns: 1fr;
   }
 
+  .demo-proof-objection {
+    grid-template-columns: 1fr;
+  }
+
   .saved-request-card {
     grid-template-columns: 1fr;
   }
@@ -9318,6 +9430,9 @@ footer a {
   .pilot-pack-summary,
   .pilot-pack-grid,
   .pilot-pack-sequence,
+  .demo-proof-summary,
+  .demo-proof-grid,
+  .demo-proof-sequence,
   .request-grid,
   .quote-grid,
   .quote-summary,

@@ -22,7 +22,7 @@ The current public beta is the supported version. Older uploaded builds should b
 - Learning approval import values are allow-listed before they can affect the review queue.
 - AI Loop recommendation influence is computed locally from approved or tenant-only learning candidates; blocked and unreviewed candidates do not intentionally affect the closed-loop guidance layer.
 - Tenant Admin and audit trail previews are derived locally from browser state. They are not persistent server audit logs until a real backend, account model, and tenant controls are implemented.
-- API, integration blueprint, SaaS readiness gate, and pilot launch pack previews are local planning artifacts only. InduScout v5.6 does not expose live API endpoints, webhook receivers, partner connectors, account identity, shared tenant storage, billing, or server-side data transfer.
+- API, integration blueprint, SaaS readiness gate, pilot launch pack, and demo proof previews are local planning artifacts only. InduScout v5.7 does not expose live API endpoints, webhook receivers, partner connectors, account identity, shared tenant storage, billing, or server-side data transfer.
 - CSV and XLSX exports protect against common spreadsheet formula-injection patterns.
 - External source links are restricted to safe web and email protocols.
 - Downloaded filenames are sanitized before being assigned in the browser.

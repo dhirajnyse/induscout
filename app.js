@@ -380,6 +380,13 @@ const els = {
   exportPilotPackJson: document.querySelector("#exportPilotPackJson"),
   pilotPackGrid: document.querySelector("#pilotPackGrid"),
   pilotPackSequence: document.querySelector("#pilotPackSequence"),
+  demoProofSummary: document.querySelector("#demoProofSummary"),
+  demoProofStatus: document.querySelector("#demoProofStatus"),
+  copyDemoProofBrief: document.querySelector("#copyDemoProofBrief"),
+  exportDemoProofJson: document.querySelector("#exportDemoProofJson"),
+  demoProofGrid: document.querySelector("#demoProofGrid"),
+  demoProofSequence: document.querySelector("#demoProofSequence"),
+  demoProofObjections: document.querySelector("#demoProofObjections"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -516,6 +523,7 @@ function init() {
   renderIntegrationBlueprint();
   renderSaasGate();
   renderPilotPack();
+  renderDemoProofPack();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1271,6 +1279,7 @@ function wireEvents() {
       renderIntegrationBlueprint();
       renderSaasGate();
       renderPilotPack();
+      renderDemoProofPack();
     });
   });
   if (els.copyGovernanceBrief) {
@@ -1320,6 +1329,12 @@ function wireEvents() {
   }
   if (els.exportPilotPackJson) {
     els.exportPilotPackJson.addEventListener("click", exportPilotPackJson);
+  }
+  if (els.copyDemoProofBrief) {
+    els.copyDemoProofBrief.addEventListener("click", copyDemoProofBrief);
+  }
+  if (els.exportDemoProofJson) {
+    els.exportDemoProofJson.addEventListener("click", exportDemoProofJson);
   }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
@@ -1643,6 +1658,7 @@ function render() {
   renderIntegrationBlueprint();
   renderSaasGate();
   renderPilotPack();
+  renderDemoProofPack();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2169,7 +2185,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.6",
+    version: "5.7",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -9168,6 +9184,9 @@ function renderGovernanceCenter() {
   if (els.pilotPackSummary) {
     renderPilotPack();
   }
+  if (els.demoProofSummary) {
+    renderDemoProofPack();
+  }
 }
 
 function governanceSummaryTemplate(label, value, detail) {
@@ -9521,6 +9540,7 @@ function setLearningCandidateStatus(status, candidateId) {
   renderIntegrationBlueprint();
   renderSaasGate();
   renderPilotPack();
+  renderDemoProofPack();
 }
 
 function approveSafeLearningCandidates() {
@@ -9541,6 +9561,7 @@ function approveSafeLearningCandidates() {
   renderIntegrationBlueprint();
   renderSaasGate();
   renderPilotPack();
+  renderDemoProofPack();
   if (els.approveSafeLearning) {
     els.approveSafeLearning.textContent = "Safe candidates approved";
     setTimeout(() => {
@@ -10407,7 +10428,7 @@ function integrationBriefText() {
   const controls = integrationControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.status} - ${control.detail}`).join("\n");
   const events = integrationEvents(data).map((event, index) => `${index + 1}. ${event[0]} [${event[2]}] - ${event[1]}`).join("\n");
 
-  return `InduScout v5.6 API and integration blueprint
+  return `InduScout v5.7 API and integration blueprint
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10429,7 +10450,7 @@ Event stream preview:
 ${events}
 
 Important boundary:
-InduScout v5.6 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
+InduScout v5.7 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
 }
 
 async function copyIntegrationBrief() {
@@ -10620,7 +10641,7 @@ function saasGateBriefText() {
   const gates = saasGateCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Owner: ${card.owner}. ${card.detail}`).join("\n");
   const sequence = saasGateSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.6 SaaS readiness gate
+  return `InduScout v5.7 SaaS readiness gate
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10639,7 +10660,7 @@ Backend migration sequence:
 ${sequence}
 
 Operating rule:
-InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.6 is a planning and readiness simulator, not a live SaaS backend.`;
+InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.7 is a planning and readiness simulator, not a live SaaS backend.`;
 }
 
 async function copySaasGateBrief() {
@@ -10839,7 +10860,7 @@ function pilotPackBriefText() {
   const cards = pilotPackCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Output: ${card.output}. ${card.detail}`).join("\n");
   const sequence = pilotPackSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.6 Pilot Launch Pack
+  return `InduScout v5.7 Pilot Launch Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10857,7 +10878,7 @@ Pilot operating plan:
 ${sequence}
 
 Boundary:
-InduScout v5.6 is suitable for curated public-beta pilot conversations, demos, and buyer workflow validation. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
+InduScout v5.7 is suitable for curated public-beta pilot conversations, demos, and buyer workflow validation. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
 }
 
 async function copyPilotPackBrief() {
@@ -10880,6 +10901,255 @@ function exportPilotPackJson() {
   downloadFile(
     `InduScout-Pilot-Pack-${new Date().toISOString().slice(0, 10)}.json`,
     JSON.stringify({ ...createSessionSnapshot(), pilotPack: { generatedAt: new Date().toISOString(), data, cards: pilotPackCards(data), sequence: pilotPackSequence(data), generatedText: pilotPackBriefText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+}
+
+function demoProofData() {
+  const pilot = pilotPackData();
+  const saas = saasGateData();
+  const integration = integrationBlueprintData();
+  const proofSignals = [
+    products.length >= 60,
+    categoryTaxonomy.length >= 10,
+    sourceDirectory.length >= 20,
+    state.shortlist.length > 0,
+    state.quotes.length > 0,
+    state.supplierReplies.length > 0,
+    state.sourceLeads.length > 0,
+    state.learningRecords.length > 0,
+    Object.keys(state.learningApprovals).length > 0,
+    pilot.readiness >= 70,
+    saas.readiness >= 65,
+    integration.readiness >= 70
+  ].filter(Boolean).length;
+  const readiness = Math.min(97, Math.round((pilot.readiness * 0.35) + (saas.readiness * 0.18) + (integration.readiness * 0.17) + (proofSignals * 3) + 8));
+
+  return {
+    readiness,
+    status: readiness >= 84 ? "Ready for stakeholder demos" : readiness >= 70 ? "Ready for friendly walkthroughs" : "Needs more proof before external demos",
+    proofSignals,
+    catalogRecords: products.length,
+    sourcePaths: products.reduce((count, product) => count + (Array.isArray(product.sources) ? product.sources.length : 0), 0),
+    categories: categoryTaxonomy.length,
+    reviewItems: evidenceReviewItems().length,
+    pilot,
+    saas,
+    integration
+  };
+}
+
+function demoProofCards(data = demoProofData()) {
+  return [
+    {
+      title: "Procurement buyer",
+      audience: "Buyer / sourcing lead",
+      score: Math.min(94, 70 + state.shortlist.length * 4 + state.quotes.length * 5),
+      status: state.shortlist.length || state.quotes.length ? "Strong story" : "Use catalog demo",
+      value: "Find, compare, shortlist, and prepare RFQs faster while keeping verification visible.",
+      proof: ["Finder", "Shortlist", "RFQ pack", "Supplier scorecard"],
+      ask: "Share 20-50 representative parts for a controlled pilot."
+    },
+    {
+      title: "Engineering reviewer",
+      audience: "Maintenance / engineering",
+      score: 82,
+      status: "Review-ready",
+      value: "Review specs, alternates, lifecycle, certification, and substitution risks before buying.",
+      proof: ["Spec Match", "Alternates", "Approval Pack", "Product confidence"],
+      ask: "Validate whether the review fields match real site approval needs."
+    },
+    {
+      title: "Procurement manager",
+      audience: "Head of procurement",
+      score: Math.min(92, 72 + state.savingsRecords.length * 5 + state.supplierReplies.length * 4),
+      status: "Executive-ready",
+      value: "Show traceable sourcing decisions, quote comparisons, savings notes, and buyer file evidence.",
+      proof: ["Decision Memo", "Savings", "Buyer File", "Compliance Gate"],
+      ask: "Choose one low-risk spend lane for a measurable pilot."
+    },
+    {
+      title: "Supplier partner",
+      audience: "Distributor / OEM",
+      score: data.integration.readiness,
+      status: data.integration.readiness >= 75 ? "Partner-ready" : "Blueprint stage",
+      value: "Explain how suppliers could submit better source evidence, quote replies, and corrected product data.",
+      proof: ["Source Intake", "Supplier Inbox", "Integration Blueprint", "Source directory"],
+      ask: "Provide source evidence and response samples for buyer validation."
+    },
+    {
+      title: "Technology partner",
+      audience: "ERP / API / platform partner",
+      score: Math.min(90, Math.round((data.integration.readiness + data.saas.readiness) / 2)),
+      status: "Architecture story",
+      value: "Show future API boundaries, event streams, tenant controls, audit gates, and safe integration sequence.",
+      proof: ["API contracts", "Event stream", "SaaS Gate", "Security baseline"],
+      ask: "Review API sandbox scope and required security controls."
+    },
+    {
+      title: "Investor / advisor",
+      audience: "Founder conversation",
+      score: data.readiness,
+      status: data.readiness >= 84 ? "Demo-ready" : "Internal rehearsal",
+      value: "Show a focused procurement wedge, buyer pain, workflow depth, launch discipline, and SaaS path.",
+      proof: ["Pilot Pack", "SaaS Gate", "Learning Loop", "SEO Catalog"],
+      ask: "Challenge the first pilot segment and go-to-market proof plan."
+    }
+  ];
+}
+
+function demoProofSequence(data = demoProofData()) {
+  return [
+    ["01", "Open with buyer pain", "Industrial buyers lose time across OEM sites, distributor pages, marketplaces, datasheets, RFQ emails, and old part numbers."],
+    ["02", "Show product discovery", `Use the Finder and SEO catalog to search across ${data.catalogRecords} records, confidence signals, source paths, and procurement filters.`],
+    ["03", "Build the RFQ workflow", "Shortlist items, open product detail, copy RFQ text, create procurement brief, and export buyer-controlled files."],
+    ["04", "Prove decision support", "Compare products, track quotes, score suppliers, prepare decision memo, compliance checks, and buyer file evidence."],
+    ["05", "Explain learning and governance", "Show local learning, review queue, AI loop, governance controls, tenant admin, and why shared learning must be opt-in and audited."],
+    ["06", "Close with pilot path", "Use Pilot Pack, SaaS Gate, and Integration Blueprint to propose a safe early-adopter pilot without confidential backend storage."]
+  ];
+}
+
+function demoProofObjections(data = demoProofData()) {
+  return [
+    {
+      objection: "Is this a purchasing recommendation engine?",
+      response: "No. InduScout is a discovery and RFQ preparation aid. Final buying validation remains with the buyer, OEM, authorized distributor, or supplier.",
+      proof: "Buyer verification notices, confidence labels, and copied RFQ reminders."
+    },
+    {
+      objection: "Where is the live backend or API?",
+      response: "The current release is intentionally static. v5.4-v5.7 show the integration, SaaS, pilot, and demo plans before shared data is introduced.",
+      proof: "Integration Blueprint, SaaS Gate, Security baseline, and Privacy Center."
+    },
+    {
+      objection: "Can buyers enter confidential tender data?",
+      response: "Not in the public beta. The pilot path should use sample or non-sensitive data until tenant isolation, secure storage, and audit logs exist.",
+      proof: "Privacy note, SaaS Gate blockers, and Pilot boundaries."
+    },
+    {
+      objection: "What makes this defensible over a simple catalog?",
+      response: "The value is workflow depth: sourcing, RFQ, alternates, quotes, supplier replies, compliance, buyer file, governance, and learning loop in one buyer desk.",
+      proof: `${data.proofSignals} local proof signals across catalog, workflow, governance, pilot, and integration readiness.`
+    }
+  ];
+}
+
+function renderDemoProofPack() {
+  if (!els.demoProofSummary || !els.demoProofGrid || !els.demoProofSequence || !els.demoProofObjections) {
+    return;
+  }
+
+  const data = demoProofData();
+  els.demoProofSummary.innerHTML = [
+    tenantSummaryTemplate("Demo readiness", `${data.readiness}%`, data.status),
+    tenantSummaryTemplate("Stakeholders", demoProofCards(data).length, "Buyer, engineer, manager, partner, investor"),
+    tenantSummaryTemplate("Proof signals", data.proofSignals, "Local evidence points"),
+    tenantSummaryTemplate("Guided steps", demoProofSequence(data).length, "20-30 minute flow")
+  ].join("");
+
+  if (els.demoProofStatus) {
+    els.demoProofStatus.textContent = `${data.status}. Use this to guide conversations; avoid presenting the public beta as a production SaaS backend.`;
+  }
+
+  els.demoProofGrid.innerHTML = demoProofCards(data).map(demoProofCardTemplate).join("");
+  els.demoProofSequence.innerHTML = demoProofSequence(data).map(demoProofStepTemplate).join("");
+  els.demoProofObjections.innerHTML = demoProofObjections(data).map(demoProofObjectionTemplate).join("");
+}
+
+function demoProofCardTemplate(card) {
+  const statusClass = card.score >= 84 ? "ready" : card.score >= 72 ? "review" : "needs";
+  return `
+    <article class="demo-proof-card ${statusClass}">
+      <div>
+        <span>${escapeHtml(card.status)}</span>
+        <strong>${escapeHtml(String(card.score))}</strong>
+      </div>
+      <h3>${escapeHtml(card.title)}</h3>
+      <p>${escapeHtml(card.value)}</p>
+      <small>${escapeHtml(card.audience)}</small>
+      <ul>${card.proof.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+      <em>${escapeHtml(card.ask)}</em>
+    </article>
+  `;
+}
+
+function demoProofStepTemplate(step) {
+  const [number, title, detail] = step;
+  return `
+    <article class="demo-proof-step">
+      <span>${escapeHtml(number)}</span>
+      <div>
+        <strong>${escapeHtml(title)}</strong>
+        <p>${escapeHtml(detail)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function demoProofObjectionTemplate(item) {
+  return `
+    <article class="demo-proof-objection">
+      <span>Objection</span>
+      <div>
+        <strong>${escapeHtml(item.objection)}</strong>
+        <p>${escapeHtml(item.response)}</p>
+        <small>${escapeHtml(item.proof)}</small>
+      </div>
+    </article>
+  `;
+}
+
+function demoProofBriefText() {
+  const data = demoProofData();
+  const cards = demoProofCards(data).map((card, index) => `${index + 1}. ${card.title} (${card.audience}): ${card.status}, score ${card.score}. Value: ${card.value} Ask: ${card.ask}`).join("\n");
+  const sequence = demoProofSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
+  const objections = demoProofObjections(data).map((item, index) => `${index + 1}. ${item.objection}\nResponse: ${item.response}\nProof: ${item.proof}`).join("\n\n");
+
+  return `InduScout v5.7 Demo and Stakeholder Proof Pack
+Prepared on ${formatCopyDate()}
+
+Project: ${projectValue("name", "TBC")}
+Buyer/company: ${projectValue("buyer", "TBC")}
+Demo readiness: ${data.readiness}% (${data.status})
+Catalog base: ${data.categories} categories, ${data.catalogRecords} product records, ${data.sourcePaths} source links
+Proof signals: ${data.proofSignals}
+Pilot readiness: ${data.pilot.readiness}%
+SaaS readiness: ${data.saas.readiness}%
+Integration readiness: ${data.integration.readiness}%
+
+Stakeholder value map:
+${cards}
+
+Guided demo flow:
+${sequence}
+
+Objection handling:
+${objections}
+
+Boundary:
+InduScout v5.7 is ready for guided stakeholder conversations and controlled public-beta demos. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
+}
+
+async function copyDemoProofBrief() {
+  const text = demoProofBriefText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyDemoProofBrief) {
+      els.copyDemoProofBrief.textContent = "Demo brief copied";
+      setTimeout(() => {
+        els.copyDemoProofBrief.textContent = "Copy demo brief";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy demo brief", text);
+  }
+}
+
+function exportDemoProofJson() {
+  const data = demoProofData();
+  downloadFile(
+    `InduScout-Demo-Proof-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), demoProof: { generatedAt: new Date().toISOString(), data, stakeholders: demoProofCards(data), sequence: demoProofSequence(data), objections: demoProofObjections(data), generatedText: demoProofBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
 }
@@ -12644,7 +12914,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.6",
+    version: "5.7",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -12787,6 +13057,7 @@ function applySession(session) {
   renderIntegrationBlueprint();
   renderSaasGate();
   renderPilotPack();
+  renderDemoProofPack();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();

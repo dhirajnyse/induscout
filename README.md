@@ -16,7 +16,7 @@ Industrial buyers often search across manufacturer pages, distributor catalogs, 
 
 ## Current Beta
 
-This v5.6 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.6 adds a Pilot Launch Pack that packages the product for serious early-adopter conversations with scope, onboarding, success metrics, data-room evidence, feedback loops, and clear beta boundaries before any SaaS account system, live API, shared storage, or network-learning layer exists.
+This v5.7 public beta is still static and lightweight, but it already demonstrates the core procurement workflow and adds buyer-useful crawlable SEO catalog pages. v5.7 adds a Demo & Stakeholder Proof Pack that turns the product into a guided buyer, partner, and investor conversation with stakeholder value maps, proof points, objection handling, and follow-up actions before any SaaS account system, live API, shared storage, or network-learning layer exists.
 
 - 12 procurement categories, 84 product records, and 252 product source links.
 - Structured `catalog.js` data layer for products, taxonomy, source channels, and source directory entries.
@@ -61,6 +61,7 @@ This v5.6 public beta is still static and lightweight, but it already demonstrat
 - API & Integration Blueprint with integration readiness score, future endpoint contract cards, connector guardrails, event stream preview, copyable integration brief, and JSON export.
 - SaaS Readiness Gate with backend launch score, identity/RBAC checks, tenant data model checks, API sandbox readiness, persistent audit log requirements, privacy gates, learning governance checks, migration sequence, copyable SaaS gate brief, and JSON export.
 - Pilot Launch Pack with early-adopter scope, onboarding plan, workflow proof, data-room evidence, success metrics, feedback loop, partner/API story, pilot boundaries, copyable pilot brief, and JSON export.
+- Demo & Stakeholder Proof Pack with demo readiness score, stakeholder value map, guided demo flow, objection handling, copyable demo brief, and JSON export.
 - Version tab and Build Phases tracker with current live build, public beta mode, next major gate, completed phases, current closed-loop intelligence phase, governed SaaS foundation, and future network learning path.
 - Supplier Inbox section for supplier reply status, missing certificates, alternates, revised prices, next actions, buyer response copy, CSV/XLSX export, and quote conversion.
 - Supplier Scorecard combines quote, inbox, shortlist, compare, source lead, and source type evidence into a ranked supplier decision view.
@@ -149,7 +150,7 @@ InduScout is a discovery and procurement workflow aid. Buyers must verify pricin
 
 ## Security And Privacy Note
 
-The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, no live API endpoints, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, tenant admin previews, integration blueprint previews, SaaS readiness gate previews, pilot launch pack previews, and sessions are stored locally in the user's browser unless exported by the user.
+The current public beta is a static GitHub Pages app. It has no login system, no backend database, no payment flow, no live API endpoints, and no embedded API keys. Buyer notes, project context, spec match requirements, alternate review setup, quote records, supplier replies, source intake leads, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, tenant admin previews, integration blueprint previews, SaaS readiness gate previews, pilot launch pack previews, demo proof pack previews, and sessions are stored locally in the user's browser unless exported by the user.
 
 - Do not enter confidential tender data, passwords, access tokens, payment details, or sensitive personal data into the public beta.
 - Session JSON import is limited and sanitized before it is loaded into the app.
