@@ -8,8 +8,8 @@ The current public beta is the supported version. Older uploaded builds should b
 
 ## Data Handling
 
-- Buyer notes, project context, spec match requirements, alternate review setup, substitution approval setup, landed cost scenarios, negotiation plans, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, tenant admin previews, shortlists, quote records, supplier replies, and sessions are stored in the user's browser local storage.
-- Exported CSV, XLSX, RFQ packs, decision memos, PO handover packs, supplier compliance packs, buyer file exports, supplier scorecard exports, spec match matrix exports, alternate review exports, substitution approval exports, landed cost exports, negotiation exports, savings register exports, learning loop exports, AI playbook exports, reinforcement signal exports, governance exports, learning queue exports, AI loop exports, tenant admin exports, and session JSON files are created locally in the browser.
+- Buyer notes, project context, spec match requirements, alternate review setup, substitution approval setup, landed cost scenarios, negotiation plans, savings records, learning records, playbook rules, reinforcement signals, governance policy, learning approvals, tenant admin previews, launch partner candidates, shortlists, quote records, supplier replies, and sessions are stored in the user's browser local storage.
+- Exported CSV, XLSX, RFQ packs, decision memos, PO handover packs, supplier compliance packs, buyer file exports, supplier scorecard exports, spec match matrix exports, alternate review exports, substitution approval exports, landed cost exports, negotiation exports, savings register exports, learning loop exports, AI playbook exports, reinforcement signal exports, governance exports, learning queue exports, AI loop exports, tenant admin exports, launch partner exports, and session JSON files are created locally in the browser.
 - The public beta is not intended for confidential tender data, passwords, access tokens, payment details, regulated personal data, or private commercial documents.
 
 ## Current Security Baseline
@@ -22,7 +22,7 @@ The current public beta is the supported version. Older uploaded builds should b
 - Learning approval import values are allow-listed before they can affect the review queue.
 - AI Loop recommendation influence is computed locally from approved or tenant-only learning candidates; blocked and unreviewed candidates do not intentionally affect the closed-loop guidance layer.
 - Tenant Admin and audit trail previews are derived locally from browser state. They are not persistent server audit logs until a real backend, account model, and tenant controls are implemented.
-- API, integration blueprint, SaaS readiness gate, pilot launch pack, demo proof previews, and value proof summaries are local planning artifacts only. InduScout v5.8 does not expose live API endpoints, webhook receivers, partner connectors, account identity, shared tenant storage, billing, or server-side data transfer.
+- API, integration blueprint, SaaS readiness gate, pilot launch pack, demo proof previews, value proof summaries, and launch partner pipeline previews are local planning artifacts only. InduScout v5.9 does not expose live API endpoints, webhook receivers, partner connectors, account identity, shared tenant storage, billing, or server-side data transfer.
 - CSV and XLSX exports protect against common spreadsheet formula-injection patterns.
 - External source links are restricted to safe web and email protocols.
 - Downloaded filenames are sanitized before being assigned in the browser.

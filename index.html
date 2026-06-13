@@ -26,7 +26,7 @@
     <title>InduScout | Global Industrial Product Finder</title>
     <link rel="icon" href="assets/induscout-logo.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=5.8">
+    <link rel="stylesheet" href="styles.css?v=5.9.1">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -76,7 +76,8 @@
         <a href="#pilot-pack">Pilot</a>
         <a href="#demo-proof">Demo</a>
         <a href="#value-proof">Value Proof</a>
-        <a class="version-tab" href="#version">v5.8</a>
+        <a href="#partners">Partners</a>
+        <a class="version-tab" href="#version">v5.9</a>
         <a href="categories/">SEO Catalog</a>
         <details class="more-menu">
           <summary>More</summary>
@@ -1561,6 +1562,95 @@
         </div>
       </section>
 
+      <section class="partner-pipeline-band" id="partners" aria-labelledby="partners-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Launch Partner Pipeline</p>
+            <h2 id="partners-title">Turn demos into controlled buyer pilots</h2>
+          </div>
+          <p>Qualify friendly buyers, suppliers, advisors, and technology partners against the current proof stack, then track next action, pilot lane, fit score, and outreach notes locally.</p>
+        </div>
+        <div class="partner-pipeline-console">
+          <div class="partner-summary" id="partnerSummary"></div>
+          <form class="partner-form" id="partnerForm">
+            <input id="partnerId" type="hidden">
+            <div class="partner-form-head">
+              <div>
+                <strong>Add launch partner candidate</strong>
+                <span id="partnerPipelineStatus">Stored locally in this browser. Use sample or non-confidential buyer context during public beta.</span>
+              </div>
+              <div class="partner-actions">
+                <button type="button" id="savePartner">Save partner</button>
+                <button class="ghost-button compact" type="button" id="copyPartnerOutreach">Copy outreach</button>
+                <button class="ghost-button compact" type="button" id="clearPartnerForm">Clear form</button>
+              </div>
+            </div>
+            <div class="partner-grid">
+              <label>Company / buyer
+                <input id="partnerCompany" type="text" placeholder="e.g. Friendly MRO buyer, distributor, OEM">
+              </label>
+              <label>Contact
+                <input id="partnerContact" type="text" placeholder="Name, email, LinkedIn, or intro path">
+              </label>
+              <label>Partner type
+                <select id="partnerSegment">
+                  <option>Procurement team</option>
+                  <option>MRO distributor</option>
+                  <option>OEM partner</option>
+                  <option>System integrator</option>
+                  <option>Technology partner</option>
+                  <option>Investor / advisor</option>
+                </select>
+              </label>
+              <label>Region
+                <input id="partnerRegion" type="text" placeholder="e.g. UAE, India, Europe, North America">
+              </label>
+              <label>Pilot lane
+                <input id="partnerLane" type="text" placeholder="e.g. sensors, MRO spares, pumps, automation">
+              </label>
+              <label>Status
+                <select id="partnerStatus">
+                  <option>Target</option>
+                  <option>Contacted</option>
+                  <option>Demo booked</option>
+                  <option>Pilot proposed</option>
+                  <option>Pilot active</option>
+                  <option>Converted</option>
+                  <option>Not now</option>
+                </select>
+              </label>
+              <label>Fit
+                <select id="partnerFit">
+                  <option>High strategic fit</option>
+                  <option>Moderate fit</option>
+                  <option>Needs qualification</option>
+                  <option>Not a fit</option>
+                </select>
+              </label>
+              <label>Next action date
+                <input id="partnerNextDate" type="date">
+              </label>
+            </div>
+            <label class="note-field">Partner notes
+              <textarea id="partnerNotes" rows="4" placeholder="Add buyer pain, pilot hypothesis, sample product lane, sponsor, objection, or next action"></textarea>
+            </label>
+            <div class="partner-export-actions">
+              <button class="ghost-button compact" type="button" id="copyPartnerReport">Copy pipeline report</button>
+              <button class="ghost-button compact" type="button" id="exportPartnerCsv">Export CSV</button>
+              <button class="ghost-button compact" type="button" id="exportPartnerJson">Export JSON</button>
+              <button class="ghost-button compact" type="button" id="clearPartners">Clear partners</button>
+            </div>
+          </form>
+          <div class="partner-register">
+            <div>
+              <strong>Partner pipeline</strong>
+              <span>Qualification score uses value proof, pilot readiness, partner type, status, fit, and entered context.</span>
+            </div>
+            <div class="partner-list" id="partnerList"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="inbox-band" id="inbox" aria-labelledby="inbox-title">
         <div class="section-heading">
           <div>
@@ -2087,8 +2177,8 @@
           <div class="version-status">
             <article class="current">
               <span>Current live build</span>
-              <strong>v5.8</strong>
-              <p>Value proof board with executive ROI narrative, commercial evidence cards, buyer value path, copyable brief, and JSON export.</p>
+              <strong>v5.9</strong>
+              <p>Launch partner pipeline with candidate qualification, pilot status tracking, outreach copy, pipeline report, CSV export, and JSON export.</p>
             </article>
             <article>
               <span>Release mode</span>
@@ -2097,8 +2187,8 @@
             </article>
             <article>
               <span>Next major gate</span>
-              <strong>v5.9</strong>
-              <p>Move toward first-customer conversion: pilot intake form, deal qualification score, feedback register, and launch partner pipeline.</p>
+              <strong>v6.0</strong>
+              <p>Move toward secure backend foundation: account model, tenant data boundaries, server validation, audit logs, and production deployment planning.</p>
             </article>
           </div>
           <div class="phase-grid">
@@ -2131,7 +2221,7 @@
           <div class="release-ledger">
             <div>
               <strong>Recent release trail</strong>
-              <span>v5.6 Pilot Pack -> v5.7 Demo Proof -> v5.8 Value Proof</span>
+              <span>v5.7 Demo Proof -> v5.8 Value Proof -> v5.9 Launch Partners</span>
             </div>
             <a href="#roadmap">Open roadmap</a>
           </div>
@@ -2308,8 +2398,8 @@
       <a href="#top">Back to top</a>
     </footer>
 
-    <script src="catalog.js?v=5.8"></script>
-    <script src="back-to-top.js?v=5.8"></script>
-    <script src="app.js?v=5.8"></script>
+    <script src="catalog.js?v=5.9"></script>
+    <script src="back-to-top.js?v=5.9.1"></script>
+    <script src="app.js?v=5.9.1"></script>
   </body>
 </html>

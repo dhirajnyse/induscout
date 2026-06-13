@@ -23,6 +23,7 @@ const state = {
   notes: loadNotes(),
   productRequests: loadProductRequests(),
   sourceLeads: loadSourceLeads(),
+  launchPartners: loadLaunchPartners(),
   quotes: loadQuoteRecords(),
   savingsRecords: loadSavingsRecords(),
   supplierReplies: loadSupplierReplies(),
@@ -394,6 +395,27 @@ const els = {
   valueProofGrid: document.querySelector("#valueProofGrid"),
   valueProofPath: document.querySelector("#valueProofPath"),
   valueProofEvidence: document.querySelector("#valueProofEvidence"),
+  partnerSummary: document.querySelector("#partnerSummary"),
+  partnerPipelineStatus: document.querySelector("#partnerPipelineStatus"),
+  partnerForm: document.querySelector("#partnerForm"),
+  partnerId: document.querySelector("#partnerId"),
+  partnerCompany: document.querySelector("#partnerCompany"),
+  partnerContact: document.querySelector("#partnerContact"),
+  partnerSegment: document.querySelector("#partnerSegment"),
+  partnerRegion: document.querySelector("#partnerRegion"),
+  partnerLane: document.querySelector("#partnerLane"),
+  partnerStatus: document.querySelector("#partnerStatus"),
+  partnerFit: document.querySelector("#partnerFit"),
+  partnerNextDate: document.querySelector("#partnerNextDate"),
+  partnerNotes: document.querySelector("#partnerNotes"),
+  savePartner: document.querySelector("#savePartner"),
+  copyPartnerOutreach: document.querySelector("#copyPartnerOutreach"),
+  clearPartnerForm: document.querySelector("#clearPartnerForm"),
+  copyPartnerReport: document.querySelector("#copyPartnerReport"),
+  exportPartnerCsv: document.querySelector("#exportPartnerCsv"),
+  exportPartnerJson: document.querySelector("#exportPartnerJson"),
+  clearPartners: document.querySelector("#clearPartners"),
+  partnerList: document.querySelector("#partnerList"),
   inboxSummary: document.querySelector("#inboxSummary"),
   replyForm: document.querySelector("#replyForm"),
   replyId: document.querySelector("#replyId"),
@@ -532,6 +554,8 @@ function init() {
   renderPilotPack();
   renderDemoProofPack();
   renderValueProofPack();
+  hydrateLaunchPartnerForm();
+  renderLaunchPartnerPipeline();
   populateReplyItems();
   renderSupplierInbox();
   renderSupplierScorecard();
@@ -1351,6 +1375,46 @@ function wireEvents() {
   if (els.exportValueProofJson) {
     els.exportValueProofJson.addEventListener("click", exportValueProofJson);
   }
+  if (els.savePartner) {
+    els.savePartner.addEventListener("click", saveLaunchPartnerFromForm);
+  }
+  if (els.copyPartnerOutreach) {
+    els.copyPartnerOutreach.addEventListener("click", copyLaunchPartnerOutreach);
+  }
+  if (els.clearPartnerForm) {
+    els.clearPartnerForm.addEventListener("click", () => hydrateLaunchPartnerForm());
+  }
+  if (els.copyPartnerReport) {
+    els.copyPartnerReport.addEventListener("click", copyLaunchPartnerReport);
+  }
+  if (els.exportPartnerCsv) {
+    els.exportPartnerCsv.addEventListener("click", exportLaunchPartnerCsv);
+  }
+  if (els.exportPartnerJson) {
+    els.exportPartnerJson.addEventListener("click", exportLaunchPartnerJson);
+  }
+  if (els.clearPartners) {
+    els.clearPartners.addEventListener("click", clearLaunchPartners);
+  }
+  if (els.partnerList) {
+    els.partnerList.addEventListener("click", (event) => {
+      const loadButton = event.target.closest("[data-load-partner]");
+      const copyButton = event.target.closest("[data-copy-partner]");
+      const removeButton = event.target.closest("[data-remove-partner]");
+
+      if (loadButton) {
+        loadLaunchPartnerToForm(loadButton.dataset.loadPartner);
+      }
+
+      if (copyButton) {
+        copySavedLaunchPartnerOutreach(copyButton.dataset.copyPartner, copyButton);
+      }
+
+      if (removeButton) {
+        removeLaunchPartner(removeButton.dataset.removePartner);
+      }
+    });
+  }
   if (els.learningQueueList) {
     els.learningQueueList.addEventListener("click", (event) => {
       const actionButton = event.target.closest("[data-learning-queue-action]");
@@ -1675,6 +1739,7 @@ function render() {
   renderPilotPack();
   renderDemoProofPack();
   renderValueProofPack();
+  renderLaunchPartnerPipeline();
   renderSpecMatchDesk(matches);
   renderAlternateDesk(matches);
   renderSubstitutionApprovalPack();
@@ -2201,7 +2266,7 @@ function exportReviewBoardJson() {
   const items = evidenceReviewItems();
   const payload = {
     app: "InduScout",
-    version: "5.8",
+    version: "5.9",
     exportedAt: new Date().toISOString(),
     project: state.project,
     counts: {
@@ -10453,7 +10518,7 @@ function integrationBriefText() {
   const controls = integrationControlCards(data).map((control, index) => `${index + 1}. ${control.title}: ${control.status} - ${control.detail}`).join("\n");
   const events = integrationEvents(data).map((event, index) => `${index + 1}. ${event[0]} [${event[2]}] - ${event[1]}`).join("\n");
 
-  return `InduScout v5.8 API and integration blueprint
+  return `InduScout v5.9 API and integration blueprint
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10475,7 +10540,7 @@ Event stream preview:
 ${events}
 
 Important boundary:
-InduScout v5.8 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
+InduScout v5.9 is still a static public beta. These API routes, events, connectors, and admin controls are a blueprint for SaaS architecture, not live endpoints. Real integrations require authentication, tenant isolation, server-side authorization, rate limits, persistent audit logs, secure storage, deletion workflows, and partner-specific data processing agreements.`;
 }
 
 async function copyIntegrationBrief() {
@@ -10666,7 +10731,7 @@ function saasGateBriefText() {
   const gates = saasGateCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Owner: ${card.owner}. ${card.detail}`).join("\n");
   const sequence = saasGateSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.8 SaaS readiness gate
+  return `InduScout v5.9 SaaS readiness gate
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10685,7 +10750,7 @@ Backend migration sequence:
 ${sequence}
 
 Operating rule:
-InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.8 is a planning and readiness simulator, not a live SaaS backend.`;
+InduScout should not move buyer accounts, quote storage, supplier replies, APIs, or learning signals into a shared backend until identity, tenant isolation, RBAC, server-side validation, audit logs, retention/deletion workflows, privacy controls, rate limits, monitoring, backups, and incident response are designed and tested. v5.9 is a planning and readiness simulator, not a live SaaS backend.`;
 }
 
 async function copySaasGateBrief() {
@@ -10885,7 +10950,7 @@ function pilotPackBriefText() {
   const cards = pilotPackCards(data).map((card, index) => `${index + 1}. ${card.title}: ${card.status}, score ${card.score}. Output: ${card.output}. ${card.detail}`).join("\n");
   const sequence = pilotPackSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
 
-  return `InduScout v5.8 Pilot Launch Pack
+  return `InduScout v5.9 Pilot Launch Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -10903,7 +10968,7 @@ Pilot operating plan:
 ${sequence}
 
 Boundary:
-InduScout v5.8 is suitable for curated public-beta pilot conversations, demos, and buyer workflow validation. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
+InduScout v5.9 is suitable for curated public-beta pilot conversations, demos, buyer workflow validation, and launch-partner qualification. It is not yet a production SaaS service. Keep confidential tender data, payment details, credentials, and regulated personal data outside the public beta until accounts, tenant isolation, secure backend storage, audit logs, deletion workflows, and support operations are in place.`;
 }
 
 async function copyPilotPackBrief() {
@@ -11043,7 +11108,7 @@ function demoProofObjections(data = demoProofData()) {
     },
     {
       objection: "Where is the live backend or API?",
-      response: "The current release is intentionally static. v5.4-v5.8 show the integration, SaaS, pilot, demo, and value-proof plans before shared data is introduced.",
+      response: "The current release is intentionally static. v5.4-v5.9 show the integration, SaaS, pilot, demo, value-proof, and launch-partner plans before shared data is introduced.",
       proof: "Integration Blueprint, SaaS Gate, Security baseline, and Privacy Center."
     },
     {
@@ -11130,7 +11195,7 @@ function demoProofBriefText() {
   const sequence = demoProofSequence(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
   const objections = demoProofObjections(data).map((item, index) => `${index + 1}. ${item.objection}\nResponse: ${item.response}\nProof: ${item.proof}`).join("\n\n");
 
-  return `InduScout v5.8 Demo and Stakeholder Proof Pack
+  return `InduScout v5.9 Demo and Stakeholder Proof Pack
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -11152,7 +11217,7 @@ Objection handling:
 ${objections}
 
 Boundary:
-InduScout v5.8 is ready for guided stakeholder conversations, controlled public-beta demos, and value-proof discussions. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
+InduScout v5.9 is ready for guided stakeholder conversations, controlled public-beta demos, value-proof discussions, and launch-partner outreach. It is not a production SaaS backend, purchasing authority, or live integration service. Keep confidential buyer data outside the public beta until secure tenant controls, audit logs, support operations, and backend storage are implemented.`;
 }
 
 async function copyDemoProofBrief() {
@@ -11402,7 +11467,7 @@ function valueProofBriefText() {
   const path = valueProofPath(data).map((step) => `${step[0]}. ${step[1]} - ${step[2]}`).join("\n");
   const evidence = valueProofEvidence(data).map((item, index) => `${index + 1}. ${item.title}: ${item.detail} Next: ${item.next}`).join("\n");
 
-  return `InduScout v5.8 Value Proof Board
+  return `InduScout v5.9 Value Proof Board
 Prepared on ${formatCopyDate()}
 
 Project: ${projectValue("name", "TBC")}
@@ -11430,7 +11495,7 @@ Evidence posture:
 ${evidence}
 
 Boundary:
-InduScout v5.8 is a public-beta value proof and RFQ workflow aid. Treat all savings, supplier, and quote claims as buyer-controlled evidence that must be validated against current supplier documents, stock, pricing, compatibility, warranty path, and internal approval. Shared tenant data, live supplier integrations, confidential tender storage, billing, and network learning must wait for governed SaaS controls.`;
+InduScout v5.9 is a public-beta value proof, launch-partner, and RFQ workflow aid. Treat all savings, supplier, quote, and partner-fit claims as buyer-controlled evidence that must be validated against current supplier documents, stock, pricing, compatibility, warranty path, and internal approval. Shared tenant data, live supplier integrations, confidential tender storage, billing, and network learning must wait for governed SaaS controls.`;
 }
 
 async function copyValueProofBrief() {
@@ -11455,6 +11520,447 @@ function exportValueProofJson() {
     JSON.stringify({ ...createSessionSnapshot(), valueProof: { generatedAt: new Date().toISOString(), data, cards: valueProofCards(data), path: valueProofPath(data), evidence: valueProofEvidence(data), generatedText: valueProofBriefText() } }, null, 2),
     "application/json;charset=utf-8"
   );
+}
+
+function defaultLaunchPartner() {
+  return {
+    id: "",
+    company: "",
+    contact: "",
+    segment: "Procurement team",
+    region: "",
+    pilotLane: "",
+    status: "Target",
+    fit: "High strategic fit",
+    nextDate: "",
+    notes: ""
+  };
+}
+
+function launchPartnerFieldValue(element, fallback = "") {
+  const value = String(element?.value || "").trim();
+  return value || fallback;
+}
+
+function launchPartnerSnapshot() {
+  const existing = state.launchPartners.find((partner) => partner.id === els.partnerId?.value);
+  const company = launchPartnerFieldValue(els.partnerCompany, "Partner TBC");
+  return sanitizeLaunchPartner({
+    id: launchPartnerFieldValue(els.partnerId, `${Date.now()}-${safeFilenamePart(company) || "launch-partner"}`),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    company,
+    contact: launchPartnerFieldValue(els.partnerContact, ""),
+    segment: launchPartnerFieldValue(els.partnerSegment, "Procurement team"),
+    region: launchPartnerFieldValue(els.partnerRegion, ""),
+    pilotLane: launchPartnerFieldValue(els.partnerLane, ""),
+    status: launchPartnerFieldValue(els.partnerStatus, "Target"),
+    fit: launchPartnerFieldValue(els.partnerFit, "High strategic fit"),
+    nextDate: launchPartnerFieldValue(els.partnerNextDate, ""),
+    notes: launchPartnerFieldValue(els.partnerNotes, "")
+  });
+}
+
+function hydrateLaunchPartnerForm(partner = defaultLaunchPartner()) {
+  if (!els.partnerForm) {
+    return;
+  }
+
+  const isBlank = !partner.id && !partner.company && !partner.contact && !partner.region && !partner.pilotLane && !partner.nextDate && !partner.notes;
+  const cleanPartner = isBlank ? defaultLaunchPartner() : sanitizeLaunchPartner({ ...defaultLaunchPartner(), ...partner }) || defaultLaunchPartner();
+  els.partnerId.value = cleanPartner.id || "";
+  els.partnerCompany.value = cleanPartner.company === "Partner TBC" ? "" : cleanPartner.company;
+  els.partnerContact.value = cleanPartner.contact || "";
+  els.partnerSegment.value = cleanPartner.segment || "Procurement team";
+  els.partnerRegion.value = cleanPartner.region || "";
+  els.partnerLane.value = cleanPartner.pilotLane || "";
+  els.partnerStatus.value = cleanPartner.status || "Target";
+  els.partnerFit.value = cleanPartner.fit || "High strategic fit";
+  els.partnerNextDate.value = cleanPartner.nextDate || "";
+  els.partnerNotes.value = cleanPartner.notes || "";
+  if (els.partnerPipelineStatus) {
+    els.partnerPipelineStatus.textContent = cleanPartner.id
+      ? "Editing saved launch partner. Changes stay local until exported or copied."
+      : "Stored locally in this browser. Use sample or non-confidential buyer context during public beta.";
+  }
+}
+
+function launchPartnerScore(partner, data = valueProofData()) {
+  const statusBoost = {
+    Target: 4,
+    Contacted: 12,
+    "Demo booked": 20,
+    "Pilot proposed": 26,
+    "Pilot active": 34,
+    Converted: 40,
+    "Not now": -8
+  };
+  const fitBoost = {
+    "High strategic fit": 24,
+    "Moderate fit": 14,
+    "Needs qualification": 4,
+    "Not a fit": -16
+  };
+  const segmentBoost = {
+    "Procurement team": 12,
+    "MRO distributor": 8,
+    "OEM partner": 8,
+    "System integrator": 6,
+    "Technology partner": 6,
+    "Investor / advisor": 5
+  };
+  let score = 35;
+  score += statusBoost[partner.status] ?? 0;
+  score += fitBoost[partner.fit] ?? 0;
+  score += segmentBoost[partner.segment] ?? 0;
+  if (partner.company && partner.company !== "Partner TBC") score += 8;
+  if (partner.contact) score += 6;
+  if (partner.region) score += 4;
+  if (partner.pilotLane) score += 8;
+  if (partner.nextDate) score += 5;
+  if (partner.notes) score += 5;
+  if (Number(data.readiness) >= 84) score += 5;
+  if (launchPartnerNestedScore(data.pilot, "readiness") >= 82) score += 5;
+  return Math.max(1, Math.min(100, Math.round(score)));
+}
+
+function launchPartnerNestedScore(source, key, fallback = 0) {
+  const value = Number(source?.[key]);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function launchPartnerScoreLabel(score) {
+  if (score >= 84) return "Pilot-ready";
+  if (score >= 70) return "Good candidate";
+  if (score >= 55) return "Needs qualification";
+  return "Low fit";
+}
+
+function launchPartnerSummaryData() {
+  const data = valueProofData();
+  const catalogBaseline = Math.min(72, 42 + Math.floor((Number(data.catalogRecords) || products.length || 0) / 7) + Math.floor((Number(data.sourcePaths) || sourceDirectory.length || 0) / 18));
+  const valueReadiness = Number.isFinite(Number(data.readiness)) ? Number(data.readiness) : catalogBaseline;
+  const pilotReadiness = launchPartnerNestedScore(data.pilot, "readiness", Math.max(0, valueReadiness - 6));
+  const partners = state.launchPartners.map((partner) => ({ ...partner, score: launchPartnerScore(partner, data) }));
+  const total = partners.length;
+  const qualified = partners.filter((partner) => partner.score >= 70).length;
+  const active = partners.filter((partner) => ["Pilot proposed", "Pilot active", "Converted"].includes(partner.status)).length;
+  const followUps = partners.filter((partner) => ["Contacted", "Demo booked", "Pilot proposed"].includes(partner.status)).length;
+  const averageScore = total ? Math.round(partners.reduce((sum, partner) => sum + partner.score, 0) / total) : 0;
+  const pipelineReadiness = total ? Math.min(98, Math.round(valueReadiness * 0.38 + pilotReadiness * 0.22 + averageScore * 0.3 + Math.min(10, total * 2))) : Math.round(valueReadiness * 0.45);
+  const topPartner = partners.sort((a, b) => b.score - a.score)[0];
+  return {
+    total,
+    qualified,
+    active,
+    followUps,
+    averageScore,
+    pipelineReadiness,
+    topPartner,
+    status: pipelineReadiness >= 84 ? "Launch-ready pipeline" : pipelineReadiness >= 70 ? "Good launch motion" : "Build partner evidence"
+  };
+}
+
+function renderLaunchPartnerPipeline() {
+  if (!els.partnerSummary || !els.partnerList) {
+    return;
+  }
+
+  const summary = launchPartnerSummaryData();
+  els.partnerSummary.innerHTML = [
+    tenantSummaryTemplate("Pipeline readiness", `${summary.pipelineReadiness}%`, summary.status),
+    tenantSummaryTemplate("Partner candidates", summary.total, summary.total ? `${summary.qualified} qualified` : "Add first pilot candidate"),
+    tenantSummaryTemplate("Active lanes", summary.active, "Proposed, active, or converted"),
+    tenantSummaryTemplate("Follow-ups", summary.followUps, summary.followUps ? "Next buyer action needed" : "No open follow-up")
+  ].join("");
+
+  if (!state.launchPartners.length) {
+    els.partnerList.innerHTML = `
+      <article class="partner-empty">
+        <strong>No launch partners saved yet</strong>
+        <p>Add a friendly buyer, distributor, OEM, advisor, or technology partner candidate. InduScout will score pilot readiness, generate outreach text, and export a clean pipeline register.</p>
+      </article>
+    `;
+    return;
+  }
+
+  const data = valueProofData();
+  const sorted = [...state.launchPartners].sort((a, b) => launchPartnerScore(b, data) - launchPartnerScore(a, data));
+  els.partnerList.innerHTML = sorted.map((partner) => launchPartnerCardTemplate(partner, data)).join("");
+}
+
+function launchPartnerCardTemplate(partner, data = valueProofData()) {
+  const score = launchPartnerScore(partner, data);
+  const label = launchPartnerScoreLabel(score);
+  const statusClass = score >= 84 ? "ready" : score >= 70 ? "review" : score >= 55 ? "needs" : "risk";
+  const next = partner.nextDate || "Next date TBC";
+  return `
+    <article class="partner-card ${statusClass}">
+      <div class="partner-card-head">
+        <div>
+          <span>${escapeHtml(partner.segment)}</span>
+          <h3>${escapeHtml(partner.company)}</h3>
+          <p>${escapeHtml(partner.contact || "Contact path TBC")}</p>
+        </div>
+        <div class="partner-score">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(String(score))}</strong>
+        </div>
+      </div>
+      <dl class="partner-facts">
+        <div><dt>Status</dt><dd>${escapeHtml(partner.status)}</dd></div>
+        <div><dt>Fit</dt><dd>${escapeHtml(partner.fit)}</dd></div>
+        <div><dt>Region</dt><dd>${escapeHtml(partner.region || "Global / TBC")}</dd></div>
+        <div><dt>Pilot lane</dt><dd>${escapeHtml(partner.pilotLane || "Lane TBC")}</dd></div>
+        <div><dt>Next action</dt><dd>${escapeHtml(next)}</dd></div>
+      </dl>
+      ${partner.notes ? `<p class="partner-notes">${escapeHtml(partner.notes)}</p>` : ""}
+      <div class="partner-card-actions">
+        <button type="button" data-load-partner="${escapeHtml(partner.id)}">Load</button>
+        <button type="button" data-copy-partner="${escapeHtml(partner.id)}">Copy outreach</button>
+        <button type="button" data-remove-partner="${escapeHtml(partner.id)}">Remove</button>
+      </div>
+    </article>
+  `;
+}
+
+function saveLaunchPartnerFromForm() {
+  const partner = launchPartnerSnapshot();
+  if (!partner) {
+    return;
+  }
+
+  const existingIndex = state.launchPartners.findIndex((item) => item.id === partner.id);
+  if (existingIndex >= 0) {
+    state.launchPartners.splice(existingIndex, 1, partner);
+  } else {
+    state.launchPartners.unshift(partner);
+  }
+  state.launchPartners = state.launchPartners.map(sanitizeLaunchPartner).filter(Boolean).slice(0, 120);
+  saveLaunchPartners();
+  hydrateLaunchPartnerForm(partner);
+  renderLaunchPartnerPipeline();
+  if (els.partnerPipelineStatus) {
+    els.partnerPipelineStatus.textContent = `Saved ${partner.company}. Qualification score ${launchPartnerScore(partner)}.`;
+  }
+}
+
+function loadLaunchPartnerToForm(id) {
+  const partner = state.launchPartners.find((item) => item.id === id);
+  if (!partner) {
+    return;
+  }
+  hydrateLaunchPartnerForm(partner);
+  if (els.partnerForm) {
+    els.partnerForm.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function removeLaunchPartner(id) {
+  const partner = state.launchPartners.find((item) => item.id === id);
+  state.launchPartners = state.launchPartners.filter((item) => item.id !== id);
+  saveLaunchPartners();
+  if (els.partnerId?.value === id) {
+    hydrateLaunchPartnerForm();
+  }
+  renderLaunchPartnerPipeline();
+  if (els.partnerPipelineStatus && partner) {
+    els.partnerPipelineStatus.textContent = `Removed ${partner.company} from the local launch pipeline.`;
+  }
+}
+
+function clearLaunchPartners() {
+  if (!state.launchPartners.length) {
+    if (els.partnerPipelineStatus) {
+      els.partnerPipelineStatus.textContent = "No launch partners to clear.";
+    }
+    return;
+  }
+
+  const confirmed = window.confirm("Clear all locally saved launch partner candidates?");
+  if (!confirmed) {
+    return;
+  }
+  state.launchPartners = [];
+  saveLaunchPartners();
+  hydrateLaunchPartnerForm();
+  renderLaunchPartnerPipeline();
+  if (els.partnerPipelineStatus) {
+    els.partnerPipelineStatus.textContent = "Launch partner pipeline cleared locally.";
+  }
+}
+
+function launchPartnerOutreachText(partner = launchPartnerSnapshot()) {
+  const data = valueProofData();
+  const pilotReadiness = launchPartnerNestedScore(data.pilot, "readiness", 0);
+  const demoReadiness = launchPartnerNestedScore(data.demo, "readiness", 0);
+  const score = partner ? launchPartnerScore(partner, data) : 0;
+  const label = launchPartnerScoreLabel(score);
+  return `InduScout launch partner outreach
+Prepared on ${formatCopyDate()}
+
+Partner candidate: ${partner?.company || "Partner TBC"}
+Contact path: ${partner?.contact || "TBC"}
+Partner type: ${partner?.segment || "TBC"}
+Region: ${partner?.region || "TBC"}
+Pilot lane: ${partner?.pilotLane || "TBC"}
+Status: ${partner?.status || "Target"}
+Qualification: ${label} (${score}/100)
+
+Why we are reaching out:
+InduScout is a procurement-first industrial product discovery and RFQ preparation workspace. The current public beta helps buyers search industrial products, compare sources, create shortlists, prepare RFQ packs, track quotes, review alternates, and build buyer-ready evidence before purchase decisions.
+
+Current proof stack:
+- ${data.catalogRecords} product records across ${categories.length} beta categories
+- ${data.sourcePaths} source links across OEM, distributor, marketplace, surplus, and RFQ paths
+- Value readiness: ${data.readiness}% (${data.status})
+- Pilot readiness: ${pilotReadiness}%
+- Demo readiness: ${demoReadiness}%
+
+Suggested pilot:
+Run a controlled, non-confidential workflow around ${partner?.pilotLane || "one industrial product lane"} using sample parts, public supplier links, buyer validation steps, RFQ preparation, and quote comparison.
+
+Requested next step:
+Would you be open to a short walkthrough and a small pilot conversation? The aim is to validate product discovery, RFQ preparation, source confidence, quote tracking, and buyer evidence before any production SaaS rollout.
+
+Public beta boundary:
+Please keep confidential tender data, credentials, payment details, personal data, and regulated records outside the beta until secure account, tenant isolation, audit log, deletion, and backend controls are launched.`;
+}
+
+async function copyLaunchPartnerOutreach() {
+  const text = launchPartnerOutreachText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyPartnerOutreach) {
+      els.copyPartnerOutreach.textContent = "Outreach copied";
+      setTimeout(() => {
+        els.copyPartnerOutreach.textContent = "Copy outreach";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy launch partner outreach", text);
+  }
+}
+
+async function copySavedLaunchPartnerOutreach(id, triggerButton) {
+  const partner = state.launchPartners.find((item) => item.id === id);
+  if (!partner) {
+    return;
+  }
+
+  const text = launchPartnerOutreachText(partner);
+  try {
+    await navigator.clipboard.writeText(text);
+    if (triggerButton) {
+      triggerButton.textContent = "Copied";
+      setTimeout(() => {
+        triggerButton.textContent = "Copy outreach";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy launch partner outreach", text);
+  }
+}
+
+function launchPartnerReportText() {
+  const summary = launchPartnerSummaryData();
+  const data = valueProofData();
+  const pilotReadiness = launchPartnerNestedScore(data.pilot, "readiness", 0);
+  const demoReadiness = launchPartnerNestedScore(data.demo, "readiness", 0);
+  const partners = state.launchPartners.map((partner) => ({
+    ...partner,
+    score: launchPartnerScore(partner, data),
+    label: launchPartnerScoreLabel(launchPartnerScore(partner, data))
+  })).sort((a, b) => b.score - a.score);
+  const partnerLines = partners.length
+    ? partners.map((partner, index) => `${index + 1}. ${partner.company} - ${partner.segment}, ${partner.status}, ${partner.fit}, score ${partner.score} (${partner.label}). Region: ${partner.region || "TBC"}. Pilot lane: ${partner.pilotLane || "TBC"}. Next: ${partner.nextDate || "TBC"}. Notes: ${partner.notes || "None"}`).join("\n")
+    : "No launch partners saved yet.";
+
+  return `InduScout v5.9 Launch Partner Pipeline
+Prepared on ${formatCopyDate()}
+
+Pipeline readiness: ${summary.pipelineReadiness}% (${summary.status})
+Partner candidates: ${summary.total}
+Qualified candidates: ${summary.qualified}
+Active lanes: ${summary.active}
+Follow-ups: ${summary.followUps}
+Average partner score: ${summary.averageScore || 0}
+
+Value proof context:
+- Catalog base: ${data.catalogRecords} product records and ${data.sourcePaths} source links
+- Value readiness: ${data.readiness}% (${data.status})
+- Pilot readiness: ${pilotReadiness}%
+- Demo readiness: ${demoReadiness}%
+- Commercial proof signals: ${data.commercialSignals}
+
+Launch partner register:
+${partnerLines}
+
+Recommended next action:
+Prioritize high-fit procurement teams and distributor/OEM partners for controlled, non-confidential pilot walkthroughs. Capture objections, pilot outcomes, and source validation evidence before moving toward secure SaaS backend work.
+
+Boundary:
+This pipeline is local-only public beta planning. Do not store confidential tender data, credentials, payment data, regulated personal data, or private supplier commercials until governed SaaS controls are live.`;
+}
+
+async function copyLaunchPartnerReport() {
+  const text = launchPartnerReportText();
+  try {
+    await navigator.clipboard.writeText(text);
+    if (els.copyPartnerReport) {
+      els.copyPartnerReport.textContent = "Report copied";
+      setTimeout(() => {
+        els.copyPartnerReport.textContent = "Copy pipeline report";
+      }, 1400);
+    }
+  } catch {
+    window.prompt("Copy launch partner report", text);
+  }
+}
+
+function launchPartnerExportTable() {
+  const data = valueProofData();
+  const headers = ["Company", "Contact", "Partner Type", "Region", "Pilot Lane", "Status", "Fit", "Score", "Qualification", "Next Action Date", "Notes", "Saved At", "Updated At"];
+  const rows = state.launchPartners.map((partner) => {
+    const score = launchPartnerScore(partner, data);
+    return [
+      partner.company,
+      partner.contact,
+      partner.segment,
+      partner.region,
+      partner.pilotLane,
+      partner.status,
+      partner.fit,
+      score,
+      launchPartnerScoreLabel(score),
+      partner.nextDate,
+      partner.notes,
+      partner.savedAt,
+      partner.updatedAt
+    ];
+  });
+  return { headers, rows };
+}
+
+function exportLaunchPartnerCsv() {
+  const { headers, rows } = launchPartnerExportTable();
+  const csv = [headers, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
+  downloadFile(`InduScout-Launch-Partners-${new Date().toISOString().slice(0, 10)}.csv`, csv, "text/csv;charset=utf-8");
+  if (els.partnerPipelineStatus) {
+    els.partnerPipelineStatus.textContent = "Launch partner CSV exported.";
+  }
+}
+
+function exportLaunchPartnerJson() {
+  const summary = launchPartnerSummaryData();
+  downloadFile(
+    `InduScout-Launch-Partners-${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify({ ...createSessionSnapshot(), launchPartnerPipeline: { generatedAt: new Date().toISOString(), summary, partners: state.launchPartners, generatedText: launchPartnerReportText() } }, null, 2),
+    "application/json;charset=utf-8"
+  );
+  if (els.partnerPipelineStatus) {
+    els.partnerPipelineStatus.textContent = "Launch partner JSON exported.";
+  }
 }
 
 function selectedQuoteProduct() {
@@ -13219,7 +13725,7 @@ function createSessionSnapshot() {
   }
   return {
     app: "InduScout",
-    version: "5.8",
+    version: "5.9",
     savedAt: new Date().toISOString(),
     project: state.project,
     specRequirements: state.specRequirements,
@@ -13245,6 +13751,7 @@ function createSessionSnapshot() {
     ),
     productRequests: state.productRequests,
     sourceLeads: state.sourceLeads,
+    launchPartners: state.launchPartners,
     quotes: state.quotes,
     savingsRecords: state.savingsRecords,
     learningRecords: state.learningRecords,
@@ -13277,6 +13784,9 @@ function applySession(session) {
   state.sourceLeads = Array.isArray(session.sourceLeads)
     ? session.sourceLeads.map(sanitizeSourceLead).filter(Boolean).slice(0, 120)
     : state.sourceLeads;
+  state.launchPartners = Array.isArray(session.launchPartners)
+    ? session.launchPartners.map(sanitizeLaunchPartner).filter(Boolean).slice(0, 120)
+    : state.launchPartners;
   state.quotes = Array.isArray(session.quotes) ? session.quotes.map(sanitizeQuoteRecord).filter(Boolean).slice(0, 80) : state.quotes;
   state.savingsRecords = Array.isArray(session.savingsRecords)
     ? session.savingsRecords.map(sanitizeSavingsRecord).filter(Boolean).slice(0, 120)
@@ -13326,6 +13836,7 @@ function applySession(session) {
   saveNotes();
   saveProductRequests();
   saveSourceLeads();
+  saveLaunchPartners();
   saveQuoteRecords();
   saveSavingsRecords();
   saveLearningRecords();
@@ -13364,6 +13875,8 @@ function applySession(session) {
   renderPilotPack();
   renderDemoProofPack();
   renderValueProofPack();
+  hydrateLaunchPartnerForm();
+  renderLaunchPartnerPipeline();
   populateReplyItems();
   renderSupplierInbox();
   renderShortlist();
@@ -15197,6 +15710,23 @@ function saveSourceLeads() {
   }
 }
 
+function loadLaunchPartners() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem("induscoutLaunchPartners") || "[]");
+    return Array.isArray(saved) ? saved.map(sanitizeLaunchPartner).filter(Boolean).slice(0, 120) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLaunchPartners() {
+  try {
+    window.localStorage.setItem("induscoutLaunchPartners", JSON.stringify(state.launchPartners));
+  } catch {
+    // Launch partner tracking is a convenience only; copy/export actions still work if storage is blocked.
+  }
+}
+
 function loadQuoteRecords() {
   try {
     const saved = JSON.parse(window.localStorage.getItem("induscoutQuoteRecords") || "[]");
@@ -15398,6 +15928,31 @@ function sanitizeSourceLead(record) {
     evidenceUrl: cleanText(safeExternalUrl(record.evidenceUrl || "", ""), 240),
     contact: cleanText(record.contact || "", 180),
     status: allowedStatuses.includes(record.status) ? record.status : "New lead",
+    notes: cleanText(record.notes || "", 1800)
+  };
+}
+
+function sanitizeLaunchPartner(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const allowedSegments = ["Procurement team", "MRO distributor", "OEM partner", "System integrator", "Technology partner", "Investor / advisor"];
+  const allowedStatuses = ["Target", "Contacted", "Demo booked", "Pilot proposed", "Pilot active", "Converted", "Not now"];
+  const allowedFits = ["High strategic fit", "Moderate fit", "Needs qualification", "Not a fit"];
+  const fallbackCompany = cleanText(record.company || "Partner TBC", 180);
+  return {
+    id: cleanText(record.id || `${Date.now()}-${safeFilenamePart(fallbackCompany) || "launch-partner"}`, 90),
+    savedAt: cleanText(record.savedAt || new Date().toISOString(), 40),
+    updatedAt: cleanText(record.updatedAt || record.savedAt || new Date().toISOString(), 40),
+    company: fallbackCompany,
+    contact: cleanText(record.contact || "", 220),
+    segment: allowedSegments.includes(record.segment) ? record.segment : "Procurement team",
+    region: cleanText(record.region || "", 160),
+    pilotLane: cleanText(record.pilotLane || record.lane || "", 180),
+    status: allowedStatuses.includes(record.status) ? record.status : "Target",
+    fit: allowedFits.includes(record.fit) ? record.fit : "High strategic fit",
+    nextDate: cleanText(record.nextDate || "", 40),
     notes: cleanText(record.notes || "", 1800)
   };
 }

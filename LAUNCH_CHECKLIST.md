@@ -1,4 +1,4 @@
-# InduScout v5.8 Launch Checklist
+# InduScout v5.9 Launch Checklist
 
 Use this checklist after each public GitHub Pages upload.
 
@@ -103,8 +103,11 @@ Use this checklist after each public GitHub Pages upload.
 - Copy the demo brief and export Demo Proof JSON; confirm stakeholder value map, guided demo flow, objection responses, proof points, and beta boundary are included.
 - Open Value Proof and confirm value readiness, quoted value, accepted savings, proof signals, commercial proof cards, buyer value path, and evidence posture render.
 - Copy the value brief and export Value Proof JSON; confirm quoted value, decision lead, savings, learning, pilot readiness, demo readiness, value cards, buyer path, and beta boundary are included.
-- Click the top `v5.8` tab and confirm the Version & Build Phases section opens.
-- Confirm the Build Phases tracker shows current live build v5.8, release mode, v5.9 next gate, completed phases, current closed-loop intelligence, governed SaaS foundation, and future network learning layer.
+- Open Partners and confirm pipeline readiness, partner candidate count, active lanes, follow-ups, partner form, and empty state or saved partner cards render.
+- Save one launch partner candidate, load it back into the form, copy outreach, copy the pipeline report, export CSV, export JSON, then remove the saved partner.
+- Export a session JSON, import it, and confirm the saved launch partner pipeline is restored.
+- Click the top `v5.9` tab and confirm the Version & Build Phases section opens.
+- Confirm the Build Phases tracker shows current live build v5.9, release mode, v6.0 next gate, completed phases, current closed-loop intelligence, governed SaaS foundation, and future network learning layer.
 - Open Inbox, save one supplier reply with status, next action, subject, supplier message, and buyer notes.
 - Confirm Inbox summary counts update and the saved reply card appears with Load, Copy buyer reply, Convert to quote, and Remove actions.
 - Copy one buyer reply and confirm it includes project context, product context, requested confirmations, supplier message, and buyer notes.
@@ -166,5 +169,5 @@ Use this checklist after each public GitHub Pages upload.
 - Add richer regional availability notes.
 - Build supplier submission review rules.
 - Grow Supplier Intake into a governed review workflow before public supplier submissions.
-- Use the v5.8 Value Proof Board for curated stakeholder walkthroughs, then convert pilot, demo, and value feedback into launch-partner qualification and secure backend priorities.
+- Use the v5.9 Launch Partner Pipeline for curated stakeholder walkthroughs, then convert partner, pilot, demo, and value feedback into secure backend priorities.
 - Plan backend search only after static catalog workflow is stable.
